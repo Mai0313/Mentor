@@ -328,7 +328,7 @@ def check_netlist(netlist_path, operating_point_path, input, output, task_id, ta
                 vds_error = 0
                 if voltages[drain] == 0.0:
                     if drain.lower() == "0" or drain.lower() == "gnd":
-                        warning_message += (f"Suggetions: Please avoid connect {mos_type} {name} drain to the ground.\n")
+                        warning_message += (f"Suggestions: Please avoid connect {mos_type} {name} drain to the ground.\n")
                     else:
                         vds_error = 1
                         warning_message += (f"For {mos_type} {name}, the drain node ({drain}) voltage is 0.\n")
@@ -387,7 +387,7 @@ def check_netlist(netlist_path, operating_point_path, input, output, task_id, ta
                     vgs_error = 1
                     warning_message += (f"For {mos_type} {name}, the gate node ({gate}) voltage is higher than the source node ({source}) voltage plus the threshold voltage.\n")
                 if vgs_error == 1:
-                    warning_message += (f"Suggestion: Please set {mos_type} {name} with an activated state by decreasing the gate voltage or incresing the source voltage and make sure V_GS < V_TH.\n")
+                    warning_message += (f"Suggestion: Please set {mos_type} {name} with an activated state by decreasing the gate voltage or increasing the source voltage and make sure V_GS < V_TH.\n")
 
     if task_id in [1, 2, 3, 4, 5, 6, 8, 13]:
         if resistance_exist == 0:
