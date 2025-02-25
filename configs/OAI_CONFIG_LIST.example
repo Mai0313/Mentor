@@ -1,0 +1,56 @@
+[
+    {
+        "model": "aide-gpt-4o",
+        "api_key": "...",
+        "base_url": "https://mlop-azure-gateway.mediatek.inc",
+        "api_type": "azure",
+        "api_version": "2024-08-01-preview",
+        "default_headers": {"X-User-Id": "..."},
+        "price": [0.005, 0.015]
+    },
+    {
+        "model": "aide-gpt-4o-mini",
+        "api_key": "...",
+        "base_url": "https://mlop-azure-gateway.mediatek.inc",
+        "api_type": "azure",
+        "api_version": "2024-08-01-preview",
+        "default_headers": {"X-User-Id": "..."},
+        "price": [0.000150, 0.000600]
+    },
+    {
+        "model": "aide-gpt-4-turbo",
+        "api_key": "...",
+        "base_url": "https://mlop-azure-gateway.mediatek.inc",
+        "api_type": "azure",
+        "api_version": "2024-08-01-preview",
+        "default_headers": {"X-User-Id": "..."},
+        "price": [0.01, 0.03]
+    },
+    {
+        "model": "aide-o1",
+        "api_key": "...",
+        "base_url": "https://mlop-azure-gateway.mediatek.inc",
+        "api_type": "azure",
+        "api_version": "2024-12-01-preview",
+        "default_headers": {"X-User-Id": "..."},
+        "price": [0.0015, 0.0060]
+    },
+    {
+        "model": "aide-o1-mini",
+        "api_key": "...",
+        "base_url": "https://mlop-azure-gateway.mediatek.inc",
+        "api_type": "azure",
+        "api_version": "2024-12-01-preview",
+        "default_headers": {"X-User-Id": "..."},
+        "price": [0.0003, 0.0012]
+    },
+    {
+        "model": "aide-o3-mini",
+        "api_key": "...",
+        "base_url": "https://mlop-azure-gateway.mediatek.inc",
+        "api_type": "azure",
+        "api_version": "2024-12-01-preview",
+        "default_headers": {"X-User-Id": "..."},
+        "price": [0.11, 0.44]
+    }
+]

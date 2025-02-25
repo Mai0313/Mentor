@@ -37,6 +37,7 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "ag2", extra = ["captainagent", "interop-pydantic-ai", "retrievechat"] },
+    { name = "logfire" },
     { name = "markitdown" },
     { name = "matplotlib" },
     { name = "numpy" },
@@ -49,6 +50,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "ag2", extras = ["captainagent", "interop-pydantic-ai", "retrievechat"], specifier = ">=0.7.5" },
+    { name = "logfire", specifier = ">=3.6.2" },
     { name = "markitdown", specifier = ">=0.0.1a4" },
     { name = "matplotlib", specifier = ">=3.10.0" },
     { name = "numpy", specifier = ">=2.2.3" },
@@ -1380,6 +1382,25 @@ wheels = [
 ]
 
 [[package]]
+name = "logfire"
+version = "3.6.2"
+source = { registry = "https://oa-mirror.mediatek.inc/repository/pypi/simple/" }
+dependencies = [
+    { name = "executing" },
+    { name = "opentelemetry-exporter-otlp-proto-http" },
+    { name = "opentelemetry-instrumentation" },
+    { name = "opentelemetry-sdk" },
+    { name = "protobuf" },
+    { name = "rich" },
+    { name = "tomli", marker = "python_full_version < '3.11'" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://oa-mirror.mediatek.inc/repository/pypi/+f/ebe/a2d1c27cf3ddb/logfire-3.6.2.tar.gz", hash = "sha256:ebea2d1c27cf3ddbc32bd4f3cb8aa10c4f18a44253472b31a975ad2e792bffce" }
+wheels = [
+    { url = "https://oa-mirror.mediatek.inc/repository/pypi/+f/361/f68c21a8799f6/logfire-3.6.2-py3-none-any.whl", hash = "sha256:361f68c21a8799f605951a46ee63ee3713a74df79396744c4f7a3c8b7d9e4ac6" },
+]
+
+[[package]]
 name = "logfire-api"
 version = "3.6.2"
 source = { registry = "https://oa-mirror.mediatek.inc/repository/pypi/simple/" }
@@ -2127,6 +2148,24 @@ dependencies = [
 sdist = { url = "https://oa-mirror.mediatek.inc/repository/pypi/+f/d0f/10f0b9b9a383b/opentelemetry_exporter_otlp_proto_grpc-1.30.0.tar.gz", hash = "sha256:d0f10f0b9b9a383b7d04a144d01cb280e70362cccc613987e234183fd1f01177" }
 wheels = [
     { url = "https://oa-mirror.mediatek.inc/repository/pypi/+f/290/6bcae3d80acc5/opentelemetry_exporter_otlp_proto_grpc-1.30.0-py3-none-any.whl", hash = "sha256:2906bcae3d80acc54fd1ffcb9e44d324e8631058b502ebe4643ca71d1ff30830" },
+]
+
+[[package]]
+name = "opentelemetry-exporter-otlp-proto-http"
+version = "1.30.0"
+source = { registry = "https://oa-mirror.mediatek.inc/repository/pypi/simple/" }
+dependencies = [
+    { name = "deprecated" },
+    { name = "googleapis-common-protos" },
+    { name = "opentelemetry-api" },
+    { name = "opentelemetry-exporter-otlp-proto-common" },
+    { name = "opentelemetry-proto" },
+    { name = "opentelemetry-sdk" },
+    { name = "requests" },
+]
+sdist = { url = "https://oa-mirror.mediatek.inc/repository/pypi/+f/c3a/e75d4181b1e34/opentelemetry_exporter_otlp_proto_http-1.30.0.tar.gz", hash = "sha256:c3ae75d4181b1e34a60662a6814d0b94dd33b628bee5588a878bed92cee6abdc" }
+wheels = [
+    { url = "https://oa-mirror.mediatek.inc/repository/pypi/+f/957/8e790e579931c/opentelemetry_exporter_otlp_proto_http-1.30.0-py3-none-any.whl", hash = "sha256:9578e790e579931c5ffd50f1e6975cbdefb6a0a0a5dea127a6ae87df10e0a589" },
 ]
 
 [[package]]

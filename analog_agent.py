@@ -352,12 +352,17 @@ class AnalogAgent(BaseModel):
         return content
 
     def use_chat_completion(self, model: str, messages: list[dict[str, str]]) -> ChatCompletion:
-        llm_config = get_config_dict(model=model)
+        # llm_config = get_config_dict(model=model)
+        # client = AzureOpenAI(
+        #     api_key=llm_config["config_list"][0]["api_key"],
+        #     azure_endpoint=llm_config["config_list"][0]["base_url"],
+        #     api_version=llm_config["config_list"][0]["api_version"],
+        #     http_client=httpx.Client(headers=llm_config["config_list"][0]["default_headers"]),
+        # )
         client = AzureOpenAI(
-            api_key=llm_config["config_list"][0]["api_key"],
-            azure_endpoint=llm_config["config_list"][0]["base_url"],
-            api_version=llm_config["config_list"][0]["api_version"],
-            http_client=httpx.Client(headers=llm_config["config_list"][0]["default_headers"]),
+            api_key="hihi",
+            azure_endpoint="https://tma.mediatek.inc/tma/sdk/api/v1",
+            api_version="2024-08-01-preview",
         )
         result = client.chat.completions.create(messages=messages, model=model, temperature=0.5)
         return result

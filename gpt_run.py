@@ -1,4 +1,7 @@
-from openai import OpenAI
+from pathlib import Path
+from openai import AzureOpenAI
+from typing import Literal
+import httpx
 import openai
 import argparse
 import re
@@ -12,6 +15,9 @@ import shutil
 import signal
 import json
 
+from analog_agent import get_chat_completion
+from autogen.code_utils import extract_code as ag_extract_code
+
 class TimeoutException(Exception):
     pass
 
@@ -19,7 +25,7 @@ def signal_handler(signum, frame):
     raise TimeoutException("timeout")
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--model', type=str, default="gpt-3.5-turbo")
+parser.add_argument('--model', type=str, default="aide-gpt-4o")
 parser.add_argument('--temperature', type=float, default=0.5)
 parser.add_argument('--num_per_task', type=int, default=15)
 parser.add_argument('--num_of_retry', type=int, default=3)
@@ -33,14 +39,17 @@ parser.add_argument("--no_chain", action="store_true", default=False)
 parser.add_argument("--retrieval", action="store_true", default=True)
 parser.add_argument('--api_key', type=str)
 
+MULTI_AGENT_MODE: Literal["original", "captain", "captain+rag", "groupchat", "groupchat+rag"] = "captain"
+USE_DOCKER: Literal["mtkomcr.mediatek.inc/srv-aith/mtkllm-sdk-analog", False] = False  # "mtkomcr.mediatek.inc/srv-aith/mtkllm-sdk-analog"
+
 args = parser.parse_args()
 
-opensource_models = ["mistral", "wizardcoder", "deepseek-coder:33b-instruct", "codeqwen", "mixtral", "qwen"]
+opensource_models = ["mistral", "wizardcoder", "deepseek-coder:33b-instruct", "codeqwen", "mixtral"]
 
-if any([model in args.model for model in opensource_models]):
-    import ollama
+# if any([model in args.model for model in opensource_models]):
+#     import ollama
 if args.skill:
-    args.num_of_retry = min(2, args.num_of_retry)
+    args.num_of_retry = min(5, args.num_of_retry)
 
 complex_task_type = ['Oscillator', 'Integrator', 'Differentiator', 'Adder', 'Subtractor', 'Schmitt']
 bias_usage = """Due to the operational range of the op-amp being 0 to 5V, please connect the nodes that were originally grounded to a 2.5V DC power source.
@@ -99,12 +108,11 @@ circuit.SinusoidalVoltageSource('sin', 'Vin', circuit.gnd,
 global client
 
 
-if "gpt" in args.model:
-    client = OpenAI(api_key=args.api_key)
-elif "deepseek-chat" in args.model:
-    client = OpenAI(api_key=args.api_key, base_url="https://api.deepseek.com/v1")
-else:
-    client = None
+client = AzureOpenAI(
+    api_key="hihi",
+    azure_endpoint="https://tma.mediatek.inc/tma/sdk/api/v1",
+    api_version="2024-08-01-preview",
+)
 
 
 # This function extracts the code from the generated content which in markdown format
@@ -750,6 +758,11 @@ def work(task, input, output, task_id, it, background, task_type, flog,
         note_info, bias_voltage = get_note_info(subcircuits)
         if task_type == "Oscillator":
             note_info += bias_usage
+        # Make the subcircuits by GPT possible
+        if task_type in complex_task_type:
+            prompt = prompt.replace('8. Avoid using subcircuits.', '')
+            # bias_voltage = 2.5
+
         call_info = get_call_info(subcircuits)
         prompt = prompt.replace('[SUBCIRCUITS_INFO]', subcircuits_info).replace('[NOTE_INFO]', note_info).replace('[CALL_INFO]', call_info)
         fwrite_prompt = open(f'prompt_template_complex_with_sub_{task_type}.md', 'w')
@@ -784,33 +797,40 @@ def work(task, input, output, task_id, it, background, task_type, flog,
             print(f"start {args.model} completion")
             signal.signal(signal.SIGALRM, signal_handler)
             signal.alarm(360)
-            try:
-                completion = ollama.chat(
-                    model=args.model,
-                    messages=messages,
-                    options={
-                        "temperature": args.temperature,
-                        "top_p": 1.0,
-                        # "num_predict": 16192,
-                    })
-                print(f"{args.model} completion finish")
-                signal.alarm(0)
-                break
-            except TimeoutException as e:
-                print(e)
-                print("timeout")
-                signal.alarm(0)
-                print("restart ollama")
-                kill_tmux_session("ollama")
-                result = subprocess.run(['ollama', 'restart'], capture_output=True, text=True)
-                start_tmux_session("ollama", "ollama serve")
-                time.sleep(120)
+            # try:
+            #     completion = ollama.chat(
+            #         model=args.model,
+            #         messages=messages,
+            #         options={
+            #             "temperature": args.temperature,
+            #             "top_p": 1.0,
+            #             # "num_predict": 16192,
+            #         })
+            #     print(f"{args.model} completion finish")
+            #     signal.alarm(0)
+            #     break
+            # except TimeoutException as e:
+            #     print(e)
+            #     print("timeout")
+            #     signal.alarm(0)
+            #     print("restart ollama")
+            #     kill_tmux_session("ollama")
+            #     result = subprocess.run(['ollama', 'restart'], capture_output=True, text=True)
+            #     start_tmux_session("ollama", "ollama serve")
+            #     time.sleep(120)
         else:
             try:
-                completion = client.chat.completions.create(
-                    model = args.model,
-                    messages = messages,
-                    temperature = args.temperature
+                # # add autogen groupchat
+                # completion = client.chat.completions.create(
+                #     model = args.model,
+                #     messages = messages,
+                #     temperature = args.temperature
+                # )
+                completion = get_chat_completion(
+                    model=args.model,
+                    messages=messages,
+                    mode=MULTI_AGENT_MODE,
+                    use_docker=USE_DOCKER
                 )
                 break
             except openai.APIStatusError as e:
@@ -831,8 +851,10 @@ def work(task, input, output, task_id, it, background, task_type, flog,
         money_quota -= (completion.usage.prompt_tokens / 1e6 * 0.5) + (completion.usage.completion_tokens / 1e6 * 1.5)
     elif "gpt-4" in args.model:
         money_quota -= (completion.usage.prompt_tokens / 1e6 * 10) + (completion.usage.completion_tokens / 1e6 * 30)
+    elif "o3-mini" in args.model:
+        money_quota -= (completion.usage.prompt_tokens / 1e6 * 1.1) + (completion.usage.completion_tokens / 1e6 * 4.4)
 
-    if "gpt" in args.model or "deepseek-chat" in args.model:
+    if "gpt" in args.model or "deepseek" in args.model:
         answer = completion.choices[0].message.content
     else:
         answer = completion['message']['content']
@@ -850,8 +872,10 @@ def work(task, input, output, task_id, it, background, task_type, flog,
         model_dir = 'gpt3p5'
     elif "gpt-4" in args.model:
         model_dir = 'gpt4'
-    elif "deepseek-chat" in args.model:
-        model_dir = "deepseek2"
+    elif "o3-mini" in args.model:
+        model_dir = "o3mini"
+    elif "deepseek" in args.model:
+        model_dir = "deepseek"
     elif any(model in args.model for model in opensource_models):
         model_dir = str(args.model).replace(":", "-")
     else:
@@ -1173,31 +1197,38 @@ def work(task, input, output, task_id, it, background, task_type, flog,
                     print(f"start {args.model} completion")
                     signal.signal(signal.SIGALRM, signal_handler)
                     signal.alarm(360)
-                    try:
-                        completion = ollama.chat(
-                            model=args.model,
-                            messages=messages,
-                            options={
-                                "temperature": args.temperature,
-                                "top_p": 1.0,
-                            })
-                        print(f"{args.model} completion finish")
-                        signal.alarm(0)
-                        break
-                    except TimeoutException as e:
-                        print(e)
-                        print("timeout")
-                        signal.alarm(0)
-                        print("restart ollama")
-                        kill_tmux_session("ollama")
-                        result = subprocess.run(['ollama', 'restart'], capture_output=True, text=True)
-                        start_tmux_session("ollama", "ollama serve")
-                        time.sleep(120)
+                    # try:
+                    #     completion = ollama.chat(
+                    #         model=args.model,
+                    #         messages=messages,
+                    #         options={
+                    #             "temperature": args.temperature,
+                    #             "top_p": 1.0,
+                    #         })
+                    #     print(f"{args.model} completion finish")
+                    #     signal.alarm(0)
+                    #     break
+                    # except TimeoutException as e:
+                    #     print(e)
+                    #     print("timeout")
+                    #     signal.alarm(0)
+                    #     print("restart ollama")
+                    #     kill_tmux_session("ollama")
+                    #     result = subprocess.run(['ollama', 'restart'], capture_output=True, text=True)
+                    #     start_tmux_session("ollama", "ollama serve")
+                    #     time.sleep(120)
                 else:
-                    completion = client.chat.completions.create(
-                        model = args.model,
-                        messages = messages,
-                        temperature = args.temperature
+                    # # add autogen groupchat
+                    # completion = client.chat.completions.create(
+                    #     model = args.model,
+                    #     messages = messages,
+                    #     temperature = args.temperature
+                    # )
+                    completion = get_chat_completion(
+                        model=args.model,
+                        messages=messages,
+                        mode=MULTI_AGENT_MODE,
+                    use_docker=USE_DOCKER
                     )
                     break
             except openai.APIStatusError as e:
@@ -1217,12 +1248,14 @@ def work(task, input, output, task_id, it, background, task_type, flog,
             money_quota -= (completion.usage.prompt_tokens / 1e6 * 0.5) + (completion.usage.completion_tokens / 1e6 * 1.5)
         elif "gpt-4" in args.model:
             money_quota -= (completion.usage.prompt_tokens / 1e6 * 10) + (completion.usage.completion_tokens / 1e6 * 30)
+        elif "o3-mini" in args.model:
+            money_quota -= (completion.usage.prompt_tokens / 1e6 * 1.1) + (completion.usage.completion_tokens / 1e6 * 4.4)
 
         fwrite_input.write("\n----------\n")
         fwrite_input.write(new_prompt)
         fwrite_input.flush()
 
-        if "gpt" in args.model or "deepseek-chat" in args.model:
+        if "gpt" in args.model or "deepseek" in args.model:
             answer = completion.choices[0].message.content
         else:
             answer = completion['message']['content']
@@ -1230,7 +1263,14 @@ def work(task, input, output, task_id, it, background, task_type, flog,
         fwrite_output.write("\n----------\n")
         fwrite_output.write(answer)
 
+        # print("+="*20, "Answer HERE", "+="*20)
+        # print(answer)
+        # print("+="*20, "Answer END", "+="*20)
         empty_code_error, code = extract_code(answer)
+        # print("+="*20, "Code HERE", "+="*20)
+        # print(code)
+        # print("+="*20, "Code END", "+="*20)
+        # exit()
 
 
         operating_point_path = "{}/p{}/{}/p{}_{}_{}_op.txt".format(model_dir, task_id, it, task_id, it, code_id)
@@ -1259,7 +1299,8 @@ def work(task, input, output, task_id, it, background, task_type, flog,
     return money_quota
 
 
-def get_retrieval(task, task_id):
+def get_retrieval(task, task_id) -> list[int]:
+    # use the real RAG here
     prompt = open('retrieval_prompt.md', 'r').read()
     prompt = prompt.replace('[TASK]', task)
     messages = [
@@ -1268,10 +1309,17 @@ def get_retrieval(task, task_id):
         ]
     if "gpt" in args.model and args.retrieval:
         try:
-            completion = client.chat.completions.create(
-                model = args.model,
-                messages = messages,
-                temperature = args.temperature
+            # # add autogen groupchat
+            # completion = client.chat.completions.create(
+            #     model = args.model,
+            #     messages = messages,
+            #     temperature = args.temperature
+            # )
+            completion = get_chat_completion(
+                model=args.model,
+                messages=messages,
+                mode=MULTI_AGENT_MODE,
+                use_docker=USE_DOCKER
             )
         except openai.APIStatusError as e:
             print("Encountered an APIStatusError. Details:")
@@ -1280,6 +1328,7 @@ def get_retrieval(task, task_id):
             time.sleep(30)
         answer = completion.choices[0].message.content
         print("answer", answer)
+        Path(f"{args.model.replace('-', '')}/p{str(task_id)}").mkdir(parents=True, exist_ok=True)
         fretre_path = os.path.join(args.model.replace("-", ""), f"p{str(task_id)}", "retrieve.txt")
         fretre = open(fretre_path, "w")
         fretre.write(answer)
@@ -1302,24 +1351,25 @@ def main():
     df = pd.read_csv(data_path, delimiter='\t')
     # print(df)
     # set money cost to $2
-    remaining_money = 2
+    remaining_money = 500
+    os.makedirs("./logs", exist_ok=True)
     for index, row in df.iterrows():
         circuit_id = row['Id']
         if circuit_id != args.task_id:
             continue
         strftime = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
         if args.ngspice:
-            flog = open('{}_{}_{}_ngspice_log.txt'.format(strftime, args.model, circuit_id), 'w')
+            flog = open('logs/{}_{}_{}_ngspice_log.txt'.format(strftime, args.model, circuit_id), 'w')
         elif args.no_prompt:
-            flog = open('{}_{}_{}_no_prompt_log.txt'.format(strftime, args.model, circuit_id), 'w')
+            flog = open('logs/{}_{}_{}_no_prompt_log.txt'.format(strftime, args.model, circuit_id), 'w')
         elif args.no_context:
-            flog = open('{}_{}_{}_no_context_log.txt'.format(strftime, args.model, circuit_id), 'w')
+            flog = open('logs/{}_{}_{}_no_context_log.txt'.format(strftime, args.model, circuit_id), 'w')
         elif args.no_chain:
-            flog = open('{}_{}_{}_no_chain_log.txt'.format(strftime, args.model, circuit_id), 'w')
+            flog = open('logs/{}_{}_{}_no_chain_log.txt'.format(strftime, args.model, circuit_id), 'w')
         elif not args.skill and row['Type'] in complex_task_type:
-            flog = open('{}_{}_{}_log_no_skill.txt'.format(strftime, args.model, circuit_id), 'w')
+            flog = open('logs/{}_{}_{}_log_no_skill.txt'.format(strftime, args.model, circuit_id), 'w')
         else:
-            flog = open('{}_{}_{}_log.txt'.format(strftime, args.model, circuit_id), 'w')
+            flog = open('logs/{}_{}_{}_log.txt'.format(strftime, args.model, circuit_id), 'w')
         for it in range(args.num_of_done, args.num_per_task):
             flog.write("task: {}, it: {}\n".format(circuit_id, it))
             flog.flush()

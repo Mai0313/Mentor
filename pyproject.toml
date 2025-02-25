@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "ag2[captainagent,interop-pydantic-ai,retrievechat]>=0.7.5",
+    "logfire>=3.6.2",
     "markitdown>=0.0.1a4",
     "matplotlib>=3.10.0",
     "numpy>=2.2.3",
