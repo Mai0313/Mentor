@@ -1,3 +1,4 @@
+import os
 from typing import Any, Literal
 from pathlib import Path
 import datetime
@@ -5,6 +6,8 @@ import datetime
 import logfire
 
 logfire.configure(send_to_logfire=False)
+
+import warnings
 
 import httpx
 from openai import AzureOpenAI, AsyncAzureOpenAI
@@ -18,7 +21,7 @@ from rich.console import Console
 from autogen.cache import Cache
 from rich.markdown import Markdown
 from chromadb.config import Settings
-from autogen.code_utils import extract_code  # noqa: F401
+from autogen.code_utils import extract_code
 from pydantic_ai.models.openai import OpenAIModel
 from openai.types.completion_usage import CompletionUsage
 from openai.types.chat.chat_completion import Choice, ChatCompletion
@@ -28,6 +31,7 @@ from autogen.agentchat.contrib.retrieve_user_proxy_agent import RetrieveUserProx
 from chromadb.utils.embedding_functions.openai_embedding_function import OpenAIEmbeddingFunction
 
 console = Console()
+warnings.filterwarnings("ignore", category=ResourceWarning)
 
 
 def get_config_dict(model: str) -> dict[str, Any]:
@@ -37,8 +41,7 @@ def get_config_dict(model: str) -> dict[str, Any]:
     llm_config = {
         "timeout": 60,
         "temperature": 0.5,
-        # "cache_seed": 43,  # It can be None if you don't wanna use cache system.
-        "cache_seed": None,
+        "cache_seed": os.getenv("SEED", None),
         "config_list": config_list,
     }
     return llm_config
@@ -59,12 +62,16 @@ def retrieve_data(query: str) -> str:
         >>> query = "What is the Product Version of Bandgap Reference Verification"
         >>> retrieved_result = retrieve_data(query=query)
     """
+    docs_path = Path("./docs").glob("**/*.*")
+    subcircuit_lib = Path("./subcircuit_lib").glob("**/*.*")
+    all_docs = [*docs_path, *subcircuit_lib]
+    all_docs = [f.as_posix() for f in all_docs]
     llm_config = get_config_dict(model="aide-gpt-4o")
     rag_agent = autogen.AssistantAgent(
         name="RetrievalAgent",
         is_termination_msg=lambda msg: "TERMINATE" in msg["content"],
         llm_config=llm_config,
-        silent=False,
+        silent=True,
     )
     rag_user_proxy = RetrieveUserProxyAgent(
         name="RetrieveAgent",
@@ -74,7 +81,7 @@ def retrieve_data(query: str) -> str:
         max_consecutive_auto_reply=3,
         retrieve_config={
             "task": "default",
-            "docs_path": "./docs",
+            "docs_path": all_docs,
             "must_break_at_empty_line": False,
             "model": "gpt-4",
             "vector_db": None,
@@ -93,7 +100,7 @@ def retrieve_data(query: str) -> str:
         },
         code_execution_config=False,  # we don't want to execute code in this case.
         description="Assistant who has extra content retrieval power for solving difficult problems.",
-        silent=False,
+        silent=True,
     )
     groupchat = autogen.GroupChat(
         agents=[rag_user_proxy, rag_agent],
@@ -101,13 +108,15 @@ def retrieve_data(query: str) -> str:
         max_round=12,
         speaker_selection_method="round_robin",
     )
-    manager = autogen.GroupChatManager(groupchat=groupchat, llm_config=llm_config, silent=False)
+    manager = autogen.GroupChatManager(groupchat=groupchat, llm_config=llm_config, silent=True)
     retrieve_result = rag_user_proxy.initiate_chat(
         recipient=manager,
         message=rag_user_proxy.message_generator,
         problem=query,
-        n_results=1,
-        silent=False,
+        # 這個會決定 LLM 能參考多少文件，要讓她拿到正確資訊，就要全部允許他看
+        n_results=len(all_docs),
+        # summary_method="last_msg",
+        silent=True,
     )
     return retrieve_result.chat_history[-1]["content"]
 
@@ -119,6 +128,14 @@ def read_prompt(filepath: str) -> str:
 
 
 def convert2markdown(path: str) -> list[dict[str, str]]:
+    """Convert the docs to markdown format.
+
+    Args:
+        path (str): The path of the docs you want to convert, it can be either a file or a directory.
+
+    Returns:
+        list[dict[str, str]]: The list of the markdown content.
+    """
     all_docs_paths = list(Path(path).glob("**/*.*")) if Path(path).is_dir() else [Path(path)]
     client = AzureOpenAI(
         api_key="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJBSURFIiwic3ViIjoiQUlERV9HQUlTRiIsImF1ZCI6WyJBSURFIl0sImlhdCI6MTY3ODg0NjkwNiwianRpIjoiZjdiYWVmMDItNzljYy00YTY3LTg5MWItYWIxOWM2MjBkY2MxIn0.0Sfk0QgU5RntmaIM0ALrOuk109dvQQttaigot8TPZZc",
@@ -322,7 +339,7 @@ class AnalogAgent(BaseModel):
             model = OpenAIModel(model_name="aide-gpt-4o", openai_client=client)
             agent = Agent(model=model, result_type=CodeBlock)
             response = agent.run_sync(
-                f"{all_histories}\nPlease extract the final result code block from the content. The output should be a python code block only."
+                user_prompt=f"{all_histories}\nPlease extract the final result code block from the content. The output should be a python code block only."
             )
             if response.data:
                 last_message = response.data.code_in_markdown
@@ -368,7 +385,7 @@ class AnalogAgent(BaseModel):
         return result
 
     def use_groupchat(
-        self, model: str, messages: list[dict[str, str]], use_rag: bool
+        self, model: str, messages: list[dict[str, str]], work_dir: str, use_rag: bool
     ) -> ChatCompletion:
         llm_config = get_config_dict(model=model)
         self._get_cache(llm_config=llm_config)
@@ -393,7 +410,7 @@ class AnalogAgent(BaseModel):
             name="executor",
             human_input_mode="NEVER",
             is_termination_msg=lambda x: "TERMINATE" in x.get("content"),
-            code_execution_config={"use_docker": self.use_docker, "work_dir": "."},
+            code_execution_config={"use_docker": self.use_docker, "work_dir": work_dir},
         )
         circuit_agent = autogen.AssistantAgent(
             name="CircuitAgent",
@@ -459,17 +476,16 @@ class AnalogAgent(BaseModel):
         #     llm_config=llm_config,
         #     is_termination_msg=lambda x: "TERMINATE" in x.get("content"),
         # )
-        if use_rag is True:
-            autogen.agentchat.register_function(
-                f=retrieve_data,
-                caller=pi_agent,
-                executor=executor,
-                name=retrieve_data.__name__,
-                description=retrieve_data.__doc__,
-            )
         proxies = [pi_agent]
         agents = [circuit_agent, cos_agent, testbench_agent]
         if use_rag is True:
+            # autogen.agentchat.register_function(
+            #     f=retrieve_data,
+            #     caller=pi_agent,
+            #     executor=executor,
+            #     name=retrieve_data.__name__,
+            #     description=retrieve_data.__doc__,
+            # )
             for agent in agents:
                 d_retrieve_content = agent.register_for_llm(
                     description="retrieve the information you need or if you have any question, you can use this function to get the answer.",
@@ -498,7 +514,7 @@ class AnalogAgent(BaseModel):
         return result
 
     def use_captain(
-        self, model: str, messages: list[dict[str, str]], use_rag: bool
+        self, model: str, messages: list[dict[str, str]], work_dir: str, use_rag: bool
     ) -> ChatCompletion:
         """A Captain Agent by using autogen.
 
@@ -507,6 +523,7 @@ class AnalogAgent(BaseModel):
         Args:
             model (str): The model name you want to use.
             messages (list[dict[str, str]]): The messages you want to chat with the Captain Agent.
+            work_dir (str): The working directory you want to use.
             use_rag (bool): If you want to use the Retrieve Agent, set it to True.
 
         Returns:
@@ -517,7 +534,7 @@ class AnalogAgent(BaseModel):
         nested_config = {
             "autobuild_init_config": {
                 "config_file_or_env": "./configs/OAI_CONFIG_LIST",
-                "builder_model": model,  # "aide-o3-mini",
+                "builder_model": "aide-o3-mini",
                 "agent_model": model,
                 "max_agents": 10,
             },
@@ -530,7 +547,7 @@ class AnalogAgent(BaseModel):
                 },
                 "code_execution_config": {
                     "timeout": 300,
-                    "work_dir": ".",
+                    "work_dir": work_dir,
                     "last_n_messages": 1,
                     "use_docker": self.use_docker,
                 },
@@ -557,7 +574,7 @@ class AnalogAgent(BaseModel):
             llm_config=llm_config,
             code_execution_config={
                 "timeout": 300,
-                "work_dir": ".",
+                "work_dir": work_dir,
                 "last_n_messages": 1,
                 "use_docker": self.use_docker,
             },
@@ -566,6 +583,12 @@ class AnalogAgent(BaseModel):
             # tool_lib="./tools",
             # is_termination_msg=lambda x: "TERMINATE" in x.get("content"),
         )
+        tools = [convert2markdown]
+        for tool in tools:
+            captain_agent.register_for_execution(
+                name=tool.__name__,  # Function name
+                description=tool.__doc__,  # Function description, you need to annotated it with `"""`
+            )(tool)
         if use_rag:
             messages.append({"role": "user", "content": "All Docs is in ./docs"})
         chat_result = captain_user_proxy.initiate_chat(
@@ -584,6 +607,7 @@ def get_chat_completion(
     model: str,
     messages: list[dict[str, str]],
     mode: Literal["original", "captain", "captain+rag", "groupchat", "groupchat+rag"],
+    work_dir: str,
     use_docker: Literal["mtkomcr.mediatek.inc/srv-aith/mtkllm-sdk-analog", False] = False,
 ) -> ChatCompletion:
     cache_path = Path("./.cache")
@@ -595,12 +619,16 @@ def get_chat_completion(
         use_rag = False
         if "rag" in mode:
             use_rag = True
-        chat_result = analog_agent.use_captain(model=model, messages=messages, use_rag=use_rag)
+        chat_result = analog_agent.use_captain(
+            model=model, messages=messages, work_dir=work_dir, use_rag=use_rag
+        )
     elif "groupchat" in mode:
         use_rag = False
         if "rag" in mode:
             use_rag = True
-        chat_result = analog_agent.use_groupchat(model=model, messages=messages, use_rag=use_rag)
+        chat_result = analog_agent.use_groupchat(
+            model=model, messages=messages, work_dir=work_dir, use_rag=use_rag
+        )
     else:
         raise ValueError(f"Invalid mode: {mode}")
     return chat_result

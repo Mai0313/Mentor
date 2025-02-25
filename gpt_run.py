@@ -1,10 +1,11 @@
+import io
 import os
 import re
 import sys
 import time
 import shutil
 import signal
-from typing import Literal
+from typing import Any, Literal, Optional
 from pathlib import Path
 import argparse
 import subprocess
@@ -76,28 +77,26 @@ Please increase the gain as much as possible to maintain oscillation.
 dc_sweep_template = """
 import numpy as np
 analysis = simulator.dc(V[IN_NAME]=slice(0, 5, 0.01))
-fopen = open("[DC_PATH]", "w")
-out_voltage = np.array(analysis.Vout)
-in_voltage = np.array(analysis.V[IN_NAME])
-print("out_voltage: ", out_voltage)
-print("in_voltage: ", in_voltage)
-for item in in_voltage:
-    fopen.write(f"{item:.4f} ")
-fopen.write("\\n")
-for item in out_voltage:
-    fopen.write(f"{item:.4f} ")
-fopen.write("\\n")
-fopen.close()
+with open("[DC_PATH]", "w") as fopen:
+    out_voltage = np.array(analysis.Vout)
+    in_voltage = np.array(analysis.V[IN_NAME])
+    print("out_voltage: ", out_voltage)
+    print("in_voltage: ", in_voltage)
+    for item in in_voltage:
+        fopen.write(f"{item:.4f} ")
+    fopen.write("\\n")
+    for item in out_voltage:
+        fopen.write(f"{item:.4f} ")
+    fopen.write("\\n")
 """
 
 
 pyspice_template = """
 try:
     analysis = simulator.operating_point()
-    fopen = open("[OP_PATH]", "w")
-    for node in analysis.nodes.values():
-        fopen.write(f"{str(node)}\\t{float(analysis[str(node)][0]):.6f}\\n")
-    fopen.close()
+    with open("[OP_PATH]", "w") as fopen:
+        for node in analysis.nodes.values():
+            fopen.write(f"{str(node)}\\t{float(analysis[str(node)][0]):.6f}\\n")
 except Exception as e:
     print("Analysis failed due to an error:")
     print(str(e))
@@ -132,7 +131,7 @@ client = AzureOpenAI(
 
 
 # This function extracts the code from the generated content which in markdown format
-def extract_code(generated_content):
+def extract_code(generated_content: str) -> tuple[int, str]:
     empty_code_error = 0
     assert generated_content != "", "generated_content is empty"
     regex = r".*?```.*?\n(.*?)```"
@@ -161,7 +160,7 @@ def extract_code(generated_content):
     return empty_code_error, new_code
 
 
-def run_code(file):
+def run_code(file: str) -> tuple[int, int, str, str]:
     print(f"IN RUN_CODE : {file}")
     simulation_error = 0
     execution_error = 0
@@ -266,7 +265,8 @@ def run_code(file):
                 execution_error = 0
             if execution_error_info == "" and execution_error == 1:
                 execution_error_info = "Simulation failed."
-        code_content = open(file).read()
+        with open(file) as f:
+            code_content = f.read()
         if "circuit.X" in code_content:
             execution_error_info += "\nPlease avoid using the subcircuit (X) in the code."
         if (
@@ -300,13 +300,23 @@ def run_code(file):
         return execution_error, simulation_error, execution_error_info, floating_node
 
 
-def check_netlist(netlist_path, operating_point_path, input, output, task_id, task_type):
+def check_netlist(
+    netlist_path: str,
+    operating_point_path: str,
+    input: str,
+    output: str,
+    task_id: int,
+    task_type: str,
+) -> tuple[int, str]:
     warning = 0
     warning_message = ""
     # Check all the input and output nodes are in the netlist
     if not os.path.exists(operating_point_path):
         return 0, ""
-    fopen_op = open(operating_point_path).read()
+
+    with open(operating_point_path) as f:
+        fopen_op = f.read()
+
     for input_node in input.split(", "):
         if input_node.lower() not in fopen_op.lower():
             warning_message += (
@@ -342,7 +352,6 @@ def check_netlist(netlist_path, operating_point_path, input, output, task_id, ta
         warning = 1
         warning_message += "Suggestion: Please make sure the input voltages are equal.\n"
 
-    fopen_netlist = open(netlist_path)
     voltages = {}
     for line in fopen_op.split("\n"):
         if line.strip() == "":
@@ -359,115 +368,117 @@ def check_netlist(netlist_path, operating_point_path, input, output, task_id, ta
     resistance_exist = 0
     has_diodeload = 0
     first_stage_out = None
-    for line in fopen_netlist.readlines():
-        if line.startswith("."):
-            continue
-        if line.startswith("C"):
-            if task_id == 9:
-                miller_node_1 = line.split()[1].lower()
-                miller_node_2 = line.split()[2].lower()
-        if line.startswith("R"):
-            resistance_exist = 1
-        if line.startswith("M"):
-            name, drain, gate, source, bulk, model = line.split()[:6]
-            name = name[1:]
-            drain = drain.lower()
-            source = source.lower()
-            bulk = bulk.lower()
-            gate = gate.lower()
-            mos_type = "NMOS" if "nmos" in model.lower() else "PMOS"
-            ## Common-gate
-            if task_id == 4:
-                if drain == "vin" or gate == "vin":
-                    warning_message += (
-                        "For a common-gate amplifier, the vin should be connected to source.\n"
-                    )
-                    warning_message += "Suggestion: Please connect the vin to the source node.\n"
-                    warning = 1
-            elif task_id == 3:
-                if drain == "vout" or gate == "vout":
-                    warning_message += (
-                        "For a common-drain amplifier, the vout should be connected to source.\n"
-                    )
-                    warning_message += "Suggestion: Please connect the vout to the source node.\n"
-                    warning = 1
-            elif task_id == 10:
-                if gate == drain:
-                    has_diodeload = 1
 
-            elif task_id == 9:
-                if gate == "vin":
-                    first_stage_out = drain
+    with open(netlist_path) as fopen_netlist:
+        for line in fopen_netlist.readlines():
+            if line.startswith("."):
+                continue
+            if line.startswith("C"):
+                if task_id == 9:
+                    miller_node_1 = line.split()[1].lower()
+                    miller_node_2 = line.split()[2].lower()
+            if line.startswith("R"):
+                resistance_exist = 1
+            if line.startswith("M"):
+                name, drain, gate, source, bulk, model = line.split()[:6]
+                name = name[1:]
+                drain = drain.lower()
+                source = source.lower()
+                bulk = bulk.lower()
+                gate = gate.lower()
+                mos_type = "NMOS" if "nmos" in model.lower() else "PMOS"
+                ## Common-gate
+                if task_id == 4:
+                    if drain == "vin" or gate == "vin":
+                        warning_message += (
+                            "For a common-gate amplifier, the vin should be connected to source.\n"
+                        )
+                        warning_message += (
+                            "Suggestion: Please connect the vin to the source node.\n"
+                        )
+                        warning = 1
+                elif task_id == 3:
+                    if drain == "vout" or gate == "vout":
+                        warning_message += "For a common-drain amplifier, the vout should be connected to source.\n"
+                        warning_message += (
+                            "Suggestion: Please connect the vout to the source node.\n"
+                        )
+                        warning = 1
+                elif task_id == 10:
+                    if gate == drain:
+                        has_diodeload = 1
 
-            if mos_type == "NMOS":
-                # VDS
-                vds_error = 0
-                if voltages[drain] == 0.0:
-                    if drain.lower() == "0" or drain.lower() == "gnd":
-                        warning_message += f"Suggestions: Please avoid connect {mos_type} {name} drain to the ground.\n"
-                    else:
+                elif task_id == 9:
+                    if gate == "vin":
+                        first_stage_out = drain
+
+                if mos_type == "NMOS":
+                    # VDS
+                    vds_error = 0
+                    if voltages[drain] == 0.0:
+                        if drain.lower() == "0" or drain.lower() == "gnd":
+                            warning_message += f"Suggestions: Please avoid connect {mos_type} {name} drain to the ground.\n"
+                        else:
+                            vds_error = 1
+                            warning_message += (
+                                f"For {mos_type} {name}, the drain node ({drain}) voltage is 0.\n"
+                            )
+                    # VDS
+                    elif voltages[drain] < voltages[source]:
                         vds_error = 1
-                        warning_message += (
-                            f"For {mos_type} {name}, the drain node ({drain}) voltage is 0.\n"
-                        )
-                # VDS
-                elif voltages[drain] < voltages[source]:
-                    vds_error = 1
-                    warning_message += f"For {mos_type} {name}, the drain node ({drain}) voltage is lower than the source node ({source}) voltage.\n"
-                if vds_error == 1:
-                    warning_message += f"Suggestion: Please set {mos_type} {name} with an activated state and make sure V_DS > V_GS - V_TH.\n"
-                # VGS
-                vgs_error = 0
-                if voltages[gate] == voltages[source]:
-                    # vgs_error = 1
-                    if gate == source:
-                        warning_message += f"For {mos_type} {name}, the gate node ({gate}) is connected to the source node ({source}).\n"
-                        warning_message += f"Suggestion: Please {mos_type} {name}, please divide its gate ({gate}) and source ({source}) connection.\n"
-                    else:
+                        warning_message += f"For {mos_type} {name}, the drain node ({drain}) voltage is lower than the source node ({source}) voltage.\n"
+                    if vds_error == 1:
+                        warning_message += f"Suggestion: Please set {mos_type} {name} with an activated state and make sure V_DS > V_GS - V_TH.\n"
+                    # VGS
+                    vgs_error = 0
+                    if voltages[gate] == voltages[source]:
+                        # vgs_error = 1
+                        if gate == source:
+                            warning_message += f"For {mos_type} {name}, the gate node ({gate}) is connected to the source node ({source}).\n"
+                            warning_message += f"Suggestion: Please {mos_type} {name}, please divide its gate ({gate}) and source ({source}) connection.\n"
+                        else:
+                            vgs_error = 1
+                            warning_message += f"For {mos_type} {name}, the gate node ({gate}) voltage is equal to the source node ({source}) voltage.\n"
+                    elif voltages[gate] < voltages[source]:
                         vgs_error = 1
-                        warning_message += f"For {mos_type} {name}, the gate node ({gate}) voltage is equal to the source node ({source}) voltage.\n"
-                elif voltages[gate] < voltages[source]:
-                    vgs_error = 1
-                    warning_message += f"For {mos_type} {name}, the gate node ({gate}) voltage is lower than the source node ({source}) voltage.\n"
-                elif voltages[gate] <= voltages[source] + vthn:
-                    vgs_error = 1
-                    warning_message += f"For {mos_type} {name}, the gate node ({gate}) voltage is lower than the source node ({source}) voltage plus the threshold voltage.\n"
-                if vgs_error == 1:
-                    warning_message += f"Suggestion: Please set {mos_type} {name} with an activated state by increasing the gate voltage or decreasing the source voltage and make sure V_GS > V_TH.\n"
-            if mos_type == "PMOS":
-                # VDS
-                vds_error = 0
-                if voltages[drain] == vdd_voltage:
-                    if drain.lower() == "vdd":
-                        warning_message += f"Suggestion: Please avoid connect {mos_type} {name} drain to the vdd.\n"
-                    else:
+                        warning_message += f"For {mos_type} {name}, the gate node ({gate}) voltage is lower than the source node ({source}) voltage.\n"
+                    elif voltages[gate] <= voltages[source] + vthn:
+                        vgs_error = 1
+                        warning_message += f"For {mos_type} {name}, the gate node ({gate}) voltage is lower than the source node ({source}) voltage plus the threshold voltage.\n"
+                    if vgs_error == 1:
+                        warning_message += f"Suggestion: Please set {mos_type} {name} with an activated state by increasing the gate voltage or decreasing the source voltage and make sure V_GS > V_TH.\n"
+                if mos_type == "PMOS":
+                    # VDS
+                    vds_error = 0
+                    if voltages[drain] == vdd_voltage:
+                        if drain.lower() == "vdd":
+                            warning_message += f"Suggestion: Please avoid connect {mos_type} {name} drain to the vdd.\n"
+                        else:
+                            vds_error = 1
+                            warning_message += f"For {mos_type} {name}, the drain node ({drain}) voltage is V_dd.\n"
+                    # VDS
+                    elif voltages[drain] > voltages[source]:
                         vds_error = 1
-                        warning_message += (
-                            f"For {mos_type} {name}, the drain node ({drain}) voltage is V_dd.\n"
-                        )
-                # VDS
-                elif voltages[drain] > voltages[source]:
-                    vds_error = 1
-                    warning_message += f"For {mos_type} {name}, the drain node ({drain}) voltage is higher than the source node ({source}) voltage.\n"
-                if vds_error == 1:
-                    warning_message += f"Suggestion: Please set {mos_type} {name} with an activated state and make sure V_DS < V_GS - V_TH.\n"
-                # VGS
-                vgs_error = 0
-                if voltages[gate] == voltages[source]:
-                    if gate == source:
-                        warning_message += f"For {mos_type} {name}, the gate node ({gate}) is connected to the source node ({source}).\n"
-                        warning_message += f"Suggestion: Please {mos_type} {name}, please divide its gate ({gate}) and source ({source}) connection.\n"
-                    else:
+                        warning_message += f"For {mos_type} {name}, the drain node ({drain}) voltage is higher than the source node ({source}) voltage.\n"
+                    if vds_error == 1:
+                        warning_message += f"Suggestion: Please set {mos_type} {name} with an activated state and make sure V_DS < V_GS - V_TH.\n"
+                    # VGS
+                    vgs_error = 0
+                    if voltages[gate] == voltages[source]:
+                        if gate == source:
+                            warning_message += f"For {mos_type} {name}, the gate node ({gate}) is connected to the source node ({source}).\n"
+                            warning_message += f"Suggestion: Please {mos_type} {name}, please divide its gate ({gate}) and source ({source}) connection.\n"
+                        else:
+                            vgs_error = 1
+                            warning_message += f"For {mos_type} {name}, the gate node ({gate}) voltage is equal to the source node ({source}) voltage.\n"
+                    elif voltages[gate] > voltages[source]:
                         vgs_error = 1
-                        warning_message += f"For {mos_type} {name}, the gate node ({gate}) voltage is equal to the source node ({source}) voltage.\n"
-                elif voltages[gate] > voltages[source]:
-                    vgs_error = 1
-                    warning_message += f"For {mos_type} {name}, the gate node ({gate}) voltage is higher than the source node ({source}) voltage.\n"
-                elif voltages[gate] >= voltages[source] - vthp:
-                    vgs_error = 1
-                    warning_message += f"For {mos_type} {name}, the gate node ({gate}) voltage is higher than the source node ({source}) voltage plus the threshold voltage.\n"
-                if vgs_error == 1:
-                    warning_message += f"Suggestion: Please set {mos_type} {name} with an activated state by decreasing the gate voltage or increasing the source voltage and make sure V_GS < V_TH.\n"
+                        warning_message += f"For {mos_type} {name}, the gate node ({gate}) voltage is higher than the source node ({source}) voltage.\n"
+                    elif voltages[gate] >= voltages[source] - vthp:
+                        vgs_error = 1
+                        warning_message += f"For {mos_type} {name}, the gate node ({gate}) voltage is higher than the source node ({source}) voltage plus the threshold voltage.\n"
+                    if vgs_error == 1:
+                        warning_message += f"Suggestion: Please set {mos_type} {name} with an activated state by decreasing the gate voltage or increasing the source voltage and make sure V_GS < V_TH.\n"
 
     if task_id in [1, 2, 3, 4, 5, 6, 8, 13]:
         if resistance_exist == 0:
@@ -515,40 +526,52 @@ def check_netlist(netlist_path, operating_point_path, input, output, task_id, ta
     return warning, warning_message
 
 
-def check_function(task_id, code_path, task_type):
+def check_function(task_id: int, code_path: str, task_type: str) -> tuple[int, str]:
     fwrite_code_path = "{}_check.py".format(code_path.rsplit(".", 1)[0])
-    fwrite_code = open(fwrite_code_path, "w")
+
     if task_type == "CurrentMirror":
-        test_code = open("problem_check/CurrentMirror.py").read()
-        code = open(code_path).read()
+        with open("problem_check/CurrentMirror.py") as test_code_file:
+            test_code = test_code_file.read()
+        with open(code_path) as code_file:
+            code = code_file.read()
         code = code + "\n" + test_code
-        fwrite_code.write(code)
-        fwrite_code.close()
+        with open(fwrite_code_path, "w") as fwrite_code:
+            fwrite_code.write(code)
+
     elif task_type == "Amplifier" or task_type == "Opamp":
         voltage = "1.0"
-        test_code = open(f"problem_check/{task_type}.py").read()
-        for line in open(code_path).readlines():
-            if line.startswith("circuit.V") and "vin" in line.lower():
-                parts = line.split("#")[0].strip().rstrip(")").split(",")
-                raw_voltage = parts[-1].strip()
-                if raw_voltage[0] == '"' or raw_voltage[0] == "'":
-                    raw_voltage = raw_voltage[1:-1]
-                voltage = raw_voltage.split(" ")[1] if "dc" in raw_voltage.lower() else raw_voltage
-                new_voltage = f' "dc {voltage} ac 1u"'
-                parts[-1] = new_voltage
-                line = ",".join(parts) + ")\n"
+        with open(f"problem_check/{task_type}.py") as test_code_file:
+            test_code = test_code_file.read()
+        with open(fwrite_code_path, "w") as fwrite_code:
+            with open(code_path) as code_file:
+                for line in code_file.readlines():
+                    if line.startswith("circuit.V") and "vin" in line.lower():
+                        parts = line.split("#")[0].strip().rstrip(")").split(",")
+                        raw_voltage = parts[-1].strip()
+                        if raw_voltage[0] == '"' or raw_voltage[0] == "'":
+                            raw_voltage = raw_voltage[1:-1]
+                        voltage = (
+                            raw_voltage.split(" ")[1]
+                            if "dc" in raw_voltage.lower()
+                            else raw_voltage
+                        )
+                        new_voltage = f' "dc {voltage} ac 1u"'
+                        parts[-1] = new_voltage
+                        line = ",".join(parts) + ")\n"
 
-            fwrite_code.write(line)
-        fwrite_code.write("\n")
-        fwrite_code.write(test_code)
-        fwrite_code.close()
+                    fwrite_code.write(line)
+            fwrite_code.write("\n")
+            fwrite_code.write(test_code)
         print("voltage", voltage)
     elif task_type == "Inverter":
-        test_code = open("problem_check/Inverter.py").read()
-        code = open(code_path).read()
+        with open("problem_check/Inverter.py") as test_code_file:
+            test_code = test_code_file.read()
+        with open(code_path) as code_file:
+            code = code_file.read()
         code = code + "\n" + test_code
-        fwrite_code.write(code)
-        fwrite_code.close()
+        with open(fwrite_code_path, "w") as fwrite_code:
+            fwrite_code.write(code)
+
     else:
         return 0, ""
     try:
@@ -574,21 +597,21 @@ import contextlib
 import numpy as np
 
 
-def get_best_voltage(dc_file_path):
-    fopen = open(dc_file_path)
-    vin = np.array([float(x) for x in fopen.readline().strip().split(" ")])
-    vout = np.array([float(x) for x in fopen.readline().strip().split(" ")])
-    if np.max(vout) - np.min(vout) < 1e-3:
-        return 1, 0
-    min_margin = 10.0
-    for i, v in enumerate(vout):
-        if np.abs(v - 2.5) < min_margin:
-            min_margin = np.abs(v - 2.5)
-            best_voltage = vin[i]
-    return 0, best_voltage
+def get_best_voltage(dc_file_path: str) -> tuple[int, Any]:
+    with open(dc_file_path) as fopen:
+        vin = np.array([float(x) for x in fopen.readline().strip().split(" ")])
+        vout = np.array([float(x) for x in fopen.readline().strip().split(" ")])
+        if np.max(vout) - np.min(vout) < 1e-3:
+            return 1, 0
+        min_margin = 10.0
+        for i, v in enumerate(vout):
+            if np.abs(v - 2.5) < min_margin:
+                min_margin = np.abs(v - 2.5)
+                best_voltage = vin[i]
+        return 0, best_voltage
 
 
-def get_vin_name(netlist_content, task_type):
+def get_vin_name(netlist_content: str, task_type: str) -> tuple[str, str | None]:
     vinn_name = "in"
     vinp_name = None
     for line in netlist_content.split("\n"):
@@ -605,7 +628,7 @@ def get_vin_name(netlist_content, task_type):
     return vinn_name, vinp_name
 
 
-def replace_voltage(raw_code, best_voltage, vinn_name, vinp_name):
+def replace_voltage(raw_code: str, best_voltage: str, vinn_name: str, vinp_name: str) -> str:
     new_code = ""
     for line in raw_code.split("\n"):
         if not line.lower().startswith("circuit.v"):
@@ -632,7 +655,7 @@ def replace_voltage(raw_code, best_voltage, vinn_name, vinp_name):
     return new_code
 
 
-def connect_vinn_vinp(dc_sweep_code, vinn_name, vinp_name):
+def connect_vinn_vinp(dc_sweep_code: str, vinn_name: str, vinp_name: str) -> str:
     new_code = ""
     for line in dc_sweep_code.split("\n"):
         if not line.lower().startswith("circuit.v"):
@@ -650,8 +673,10 @@ def connect_vinn_vinp(dc_sweep_code, vinn_name, vinp_name):
 
 
 def get_subcircuits_info(
-    subcircuits, lib_data_path="lib_info.tsv", task_data_path="problem_set.tsv"
-):
+    subcircuits: list[int],
+    lib_data_path: str = "lib_info.tsv",
+    task_data_path: str = "problem_set.tsv",
+) -> str:
     lib_df = pd.read_csv(lib_data_path, delimiter="\t")
     task_df = pd.read_csv(task_data_path, delimiter="\t")
     # New data frame
@@ -706,7 +731,11 @@ def get_subcircuits_info(
     return subcircuits_info
 
 
-def get_note_info(subcircuits, lib_data_path="lib_info.tsv", task_data_path="problem_set.tsv"):
+def get_note_info(
+    subcircuits: list[int],
+    lib_data_path: str = "lib_info.tsv",
+    task_data_path: str = "problem_set.tsv",
+) -> tuple[str, Any]:
     lib_df = pd.read_csv(lib_data_path, delimiter="\t")
     task_df = pd.read_csv(task_data_path, delimiter="\t")
     note_info = ""
@@ -732,7 +761,11 @@ def get_note_info(subcircuits, lib_data_path="lib_info.tsv", task_data_path="pro
     return note_info, sub_bias_voltage
 
 
-def get_call_info(subcircuits, lib_data_path="lib_info.tsv", task_data_path="problem_set.tsv"):
+def get_call_info(
+    subcircuits: Optional[list[int]],
+    lib_data_path: str = "lib_info.tsv",
+    task_data_path: str = "problem_set.tsv",
+) -> str:
     template = """```python
 from p[ID]_lib import *
 # declare the subcircuit
@@ -776,61 +809,59 @@ global generator
 generator = None
 
 
-def write_pyspice_code(sp_code_path, code_path, op_path):
-    sp_code = open(sp_code_path)
-    code = open(code_path, "w")
-    code.write(import_template)
-    code.write("circuit = Circuit('circuit')\n")
-    for line in sp_code.readlines():
-        if line.startswith(".model"):
-            parts = line.split()
-            if len(parts) < 6:
-                continue
-            code.write(
-                f"circuit.model('{parts[1]}', '{parts[2]}', {parts[3]}, {parts[4]}, {parts[5]})\n"
-            )
-        elif (
-            line.startswith("R")
-            or line.startswith("C")
-            or line.startswith("V")
-            or line.startswith("I")
-        ):
-            type_name = line[0]
-            parts = line.split()
-            if len(parts) < 4:
-                continue
-            name = parts[0][1:]
-            n1 = parts[1]
-            n2 = parts[2]
-            value = parts[3]
-            code.write(f"circuit.{type_name}('{name}', '{n1}', '{n2}', '{value}')\n")
-        elif line.startswith("M"):
-            parts = line.split()
-            if len(parts) < 8:
-                continue
-            name = parts[0][1:]
-            drain = parts[1]
-            gate = parts[2]
-            source = parts[3]
-            bulk = parts[4]
-            model = parts[5]
-            w = parts[6]
-            l = parts[7]
-            code.write(
-                f"circuit.MOSFET('{name}', '{drain}', '{gate}', '{source}', '{bulk}', model='{model}', {w}, {l})\n"
-            )
-    code.write("simulator = circuit.simulator()\n")
-    code.write(pyspice_template.replace("[OP_PATH]", op_path))
-    code.close()
+def write_pyspice_code(sp_code_path: str, code_path: str, op_path: str) -> None:
+    with open(sp_code_path) as sp_code, open(code_path, "w") as code:
+        code.write(import_template)
+        code.write("circuit = Circuit('circuit')\n")
+        for line in sp_code.readlines():
+            if line.startswith(".model"):
+                parts = line.split()
+                if len(parts) < 6:
+                    continue
+                code.write(
+                    f"circuit.model('{parts[1]}', '{parts[2]}', {parts[3]}, {parts[4]}, {parts[5]})\n"
+                )
+            elif (
+                line.startswith("R")
+                or line.startswith("C")
+                or line.startswith("V")
+                or line.startswith("I")
+            ):
+                type_name = line[0]
+                parts = line.split()
+                if len(parts) < 4:
+                    continue
+                name = parts[0][1:]
+                n1 = parts[1]
+                n2 = parts[2]
+                value = parts[3]
+                code.write(f"circuit.{type_name}('{name}', '{n1}', '{n2}', '{value}')\n")
+            elif line.startswith("M"):
+                parts = line.split()
+                if len(parts) < 8:
+                    continue
+                name = parts[0][1:]
+                drain = parts[1]
+                gate = parts[2]
+                source = parts[3]
+                bulk = parts[4]
+                model = parts[5]
+                w = parts[6]
+                l = parts[7]
+                code.write(
+                    f"circuit.MOSFET('{name}', '{drain}', '{gate}', '{source}', '{bulk}', model='{model}', {w}, {l})\n"
+                )
+        code.write("simulator = circuit.simulator()\n")
+        code.write(pyspice_template.replace("[OP_PATH]", op_path))
 
 
-def start_tmux_session(session_name, command):
+def start_tmux_session(session_name: str, command: str) -> None:
     subprocess.run(["tmux", "new-session", "-d", "-s", session_name])
     subprocess.run(["tmux", "send-keys", "-t", session_name, command, "C-m"])
     print(f"tmux session '{session_name}' started, running command: {command}")
 
 
-def kill_tmux_session(session_name):
+def kill_tmux_session(session_name: str) -> None:
     try:
         subprocess.run(["tmux", "kill-session", "-t", session_name], check=True)
         print(f"tmux session '{session_name}' has been killed successfully.")
@@ -839,17 +870,17 @@ def kill_tmux_session(session_name):
 
 
 def work(
-    task,
-    input,
-    output,
-    task_id,
-    it,
-    background,
-    task_type,
-    flog,
-    money_quota=100,
-    subcircuits=None,
-):
+    task: str,
+    input: str,
+    output: str,
+    task_id: int,
+    it: int,
+    background: None,
+    task_type: str,
+    flog: io.TextIOWrapper,
+    money_quota: int = 100,
+    subcircuits: Optional[list[int]] = None,
+) -> int:
     global generator
 
     total_tokens = 0
@@ -858,21 +889,27 @@ def work(
 
     if task_type not in complex_task_type or args.skill is False:
         if "llama" in args.model:
-            fopen = open("prompt_template.md")
+            with open("prompt_template.md") as fopen:
+                prompt = fopen.read()
         elif args.ngspice:
-            fopen = open("prompt_template_ngspice.md")
+            with open("prompt_template_ngspice.md") as fopen:
+                prompt = fopen.read()
         elif any(model in args.model for model in opensource_models):
-            fopen = open("prompt_template.md")
+            with open("prompt_template.md") as fopen:
+                prompt = fopen.read()
         else:
-            fopen = open("prompt_template.md")
+            with open("prompt_template.md") as fopen:
+                prompt = fopen.read()
 
         if args.no_prompt:
-            fopen = open("prompt_template_wo_prompt.md")
+            with open("prompt_template_wo_prompt.md") as fopen:
+                prompt = fopen.read()
         elif args.no_context:
-            fopen = open("prompt_template_wo_context.md")
+            with open("prompt_template_wo_context.md") as fopen:
+                prompt = fopen.read()
         elif args.no_chain:
-            fopen = open("prompt_template_wo_chain_of_thought.md")
-        prompt = fopen.read()
+            with open("prompt_template_wo_chain_of_thought.md") as fopen:
+                prompt = fopen.read()
 
         prompt = prompt.replace("[TASK]", task)
         prompt = prompt.replace("[INPUT]", input)
@@ -887,8 +924,8 @@ def work(
             bias_voltage = 2.5
 
     else:
-        fopen = open("prompt_template_complex.md")
-        prompt = fopen.read()
+        with open("prompt_template_complex.md") as fopen:
+            prompt = fopen.read()
 
         prompt = prompt.replace("[TASK]", task)
         prompt = prompt.replace("[INPUT]", input)
@@ -908,22 +945,18 @@ def work(
             .replace("[NOTE_INFO]", note_info)
             .replace("[CALL_INFO]", call_info)
         )
-        fwrite_prompt = open(f"prompt_template_complex_with_sub_{task_type}.md", "w")
-        fwrite_prompt.write(prompt)
-        fwrite_prompt.close()
+        with open(f"prompt_template_complex_with_sub_{task_type}.md", "w") as fwrite_prompt:
+            fwrite_prompt.write(prompt)
 
     # Background is not used now
     if background is not None:
         prompt += "\n\nHint Background: \n" + background + "\n## Answer \n"
-    fopen.close()
 
-    fopen_exe_error = open("execution_error.md")
-    prompt_exe_error = fopen_exe_error.read()
-    fopen_exe_error.close()
+    with open("execution_error.md") as fopen_exe_error:
+        prompt_exe_error = fopen_exe_error.read()
 
-    fopen_sim_error = open("simulation_error.md")
-    prompt_sim_error = fopen_sim_error.read()
-    fopen_sim_error.close()
+    with open("simulation_error.md") as fopen_sim_error:
+        prompt_sim_error = fopen_sim_error.read()
 
     messages = [
         {"role": "system", "content": "You are an analog integrated circuits expert."},
@@ -934,6 +967,56 @@ def work(
     if money_quota < 0:
         flog.write(f"Money quota is used up. Exceed quota: {money_quota}\n")
         return money_quota
+
+    if "ft:gpt-3.5" in args.model:
+        if "a:9HyyBpNI" in args.model:
+            model_dir = "gpt3p5-ft-A"
+        elif "b:9Hzb5l4S" in args.model:
+            model_dir = "gpt3p5-ft-B"
+        elif "c:9I0X557K" in args.model:
+            model_dir = "gpt3p5-ft-C"
+        else:
+            raise AssertionError
+    elif "gpt-3" in args.model:
+        model_dir = "gpt3p5"
+    elif "gpt-4" in args.model:
+        model_dir = "gpt4"
+    elif "o3-mini" in args.model:
+        model_dir = "o3mini"
+    elif "deepseek" in args.model:
+        model_dir = "deepseek"
+    elif any(model in args.model for model in opensource_models):
+        model_dir = str(args.model).replace(":", "-")
+    else:
+        model_dir = "unknown"
+    if "ft-A" in model_dir:
+        assert task_id in [0, 3, 6, 9, 14, 10, 11]
+    elif "ft-B" in model_dir:
+        assert task_id in [1, 4, 7, 12, 10, 11]
+    elif "ft-C" in model_dir:
+        assert task_id in [2, 5, 8, 13, 10, 11]
+    if args.ngspice:
+        model_dir += "_ngspice"
+
+    if args.no_prompt:
+        model_dir += "_no_prompt"
+    elif args.no_context:
+        model_dir += "_no_context"
+    elif args.no_chain:
+        model_dir += "_no_chain"
+
+    if args.num_of_retry > 3:
+        model_dir += f"_retry_{args.num_of_retry}"
+
+    if task_type in complex_task_type and not args.skill:
+        model_dir += "_no_skill"
+
+    if not os.path.exists(model_dir):
+        with contextlib.suppress(Exception):
+            os.mkdir(model_dir)
+    if not os.path.exists(f"{model_dir}/p{task_id}"):
+        with contextlib.suppress(Exception):
+            os.mkdir(f"{model_dir}/p{task_id}")
 
     while retry:
         if any(model in args.model for model in opensource_models):
@@ -973,6 +1056,7 @@ def work(
                     model=args.model,
                     messages=messages,
                     mode=MULTI_AGENT_MODE,
+                    work_dir=f"{model_dir}/p{task_id}/{it}",
                     use_docker=USE_DOCKER,
                 )
                 break
@@ -1009,57 +1093,6 @@ def work(
     else:
         answer = completion["message"]["content"]
 
-    if "ft:gpt-3.5" in args.model:
-        if "a:9HyyBpNI" in args.model:
-            model_dir = "gpt3p5-ft-A"
-        elif "b:9Hzb5l4S" in args.model:
-            model_dir = "gpt3p5-ft-B"
-        elif "c:9I0X557K" in args.model:
-            model_dir = "gpt3p5-ft-C"
-        else:
-            raise AssertionError
-    elif "gpt-3" in args.model:
-        model_dir = "gpt3p5"
-    elif "gpt-4" in args.model:
-        model_dir = "gpt4"
-    elif "o3-mini" in args.model:
-        model_dir = "o3mini"
-    elif "deepseek" in args.model:
-        model_dir = "deepseek"
-    elif any(model in args.model for model in opensource_models):
-        model_dir = str(args.model).replace(":", "-")
-    else:
-        model_dir = "unknown"
-
-    if "ft-A" in model_dir:
-        assert task_id in [0, 3, 6, 9, 14, 10, 11]
-    elif "ft-B" in model_dir:
-        assert task_id in [1, 4, 7, 12, 10, 11]
-    elif "ft-C" in model_dir:
-        assert task_id in [2, 5, 8, 13, 10, 11]
-    if args.ngspice:
-        model_dir += "_ngspice"
-
-    if args.no_prompt:
-        model_dir += "_no_prompt"
-    elif args.no_context:
-        model_dir += "_no_context"
-    elif args.no_chain:
-        model_dir += "_no_chain"
-
-    if args.num_of_retry > 3:
-        model_dir += f"_retry_{args.num_of_retry}"
-
-    if task_type in complex_task_type and not args.skill:
-        model_dir += "_no_skill"
-
-    if not os.path.exists(model_dir):
-        with contextlib.suppress(Exception):
-            os.mkdir(model_dir)
-    if not os.path.exists(f"{model_dir}/p{task_id}"):
-        with contextlib.suppress(Exception):
-            os.mkdir(f"{model_dir}/p{task_id}")
-
     empty_code_error, raw_code = extract_code(answer)
     operating_point_path = f"{model_dir}/p{task_id}/{it}/p{task_id}_{it}_{0}_op.txt"
     if not args.ngspice and "simulator = circuit.simulator()" not in raw_code:
@@ -1072,7 +1105,8 @@ def work(
         if task_type not in complex_task_type:
             code = raw_code + pyspice_template.replace("[OP_PATH]", operating_point_path)
         else:
-            pyspice_template_complex = open(f"problem_check/{task_type}.py").read()
+            with open(f"problem_check/{task_type}.py") as f:
+                pyspice_template_complex = f.read()
             figure_path = f"{model_dir}/p{task_id}/{it}/p{task_id}_{it}_{code_id}_figure"
             if task_type == "Oscillator":
                 code = raw_code + pyspice_template_complex.replace("[FIGURE_PATH]", figure_path)
@@ -1090,12 +1124,12 @@ def work(
     else:
         code = raw_code
 
-    fwrite_input = open(f"{model_dir}/p{task_id}/p{task_id}_{it}_input.txt", "w")
-    fwrite_input.write(prompt)
-    fwrite_input.flush()
-    fwrite_output = open(f"{model_dir}/p{task_id}/p{task_id}_{it}_output.txt", "w")
-    fwrite_output.write(answer)
-    fwrite_output.flush()
+    with open(f"{model_dir}/p{task_id}/p{task_id}_{it}_input.txt", "w") as fwrite_input:
+        fwrite_input.write(prompt)
+        fwrite_input.flush()
+    with open(f"{model_dir}/p{task_id}/p{task_id}_{it}_output.txt", "w") as fwrite_output:
+        fwrite_output.write(answer)
+        fwrite_output.flush()
 
     # delete files
     existing_code_files = os.listdir(f"{model_dir}/p{task_id}")
@@ -1119,23 +1153,21 @@ def work(
         messages.append({"role": "assistant", "content": answer})
 
         if not os.path.exists(f"{model_dir}/p{task_id}/{it}"):
-            # try:
-            os.mkdir(f"{model_dir}/p{task_id}/{it}")
-            # except:
-            #     pass
+            with contextlib.suppress(Exception):
+                os.mkdir(f"{model_dir}/p{task_id}/{it}")
 
         code_path = f"{model_dir}/p{task_id}/{it}/p{task_id}_{it}_{code_id}.py"
         if args.ngspice:
             code_path = code_path.replace(".py", ".sp")
-        fwrite_code = open(code_path, "w")
-        fwrite_code.write(code)
-        fwrite_code.close()
+        with open(code_path, "w") as fwrite_code:
+            fwrite_code.write(code)
 
         if args.ngspice:
             sp_code_path = code_path
             code_path = code_path.replace(".sp", ".py")
             write_pyspice_code(sp_code_path, code_path, operating_point_path)
-            answer_code = open(code_path).read()
+            with open(code_path) as f:
+                answer_code = f.read()
         else:
             answer_code = code
 
@@ -1159,9 +1191,8 @@ def work(
                 code_netlist_path = (
                     f"{model_dir}/p{task_id}/{it}/p{task_id}_{it}_{code_id}_netlist_gen.py"
                 )
-                fwrite_code_netlist = open(code_netlist_path, "w")
-                fwrite_code_netlist.write(code_netlist)
-                fwrite_code_netlist.close()
+                with open(code_netlist_path, "w") as fwrite_code_netlist:
+                    fwrite_code_netlist.write(code_netlist)
 
                 netlist_path = f"{model_dir}/p{task_id}/{it}/p{task_id}_{it}_{code_id}_netlist.sp"
                 result = subprocess.run(
@@ -1170,16 +1201,16 @@ def work(
                 netlist_file_path = (
                     f"{model_dir}/p{task_id}/{it}/p{task_id}_{it}_{code_id}_netlist.sp"
                 )
-                fwrite_netlist = open(netlist_file_path, "w")
-                fwrite_netlist.write("\n".join(result.stdout.split("\n")[1:]))
-                fwrite_netlist.close()
+                with open(netlist_file_path, "w") as fwrite_netlist:
+                    fwrite_netlist.write("\n".join(result.stdout.split("\n")[1:]))
 
                 ## special for Opamp: dc sweep
 
                 if "Opamp" in task_type or "Amplifier" in task_type:
                     vinn_name = "in"
                     vinp_name = "inp"
-                    netlist_content = open(netlist_file_path).read()
+                    with open(netlist_file_path) as f:
+                        netlist_content = f.read()
                     vinn_name, vinp_name = get_vin_name(netlist_content, task_type)
                     dc_sweep_code_path = (
                         f"{model_dir}/p{task_id}/{it}/p{task_id}_{it}_{code_id}_dc_sweep.py"
@@ -1193,9 +1224,9 @@ def work(
                     dc_sweep_code += dc_sweep_template.replace("[IN_NAME]", vinn_name).replace(
                         "[DC_PATH]", dc_file_path
                     )
-                    fwrite_dc_sweep_code = open(dc_sweep_code_path, "w")
-                    fwrite_dc_sweep_code.write(dc_sweep_code)
-                    fwrite_dc_sweep_code.close()
+                    with open(dc_sweep_code_path, "w") as fwrite_dc_sweep_code:
+                        fwrite_dc_sweep_code.write(dc_sweep_code)
+
                     try:
                         subprocess.run(
                             ["python", "-u", dc_sweep_code_path],
@@ -1234,9 +1265,8 @@ def work(
                         code_netlist_path = (
                             f"{model_dir}/p{task_id}/{it}/p{task_id}_{it}_{code_id}_netlist_gen.py"
                         )
-                        fwrite_code_netlist = open(code_netlist_path, "w")
-                        fwrite_code_netlist.write(new_code_netlist)
-                        fwrite_code_netlist.close()
+                        with open(code_netlist_path, "w") as fwrite_code_netlist:
+                            fwrite_code_netlist.write(new_code_netlist)
                         netlist_path = (
                             f"{model_dir}/p{task_id}/{it}/p{task_id}_{it}_{code_id}_netlist.sp"
                         )
@@ -1249,9 +1279,8 @@ def work(
                         netlist_file_path = (
                             f"{model_dir}/p{task_id}/{it}/p{task_id}_{it}_{code_id}_netlist.sp"
                         )
-                        fwrite_netlist = open(netlist_file_path, "w")
-                        fwrite_netlist.write("\n".join(result.stdout.split("\n")[1:]))
-                        fwrite_netlist.close()
+                        with open(netlist_file_path, "w") as fwrite_netlist:
+                            fwrite_netlist.write("\n".join(result.stdout.split("\n")[1:]))
                         dc_sweep_success = 1
                     except:
                         # recover the raw file
@@ -1284,11 +1313,11 @@ def work(
                             flog.write(
                                 f"total_tokens\t{total_tokens}\ttotal_prompt_tokens\t{total_prompt_tokens}\ttotal_completion_tokens\t{total_completion_tokens}\n"
                             )
-                            ftmp_write = open(
+                            with open(
                                 f"{model_dir}/p{task_id}/{it}/token_info_{total_tokens}_{total_prompt_tokens}_{total_completion_tokens}_{code_id}",
                                 "w",
-                            )
-                            ftmp_write.close()
+                            ):
+                                pass
                         else:
                             flog.write(f"task:{task_id}\tit:{it}\tcode_id:{code_id}\tsuccess.\n")
                         flog.write(f"money_quota\t{money_quota:.10f}\n")
@@ -1311,11 +1340,11 @@ def work(
                     flog.write(
                         f"total_tokens\t{total_tokens}\ttotal_prompt_tokens\t{total_prompt_tokens}\ttotal_completion_tokens\t{total_completion_tokens}\n"
                     )
-                    ftmp_write = open(
+                    with open(
                         f"{model_dir}/p{task_id}/{it}/token_info_{total_tokens}_{total_prompt_tokens}_{total_completion_tokens}_{code_id}",
                         "w",
-                    )
-                    ftmp_write.close()
+                    ):
+                        pass
                 else:
                     flog.write(f"task:{task_id}\tit:{it}\tcode_id:{code_id}\tsuccess.\n")
                 flog.write(f"money_quota\t{money_quota:.10f}\n")
@@ -1329,13 +1358,14 @@ def work(
         if dc_sweep_error == 1:
             new_prompt = "According to dc sweep analysis, changing the input voltage does not change the output voltage. Please check the netlist and rewrite the complete code.\n"
             new_prompt += "Reference operating point:\n"
-            op_content = open(operating_point_path).read()
+            with open(operating_point_path) as f:
+                op_content = f.read()
             new_prompt += op_content
 
             flog.write(f"task:{task_id}\tit:{it}\tcode_id\t{code_id}\tdc sweep error\n")
             flog.flush()
-            ftmp = open(f"{model_dir}/p{task_id}/{it}/dc_sweep_error_{code_id}", "w")
-            ftmp.close()
+            with open(f"{model_dir}/p{task_id}/{it}/dc_sweep_error_{code_id}", "w"):
+                pass
         else:
             if dc_sweep_success == 1:
                 new_prompt = f"According to dc sweep analysis, the best input voltage is {best_voltage}. Please use this voltage.\n"
@@ -1347,46 +1377,46 @@ def work(
                 )
                 flog.write(f"task:{task_id}\tit:{it}\tcode_id\t{code_id}\tempty code error\n")
                 flog.flush()
-                ftmp = open(f"{model_dir}/p{task_id}/{it}/empty_error_{code_id}", "w")
-                ftmp.close()
+                with open(f"{model_dir}/p{task_id}/{it}/empty_error_{code_id}", "w"):
+                    pass
             elif simulation_error == 1:
                 new_prompt += prompt_sim_error.replace("[NODE]", floating_node)
                 flog.write(f"task:{task_id}\tit:{it}\tcode_id:{code_id}\tsimulation error\n")
                 flog.flush()
-                ftmp = open(f"{model_dir}/p{task_id}/{it}/simulation_error_{code_id}", "w")
-                ftmp.close()
+                with open(f"{model_dir}/p{task_id}/{it}/simulation_error_{code_id}", "w"):
+                    pass
             elif execution_error == 1:
                 new_prompt += prompt_exe_error.replace("[ERROR]", execution_error_info)
                 flog.write(f"task:{task_id}\tit:{it}\tcode_id:{code_id}\texecution error\n")
                 flog.flush()
-                ftmp = open(f"{model_dir}/p{task_id}/{it}/execution_error_{code_id}", "w")
-                ftmp.close()
+                with open(f"{model_dir}/p{task_id}/{it}/execution_error_{code_id}", "w"):
+                    pass
             elif warning == 1:
                 new_prompt += warning_message
                 flog.write(
                     f"task:{task_id}\tit:{it}\tcode_id:{code_id}\tmosfet connection error\n"
                 )
                 flog.flush()
-                ftmp = open(f"{model_dir}/p{task_id}/{it}/mosfet_connection_error_{code_id}", "w")
-                ftmp.close()
+                with open(f"{model_dir}/p{task_id}/{it}/mosfet_connection_error_{code_id}", "w"):
+                    pass
             elif func_error == 1:
                 new_prompt += func_error_message
                 new_prompt += "\nPlease rewrite the corrected complete code."
                 flog.write(f"task:{task_id}\tit:{it}\tcode_id:{code_id}\tfunction error\n")
                 flog.flush()
-                ftmp = open(f"{model_dir}/p{task_id}/{it}/function_error_{code_id}", "w")
-                ftmp.close()
+                with open(f"{model_dir}/p{task_id}/{it}/function_error_{code_id}", "w"):
+                    pass
             else:
                 raise AssertionError
         flog.write(
             f"total_tokens\t{total_tokens}\ttotal_prompt_tokens\t{total_prompt_tokens}\ttotal_completion_tokens\t{total_completion_tokens}\n"
         )
         flog.write(f"money_quota\t{money_quota:.10f}\n")
-        ftmp_write = open(
+        with open(
             f"{model_dir}/p{task_id}/{it}/token_info_{total_tokens}_{total_prompt_tokens}_{total_completion_tokens}_{code_id}",
             "w",
-        )
-        ftmp_write.close()
+        ):
+            pass
         flog.flush()
         code_id += 1
         if code_id >= args.num_of_retry:
@@ -1435,6 +1465,7 @@ def work(
                         model=args.model,
                         messages=messages,
                         mode=MULTI_AGENT_MODE,
+                        work_dir=f"{model_dir}/p{task_id}/{it}",
                         use_docker=USE_DOCKER,
                     )
                     break
@@ -1466,26 +1497,21 @@ def work(
                 completion.usage.completion_tokens / 1e6 * 4.4
             )
 
-        fwrite_input.write("\n----------\n")
-        fwrite_input.write(new_prompt)
-        fwrite_input.flush()
+        with open(f"{model_dir}/p{task_id}/p{task_id}_{it}_input.txt", "w") as fwrite_input:
+            fwrite_input.write("\n----------\n")
+            fwrite_input.write(new_prompt)
+            fwrite_input.flush()
 
-        if "gpt" in args.model or "deepseek" in args.model:
-            answer = completion.choices[0].message.content
-        else:
-            answer = completion["message"]["content"]
+            if "gpt" in args.model or "deepseek" in args.model:
+                answer = completion.choices[0].message.content
+            else:
+                answer = completion["message"]["content"]
 
-        fwrite_output.write("\n----------\n")
-        fwrite_output.write(answer)
+        with open(f"{model_dir}/p{task_id}/p{task_id}_{it}_output.txt", "w") as fwrite_output:
+            fwrite_output.write("\n----------\n")
+            fwrite_output.write(answer)
 
-        # print("+="*20, "Answer HERE", "+="*20)
-        # print(answer)
-        # print("+="*20, "Answer END", "+="*20)
         empty_code_error, code = extract_code(answer)
-        # print("+="*20, "Code HERE", "+="*20)
-        # print(code)
-        # print("+="*20, "Code END", "+="*20)
-        # exit()
 
         operating_point_path = f"{model_dir}/p{task_id}/{it}/p{task_id}_{it}_{code_id}_op.txt"
         if "simulator = circuit.simulator()" not in code:
@@ -1509,17 +1535,15 @@ def work(
                 code = "import math\n" + code
 
     # save messages
-    fwrite = open(f"{model_dir}/p{task_id}/{it}/p{task_id}_{it}_messages.txt", "w")
-    fwrite.write(str(messages))
-    fwrite.close()
-    fwrite_input.close()
-    fwrite_output.close()
+    with open(f"{model_dir}/p{task_id}/{it}/p{task_id}_{it}_messages.txt", "w") as fwrite:
+        fwrite.write(str(messages))
     return money_quota
 
 
-def get_retrieval(task, task_id) -> list[int]:
+def get_retrieval(task: str, task_id: int) -> list[int]:
     # use the real RAG here
-    prompt = open("retrieval_prompt.md").read()
+    with open("retrieval_prompt.md") as f:
+        prompt = f.read()
     prompt = prompt.replace("[TASK]", task)
     messages = [
         {"role": "system", "content": "You are an analog integrated circuits expert."},
@@ -1534,7 +1558,11 @@ def get_retrieval(task, task_id) -> list[int]:
             #     temperature = args.temperature
             # )
             completion = get_chat_completion(
-                model=args.model, messages=messages, mode=MULTI_AGENT_MODE, use_docker=USE_DOCKER
+                model=args.model,
+                messages=messages,
+                mode="original",
+                work_dir=".",
+                use_docker=USE_DOCKER,
             )
         except openai.APIStatusError as e:
             print("Encountered an APIStatusError. Details:")
@@ -1542,18 +1570,23 @@ def get_retrieval(task, task_id) -> list[int]:
             print("sleep 30 seconds")
             time.sleep(30)
         answer = completion.choices[0].message.content
-        print("answer", answer)
-        Path(f"{args.model.replace('-', '')}/p{task_id!s}").mkdir(parents=True, exist_ok=True)
-        fretre_path = os.path.join(args.model.replace("-", ""), f"p{task_id!s}", "retrieve.txt")
-        fretre = open(fretre_path, "w")
-        fretre.write(answer)
-        fretre.close()
+        print(f"Answer:\n{answer}")
+
+        output_dir = Path(f"{args.model.replace('-', '')}/p{task_id!s}")
+        output_dir.mkdir(parents=True, exist_ok=True)
+        fretre_path = output_dir / "retrieve.txt"
+
+        with open(fretre_path, "w") as fretre:
+            fretre.write(answer)
         regex = r".*?```.*?\n(.*?)```"
         matches = re.finditer(regex, answer, re.DOTALL)
         first_match = next(matches, None)
         match_res = first_match.group(1)
-        print("match_res", match_res)
+        print(f"match_res\n{match_res}")
+        # 原本使用 `eval`，但 `eval` 只能執行單行代碼
+        # 這裡要改成 `exec`
         subcircuits = eval(match_res)
+        # subcircuits = exec(match_res)
     else:
         # use default subcircuits
         subcircuits = [11]
@@ -1573,38 +1606,40 @@ def main():
             continue
         strftime = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
         if args.ngspice:
-            flog = open(f"logs/{strftime}_{args.model}_{circuit_id}_ngspice_log.txt", "w")
+            log_path = f"logs/{strftime}_{args.model}_{circuit_id}_ngspice_log.txt"
         elif args.no_prompt:
-            flog = open(f"logs/{strftime}_{args.model}_{circuit_id}_no_prompt_log.txt", "w")
+            log_path = f"logs/{strftime}_{args.model}_{circuit_id}_no_prompt_log.txt"
         elif args.no_context:
-            flog = open(f"logs/{strftime}_{args.model}_{circuit_id}_no_context_log.txt", "w")
+            log_path = f"logs/{strftime}_{args.model}_{circuit_id}_no_context_log.txt"
         elif args.no_chain:
-            flog = open(f"logs/{strftime}_{args.model}_{circuit_id}_no_chain_log.txt", "w")
+            log_path = f"logs/{strftime}_{args.model}_{circuit_id}_no_chain_log.txt"
         elif not args.skill and row["Type"] in complex_task_type:
-            flog = open(f"logs/{strftime}_{args.model}_{circuit_id}_log_no_skill.txt", "w")
+            log_path = f"logs/{strftime}_{args.model}_{circuit_id}_log_no_skill.txt"
         else:
-            flog = open(f"logs/{strftime}_{args.model}_{circuit_id}_log.txt", "w")
-        for it in range(args.num_of_done, args.num_per_task):
-            flog.write(f"task: {circuit_id}, it: {it}\n")
-            flog.flush()
-            if row["Type"] in complex_task_type:
-                subcircuits = get_retrieval(row["Circuit"], args.task_id)
-            else:
-                subcircuits = None
-            remaining_money = work(
-                row["Circuit"],
-                row["Input"].strip(),
-                row["Output"].strip(),
-                circuit_id,
-                it,
-                None,
-                row["Type"],
-                flog,
-                money_quota=remaining_money,
-                subcircuits=subcircuits,
-            )
-            if remaining_money < 0:
-                break
+            log_path = f"logs/{strftime}_{args.model}_{circuit_id}_log.txt"
+
+        with open(log_path, "w") as flog:
+            for it in range(args.num_of_done, args.num_per_task):
+                flog.write(f"task: {circuit_id}, it: {it}\n")
+                flog.flush()
+                if row["Type"] in complex_task_type:
+                    subcircuits = get_retrieval(row["Circuit"], args.task_id)
+                else:
+                    subcircuits = None
+                remaining_money = work(
+                    row["Circuit"],
+                    row["Input"].strip(),
+                    row["Output"].strip(),
+                    circuit_id,
+                    it,
+                    None,
+                    row["Type"],
+                    flog,
+                    money_quota=remaining_money,
+                    subcircuits=subcircuits,
+                )
+                if remaining_money < 0:
+                    break
 
 
 if __name__ == "__main__":

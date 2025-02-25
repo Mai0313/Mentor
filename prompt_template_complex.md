@@ -27,10 +27,11 @@ To use them, please insert the following codes.
 
 ```python
 from example_lib import *
+
 # declare the subcircuit
-circuit.subcircuit(‘BasicOperationalAmplifier())
+circuit.subcircuit(BasicOperationalAmplifier())
 # create a subcircuit instance
-circuit.X('1', 'BasicOperationalAmplifier', 'Vin', 'Vout')
+circuit.X("1", "BasicOperationalAmplifier", "Vin", "Vout")
 ```
 
 ## Answer

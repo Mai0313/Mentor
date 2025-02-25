@@ -15,6 +15,12 @@ uv pip install -r pyproject.toml
 conda env create -f environment.yml
 ```
 
+### Update from environment.yml
+
+```bash
+conda env update -f environment.yml
+```
+
 ### Export your env
 
 ```bash

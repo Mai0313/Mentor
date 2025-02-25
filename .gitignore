@@ -176,3 +176,5 @@ cython_debug/
 /configs/OAI_CONFIG_LIST
 /configs/OAI_CONFIG_LIST.*
 !configs/OAI_CONFIG_LIST.example
+**/p[0-9]*/
+prompt_template_complex_with_sub_*.md

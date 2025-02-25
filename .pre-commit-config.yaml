@@ -113,7 +113,7 @@ repos:
       # - id: uv-export
       #   args: ["--no-dev", "--no-hashes", "--frozen", "--output-file", "./requirements.txt"]
       - id: uv-export
-        args: ["--no-hashes", "--frozen", "--output-file", "./src/mtkllm_analog/requirements.txt"]
+        args: ["--no-hashes", "--frozen", "--output-file", "./requirements.txt"]
       # - id: pip-compile
       #   args: [pyproject.toml]
       #   files: ^pyproject\.(toml|ini)$
