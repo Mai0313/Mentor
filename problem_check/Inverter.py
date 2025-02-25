@@ -1,9 +1,11 @@
 analysis = simulator.operating_point()
-for node in analysis.nodes.values(): 
-    print(f"{str(node)}\t{float(analysis[str(node)][0]):.6f}")
+for node in analysis.nodes.values():
+    print(f"{node!s}\t{float(analysis[str(node)][0]):.6f}")
 vin_name = ""
 for element in circuit.elements:
-    if "vin" in [str(pin.node).lower() for pin in element.pins] and element.name.lower().startswith("v"):
+    if "vin" in [
+        str(pin.node).lower() for pin in element.pins
+    ] and element.name.lower().startswith("v"):
         vin_name = element.name
 
 circuit.element(vin_name).dc_value = "5"
@@ -21,15 +23,15 @@ analysis3 = simulator3.operating_point()
 vout3 = float(analysis3["vout"][0])
 
 import sys
+
 if vout2 <= 2.5 and vout3 >= 2.5 and vout3 - vout2 >= 1.0:
     print("The circuit functions correctly.\n")
     sys.exit(0)
 
-print("The circuit does not function correctly.\n"
+print(
+    "The circuit does not function correctly.\n"
     "It can not invert the input voltage.\n"
-    "Please fix the wrong operating point.\n")
+    "Please fix the wrong operating point.\n"
+)
 
 sys.exit(2)
-
-
-

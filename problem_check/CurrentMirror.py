@@ -2,6 +2,7 @@ load_resistances = [100, 300, 500, 750, 1000]
 currents = []
 
 import PySpice.Spice.BasicElement
+
 for element in circuit.elements:
     if isinstance(element, PySpice.Spice.BasicElement.Resistor):
         resistor_name = element.name
@@ -16,21 +17,22 @@ for r_load in load_resistances:
     if str(node2) == "0":
         current = float(analysis[str(node1)][0]) / r_load
     elif str(node1) == "0":
-        current = - float(analysis[str(node2)][0]) / r_load
+        current = -float(analysis[str(node2)][0]) / r_load
     else:
-        current = - (float(analysis[str(node1)][0]) - float(analysis[str(node2)][0])) / r_load
+        current = -(float(analysis[str(node1)][0]) - float(analysis[str(node2)][0])) / r_load
     currents.append(current)
 
-for r_load, current in zip(load_resistances, currents):
+for r_load, current in zip(load_resistances, currents, strict=False):
     print(f"Load: {r_load}, Current: {current}")
 
 tolerance = 1e-6
 
 current_variations = []
 for i in range(4):
-    current_variations.append(abs(currents[i+1] - currents[i]))
+    current_variations.append(abs(currents[i + 1] - currents[i]))
 
 import sys
+
 if min(current_variations) < tolerance and min(currents) > 1e-5:
     pass
     # print("The circuit functions correctly as a constant current source within the given tolerance.")
@@ -41,7 +43,7 @@ else:
 
 iin_name = None
 for element in circuit.elements:
-    if "ref" in element.name.lower(): # and element.name.lower().startswith("v"):
+    if "ref" in element.name.lower():  # and element.name.lower().startswith("v"):
         iin_name = element.name
 
 # print("iin_name", iin_name)
@@ -59,9 +61,9 @@ analysis = simulator.operating_point()
 if str(node2) == "0":
     current = float(analysis[str(node1)][0]) / r_load
 elif str(node1) == "0":
-    current = - float(analysis[str(node2)][0]) / r_load
+    current = -float(analysis[str(node2)][0]) / r_load
 else:
-    current = - (float(analysis[str(node1)][0]) - float(analysis[str(node2)][0])) / r_load
+    current = -(float(analysis[str(node1)][0]) - float(analysis[str(node2)][0])) / r_load
 
 # print("current", current)
 # print("currents", currents)

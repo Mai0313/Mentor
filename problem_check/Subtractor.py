@@ -1,43 +1,49 @@
-import numpy as np
 import sys
+
+import numpy as np
 
 # Define the bias voltage and input voltage differences
 BIAS_VOLTAGE = [BIAS_VOLTAGE]
-v1_amp = BIAS_VOLTAGE*2
-v2_amp = BIAS_VOLTAGE*2
+v1_amp = BIAS_VOLTAGE * 2
+v2_amp = BIAS_VOLTAGE * 2
 
 
 vin1_name = ""
 for element in circuit.elements:
-    if "vin1" in [str(pin.node).lower() for pin in element.pins] and element.name.lower().startswith("v"):
+    if "vin1" in [
+        str(pin.node).lower() for pin in element.pins
+    ] and element.name.lower().startswith("v"):
         vin1_name = element.name
 
 vin1_name = ""
 for element in circuit.elements:
-    if "vin1" in [str(pin.node).lower() for pin in element.pins] and element.name.lower().startswith("v"):
+    if "vin1" in [
+        str(pin.node).lower() for pin in element.pins
+    ] and element.name.lower().startswith("v"):
         vin1_name = element.name
 
-if not vin1_name == "":
+if vin1_name != "":
     circuit.element(vin1_name).detach()
-    circuit.V('in1', 'Vin1', circuit.gnd, v1_amp)
+    circuit.V("in1", "Vin1", circuit.gnd, v1_amp)
     vin1_name = "Vin1"
 else:
-    circuit.V('in1', 'Vin1', circuit.gnd, v1_amp)
+    circuit.V("in1", "Vin1", circuit.gnd, v1_amp)
     vin1_name = "Vin1"
 
 vin2_name = ""
 for element in circuit.elements:
-    if "vin2" in [str(pin.node).lower() for pin in element.pins] and element.name.lower().startswith("v"):
+    if "vin2" in [
+        str(pin.node).lower() for pin in element.pins
+    ] and element.name.lower().startswith("v"):
         vin2_name = element.name
-    
-if not vin2_name == "":
+
+if vin2_name != "":
     circuit.element(vin2_name).detach()
-    circuit.V('in2', 'Vin2', circuit.gnd, v2_amp)
+    circuit.V("in2", "Vin2", circuit.gnd, v2_amp)
     vin2_name = "Vin2"
 else:
-    circuit.V('in2', 'Vin2', circuit.gnd, v2_amp)
+    circuit.V("in2", "Vin2", circuit.gnd, v2_amp)
     vin2_name = "Vin2"
-
 
 
 # print("vin1_name", vin1_name)
@@ -54,7 +60,7 @@ for element in circuit.elements:
 simulator = circuit.simulator()
 
 
-params = {vin1_name: slice(BIAS_VOLTAGE*2 -2.25, BIAS_VOLTAGE*2 - 1.75, 0.05)}
+params = {vin1_name: slice(BIAS_VOLTAGE * 2 - 2.25, BIAS_VOLTAGE * 2 - 1.75, 0.05)}
 # Run a DC analysis
 try:
     analysis = simulator.dc(**params)
@@ -85,8 +91,10 @@ for i, out_v in enumerate(out_voltage):
     expected_vout = in_v_2 - in_v_1
     actual_vout = out_v
     if not np.isclose(actual_vout, expected_vout, rtol=tolerance):
-        print(f"The circuit does not function correctly as a subtractor.\n"
-              f"Expected Vout: {expected_vout:.2f} V, Vin1 = {in_v_1:.2f} V, Vin2 = {in_v_2:.2f} V | Actual Vout: {actual_vout:.2f} V\n")
+        print(
+            f"The circuit does not function correctly as a subtractor.\n"
+            f"Expected Vout: {expected_vout:.2f} V, Vin1 = {in_v_1:.2f} V, Vin2 = {in_v_2:.2f} V | Actual Vout: {actual_vout:.2f} V\n"
+        )
         sys.exit(1)
 
 print("The op-amp subtractor functions correctly.\n")

@@ -24,19 +24,20 @@ simulator = circuit.simulator()
 simulator.initial_condition(**params)
 
 try:
-    analysis = simulator.transient(step_time=1@u_us, end_time=10@u_ms)
+    analysis = simulator.transient(step_time=1 @ u_us, end_time=10 @ u_ms)
 except:
     print("analysis failed.")
     sys.exit(2)
 
 import numpy as np
+
 # Get the output node voltage
-vout = np.array(analysis['Vout'])
+vout = np.array(analysis["Vout"])
 vinp = np.array(analysis[pin_name])
 vinn = np.array(analysis[pin_name_n])
 time = np.array(analysis.time)
 
-from scipy.signal import find_peaks, firwin, lfilter
+from scipy.signal import firwin, lfilter, find_peaks
 
 numtaps = 51
 cutoff_hz = 10.0
@@ -58,12 +59,12 @@ plt.plot(time, vout)
 # plt.plot(time, filtered_vout)
 plt.plot(time, vinp)
 plt.plot(time, vinn)
-plt.title('Wien Bridge Oscillator Output')
-plt.xlabel('Time [s]')
-plt.ylabel('Voltage [V]')
-plt.legend(['Vout', 'Vinp', 'Vinn'])
+plt.title("Wien Bridge Oscillator Output")
+plt.xlabel("Time [s]")
+plt.ylabel("Voltage [V]")
+plt.legend(["Vout", "Vinp", "Vinn"])
 plt.grid()
-plt.savefig('[FIGURE_PATH].png')
+plt.savefig("[FIGURE_PATH].png")
 
 # sys.exit(0)
 
@@ -105,14 +106,13 @@ if len(peaks) > 3:
     if period_variation < some_small_threshold:
         if error == 0:
             print("The oscillator works correct and produces periodic oscillations.")
-            print("The average period is: {} s".format(np.mean(periods)))
+            print(f"The average period is: {np.mean(periods)} s")
     else:
         print("Periodicity is inconsistent, oscillation may not be an ideal periodicity.")
         error = 1
 else:
     print("Not enough peaks were detected to determine periodicity.")
     error = 1
-
 
 
 if error == 1:

@@ -199,25 +199,6 @@ ignore = [
     "S106",
     # ignore print, Analog Coder codebase is shit.
     "T201",
-    "F405",
-    "INP001",
-    "ANN001",
-    "F403",
-    "S603",
-    "S607",
-    "S101",
-    "F821",
-    "E722",
-    "C901",
-    "PD901",
-    "N801",
-    "N803",
-    "ANN201",
-    "S307",
-    "A002",
-    "N818",
-    "E741",
-    "SIM102",
 ]
 
 [tool.ruff.lint.pycodestyle]
@@ -249,6 +230,11 @@ keep-runtime-typing = true
 "notebooks/*.ipynb" = ["UP", "DOC", "RUF", "D", "C", "F401", "T201"]
 "examples/*.py" = ["UP", "DOC", "RUF", "D", "C", "F401", "T201"]
 "scripts/*" = ["UP", "DOC", "RUF", "D", "C", "F401", "T201"]
+"gpt_run.py" = ['N818', 'ANN001', 'ANN201', 'S101', 'E722', 'C901', 'S603', 'S607', 'SIM115', 'SIM102', 'A002', 'E741', 'S307', 'PD901']
+"problem_check/*.py" = ['INP001', 'F821', 'E722', 'ANN201', 'ANN001']
+"sample_design/*.py" = ['INP001', 'F403', 'F405', 'ANN001', 'S603', 'S607']
+"sample_design/subcircuits/*.py" = ['F403', 'ANN001', 'F405', 'N801', 'N803']
+"subcircuit_lib/*.py" = ['INP001', 'F403', 'F405']
 
 [tool.ruff.lint.isort]
 case-sensitive = true
