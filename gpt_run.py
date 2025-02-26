@@ -1039,7 +1039,7 @@ def work(
         flog.write(f"Money quota is used up. Exceed quota: {money_quota}\n")
         return money_quota
 
-    while retry_quota <= 5:
+    while retry_quota < 2:
         retry_quota += 1
         # 生成第一段代碼，因為最一開始沒有代碼可以跑check，所以這裡需要先讓LLM產出初始代碼
         if any(model in args.model for model in opensource_models):
@@ -1086,7 +1086,7 @@ def work(
             except openai.APIStatusError as e:
                 print("Encountered an APIStatusError. Details:")
                 print(e)
-                print(f"API Retry Quota: {5 - retry_quota} times left")
+                print(f"API Retry Quota: {2 - retry_quota} times left")
                 print("sleep 30 seconds")
                 time.sleep(30)
 
@@ -1438,7 +1438,7 @@ def work(
             return None
 
         retry_quota = 0
-        while retry_quota <= 5:
+        while retry_quota < 2:
             retry_quota += 1
             try:
                 if any(model in args.model for model in opensource_models):
@@ -1483,7 +1483,7 @@ def work(
             except openai.APIStatusError as e:
                 print("Encountered an APIStatusError. Details:")
                 print(e)
-                print(f"API Retry Quota: {5 - retry_quota} times left")
+                print(f"API Retry Quota: {2 - retry_quota} times left")
                 print("sleep 30 seconds")
                 time.sleep(30)
 
