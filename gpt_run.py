@@ -14,6 +14,8 @@ import openai
 from openai import AzureOpenAI
 import pandas as pd
 from analog_agent import get_chat_completion
+from autogen.oai.openai_utils import OAI_PRICE1K
+from openai.types.chat.chat_completion import ChatCompletion
 
 
 class TimeoutException(Exception):
@@ -916,6 +918,25 @@ def get_model_dir(task_type: str, task_id: int, it: int) -> tuple[str, str]:
     return model_dir, log_path.as_posix()
 
 
+def cal_quota(
+    money_quota: int,
+    total_tokens: int,
+    total_prompt_tokens: int,
+    total_completion_tokens: int,
+    completion: ChatCompletion,
+) -> tuple[int, int, int, int]:
+    """不想改太多, 所以我讓這個function吃原本main function那邊定義的, 後續就不需要再+="""
+    total_tokens += completion.usage.total_tokens
+    total_prompt_tokens += completion.usage.prompt_tokens
+    total_completion_tokens += completion.usage.completion_tokens
+
+    input_tokens, output_token = OAI_PRICE1K.get(completion.model, (0, 0))
+    prompt_price = completion.usage.prompt_tokens / 1000 * input_tokens
+    completion_price = completion.usage.completion_tokens / 1000 * output_token
+    money_quota -= prompt_price + completion_price
+    return money_quota, total_tokens, total_prompt_tokens, total_completion_tokens
+
+
 def work(
     task: str,
     input: str,
@@ -937,27 +958,23 @@ def work(
 
     if task_type not in complex_task_type or args.skill is False:
         if "llama" in args.model:
-            with open("prompt_template.md") as fopen:
-                prompt = fopen.read()
+            prompt_path = "prompt_template.md"
         elif args.ngspice:
-            with open("prompt_template_ngspice.md") as fopen:
-                prompt = fopen.read()
+            prompt_path = "prompt_template_ngspice.md"
         elif any(model in args.model for model in opensource_models):
-            with open("prompt_template.md") as fopen:
-                prompt = fopen.read()
+            prompt_path = "prompt_template.md"
         else:
-            with open("prompt_template.md") as fopen:
-                prompt = fopen.read()
+            prompt_path = "prompt_template.md"
 
         if args.no_prompt:
-            with open("prompt_template_wo_prompt.md") as fopen:
-                prompt = fopen.read()
+            prompt_path = "prompt_template_wo_prompt.md"
         elif args.no_context:
-            with open("prompt_template_wo_context.md") as fopen:
-                prompt = fopen.read()
+            prompt_path = "prompt_template_wo_context.md"
         elif args.no_chain:
-            with open("prompt_template_wo_chain_of_thought.md") as fopen:
-                prompt = fopen.read()
+            prompt_path = "prompt_template_wo_chain_of_thought.md"
+
+        with open(prompt_path) as fopen:
+            prompt = fopen.read()
 
         prompt = prompt.replace("[TASK]", task)
         prompt = prompt.replace("[INPUT]", input)
@@ -1068,27 +1085,9 @@ def work(
                 print("sleep 30 seconds")
                 time.sleep(30)
 
-    if "gpt" in args.model:
-        total_tokens += completion.usage.total_tokens
-        total_prompt_tokens += completion.usage.prompt_tokens
-        total_completion_tokens += completion.usage.completion_tokens
-
-    if "ft:gpt-3.5" in args.model:
-        money_quota -= (completion.usage.prompt_tokens / 1e6 * 3) + (
-            completion.usage.completion_tokens / 1e6 * 6
-        )
-    elif "gpt-3" in args.model:
-        money_quota -= (completion.usage.prompt_tokens / 1e6 * 0.5) + (
-            completion.usage.completion_tokens / 1e6 * 1.5
-        )
-    elif "gpt-4" in args.model:
-        money_quota -= (completion.usage.prompt_tokens / 1e6 * 10) + (
-            completion.usage.completion_tokens / 1e6 * 30
-        )
-    elif "o3-mini" in args.model:
-        money_quota -= (completion.usage.prompt_tokens / 1e6 * 1.1) + (
-            completion.usage.completion_tokens / 1e6 * 4.4
-        )
+    money_quota, total_tokens, total_prompt_tokens, total_completion_tokens = cal_quota(
+        money_quota, total_tokens, total_prompt_tokens, total_completion_tokens, completion
+    )
 
     if "gpt" in args.model or "deepseek" in args.model:
         answer = completion.choices[0].message.content
@@ -1155,10 +1154,6 @@ def work(
     while code_id < args.num_of_retry:
         messages.append({"role": "assistant", "content": answer})
 
-        if not os.path.exists(log_path):
-            with contextlib.suppress(Exception):
-                os.mkdir(log_path)
-
         code_path = f"{model_dir}/p{task_id}/{it}/p{task_id}_{it}_{code_id}.py"
         if args.ngspice:
             code_path = code_path.replace(".py", ".sp")
@@ -1179,11 +1174,14 @@ def work(
                 shutil.copy(
                     f"subcircuit_lib/p{subcircuit}_lib.py", "/".join(code_path.split("/")[:-1])
                 )
+
+        # Check if the code can be executed
         execution_error, simulation_error, execution_error_info, floating_node = run_code(
             code_path
         )
         print(f"execution_error = {execution_error}, simulation_error = {simulation_error}")
 
+        # Once the code can be executed, get into the next step for dc sweep
         dc_sweep_error = 0
         dc_sweep_success = 0
 
@@ -1478,27 +1476,9 @@ def work(
                 print("sleep 30 seconds")
                 time.sleep(30)
 
-        if "gpt" in args.model:
-            total_tokens += completion.usage.total_tokens
-            total_prompt_tokens += completion.usage.prompt_tokens
-            total_completion_tokens += completion.usage.completion_tokens
-
-        if "ft:gpt-3.5" in args.model:
-            money_quota -= (completion.usage.prompt_tokens / 1e6 * 3) + (
-                completion.usage.completion_tokens / 1e6 * 6
-            )
-        elif "gpt-3" in args.model:
-            money_quota -= (completion.usage.prompt_tokens / 1e6 * 0.5) + (
-                completion.usage.completion_tokens / 1e6 * 1.5
-            )
-        elif "gpt-4" in args.model:
-            money_quota -= (completion.usage.prompt_tokens / 1e6 * 10) + (
-                completion.usage.completion_tokens / 1e6 * 30
-            )
-        elif "o3-mini" in args.model:
-            money_quota -= (completion.usage.prompt_tokens / 1e6 * 1.1) + (
-                completion.usage.completion_tokens / 1e6 * 4.4
-            )
+        money_quota, total_tokens, total_prompt_tokens, total_completion_tokens = cal_quota(
+            money_quota, total_tokens, total_prompt_tokens, total_completion_tokens, completion
+        )
 
         with open(f"{model_dir}/p{task_id}/p{task_id}_{it}_input.txt", "w") as fwrite_input:
             fwrite_input.write("\n----------\n")
@@ -1597,52 +1577,72 @@ def get_retrieval(task: str, task_id: int) -> list[int]:
 
 
 def main():
-    data_path = "problem_set.tsv"
-    df = pd.read_csv(data_path, delimiter="\t")
+    data = pd.read_csv("problem_set.tsv", delimiter="\t")
     # print(df)
     # set money cost to $2
     remaining_money = 500
     os.makedirs("./logs", exist_ok=True)
-    for _index, row in df.iterrows():
-        circuit_id = row["Id"]
-        if circuit_id != args.task_id:
-            continue
-        strftime = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
-        if args.ngspice:
-            log_path = f"logs/{strftime}_{args.model}_{circuit_id}_ngspice_log.txt"
-        elif args.no_prompt:
-            log_path = f"logs/{strftime}_{args.model}_{circuit_id}_no_prompt_log.txt"
-        elif args.no_context:
-            log_path = f"logs/{strftime}_{args.model}_{circuit_id}_no_context_log.txt"
-        elif args.no_chain:
-            log_path = f"logs/{strftime}_{args.model}_{circuit_id}_no_chain_log.txt"
-        elif not args.skill and row["Type"] in complex_task_type:
-            log_path = f"logs/{strftime}_{args.model}_{circuit_id}_log_no_skill.txt"
-        else:
-            log_path = f"logs/{strftime}_{args.model}_{circuit_id}_log.txt"
+    data = data.query("Id == @args.task_id")
+    data_list = data.to_dict("records")
+    if len(data_list) > 1:
+        raise AttributeError("There are multiple tasks with the same ID.")
+    data_dict = data_list[0]
+    circuit_id = data_dict.get("Id")
+    circuit_name = data_dict.get("Circuit")
+    circuit_type = data_dict.get("Type")
+    circuit_input = data_dict.get("Input")
+    circuit_output = data_dict.get("Output")
+    if not isinstance(circuit_id, int):
+        raise AttributeError("Task ID should be an integer.")
+    if not isinstance(circuit_name, str):
+        raise AttributeError("Circuit name should be a string.")
+    if not isinstance(circuit_type, str):
+        raise AttributeError("Circuit type should be a string.")
+    if not isinstance(circuit_input, str):
+        raise AttributeError("Circuit input should be a string.")
+    if not isinstance(circuit_output, str):
+        raise AttributeError("Circuit output should be a string.")
+    if circuit_id != args.task_id:
+        raise AttributeError("Task ID does not match the task.")
 
-        with open(log_path, "w") as flog:
-            for it in range(args.num_of_done, args.num_per_task):
-                flog.write(f"task: {circuit_id}, it: {it}\n")
-                flog.flush()
-                if row["Type"] in complex_task_type:
-                    subcircuits = get_retrieval(row["Circuit"], args.task_id)
-                else:
-                    subcircuits = None
-                remaining_money = work(
-                    row["Circuit"],
-                    row["Input"].strip(),
-                    row["Output"].strip(),
-                    circuit_id,
-                    it,
-                    None,
-                    row["Type"],
-                    flog,
-                    money_quota=remaining_money,
-                    subcircuits=subcircuits,
-                )
-                if remaining_money < 0:
-                    break
+    strftime = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
+    if args.ngspice:
+        log_path = f"logs/{strftime}_{args.model}_{circuit_id}_ngspice_log.txt"
+    elif args.no_prompt:
+        log_path = f"logs/{strftime}_{args.model}_{circuit_id}_no_prompt_log.txt"
+    elif args.no_context:
+        log_path = f"logs/{strftime}_{args.model}_{circuit_id}_no_context_log.txt"
+    elif args.no_chain:
+        log_path = f"logs/{strftime}_{args.model}_{circuit_id}_no_chain_log.txt"
+    elif not args.skill and circuit_type in complex_task_type:
+        log_path = f"logs/{strftime}_{args.model}_{circuit_id}_log_no_skill.txt"
+    else:
+        log_path = f"logs/{strftime}_{args.model}_{circuit_id}_log.txt"
+
+    with open(log_path, "w") as flog:
+        for it in range(args.num_of_done, args.num_per_task):
+            # flog.write(
+            #     "task,it,code_id,result,completion_tokens,prompt_tokens,total_tokens,overall_completion_tokens,overall_prompt_tokens,overall_tokens,quota_left\n"
+            # )
+            flog.write(f"task: {circuit_id}, it: {it}\n")
+            flog.flush()
+            subcircuits = None
+            if circuit_type in complex_task_type:
+                subcircuits = get_retrieval(task=circuit_name, task_id=args.task_id)
+            remaining_money = work(
+                task=circuit_name,
+                input=circuit_input.strip(),
+                output=circuit_output.strip(),
+                task_id=circuit_id,
+                it=it,
+                background=None,
+                task_type=circuit_type,
+                flog=flog,
+                money_quota=remaining_money,
+                subcircuits=subcircuits,
+            )
+            if remaining_money < 0:
+                break
 
 
 if __name__ == "__main__":

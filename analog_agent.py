@@ -372,17 +372,12 @@ class AnalogAgent(BaseModel):
         return content
 
     def use_chat_completion(self, model: str, messages: list[dict[str, str]]) -> ChatCompletion:
-        # llm_config = get_config_dict(model=model)
-        # client = AzureOpenAI(
-        #     api_key=llm_config["config_list"][0]["api_key"],
-        #     azure_endpoint=llm_config["config_list"][0]["base_url"],
-        #     api_version=llm_config["config_list"][0]["api_version"],
-        #     http_client=httpx.Client(headers=llm_config["config_list"][0]["default_headers"]),
-        # )
+        llm_config = get_config_dict(model=model)
         client = AzureOpenAI(
-            api_key="hihi",
-            azure_endpoint="https://tma.mediatek.inc/tma/sdk/api/v1",
-            api_version="2024-08-01-preview",
+            api_key=llm_config["config_list"][0]["api_key"],
+            azure_endpoint=llm_config["config_list"][0]["base_url"],
+            api_version=llm_config["config_list"][0]["api_version"],
+            http_client=httpx.Client(headers=llm_config["config_list"][0]["default_headers"]),
         )
         result = client.chat.completions.create(messages=messages, model=model, temperature=0.5)
         return result
@@ -555,6 +550,7 @@ class AnalogAgent(BaseModel):
                     "use_docker": self.use_docker,
                 },
                 "coding": True,
+                "library_path_or_json": None,
             },
             # "autobuild_tool_config": {
             #     "tool_root": "tools",
@@ -581,17 +577,17 @@ class AnalogAgent(BaseModel):
                 "last_n_messages": 1,
                 "use_docker": self.use_docker,
             },
-            agent_config_save_path="./.cache",
+            agent_config_save_path=work_dir,
             nested_config=nested_config,
             # tool_lib="./tools",
             # is_termination_msg=lambda x: "TERMINATE" in x.get("content"),
         )
-        tools = [convert2markdown]
-        for tool in tools:
-            captain_agent.register_for_execution(
-                name=tool.__name__,  # Function name
-                description=tool.__doc__,  # Function description, you need to annotated it with `"""`
-            )(tool)
+        # tools = [convert2markdown]
+        # for tool in tools:
+        #     captain_agent.register_for_execution(
+        #         name=tool.__name__,  # Function name
+        #         description=tool.__doc__,  # Function description, you need to annotated it with `"""`
+        #     )(tool)
         if use_rag:
             messages.append({"role": "user", "content": "All Docs is in ./docs"})
         chat_result = captain_user_proxy.initiate_chat(
