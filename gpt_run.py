@@ -310,6 +310,7 @@ def check_netlist(
     task_id: int,
     task_type: str,
 ) -> tuple[int, str]:
+    # 3-1. Requirement Check
     warning = 0
     warning_message = ""
     # Check all the input and output nodes are in the netlist
@@ -414,6 +415,7 @@ def check_netlist(
                     if gate == "vin":
                         first_stage_out = drain
 
+                # 3-2. Simulation OP Check
                 if mos_type == "NMOS":
                     # VDS
                     vds_error = 0
@@ -482,6 +484,7 @@ def check_netlist(
                     if vgs_error == 1:
                         warning_message += f"Suggestion: Please set {mos_type} {name} with an activated state by decreasing the gate voltage or increasing the source voltage and make sure V_GS < V_TH.\n"
 
+    # 3-1. Requirement Check
     if task_id in [1, 2, 3, 4, 5, 6, 8, 13]:
         if resistance_exist == 0:
             warning_message += "There is no resistance in the netlist.\n"
@@ -1030,13 +1033,14 @@ def work(
         {"role": "system", "content": "You are an analog integrated circuits expert."},
         {"role": "user", "content": prompt},
     ]
-    retry = True
+    retry_quota = 0
 
     if money_quota < 0:
         flog.write(f"Money quota is used up. Exceed quota: {money_quota}\n")
         return money_quota
 
-    while retry:
+    while retry_quota <= 5:
+        retry_quota += 1
         # 生成第一段代碼，因為最一開始沒有代碼可以跑check，所以這裡需要先讓LLM產出初始代碼
         if any(model in args.model for model in opensource_models):
             print(f"start {args.model} completion")
@@ -1082,6 +1086,7 @@ def work(
             except openai.APIStatusError as e:
                 print("Encountered an APIStatusError. Details:")
                 print(e)
+                print(f"API Retry Quota: {5 - retry_quota} times left")
                 print("sleep 30 seconds")
                 time.sleep(30)
 
@@ -1174,8 +1179,7 @@ def work(
                 shutil.copy(
                     f"subcircuit_lib/p{subcircuit}_lib.py", "/".join(code_path.split("/")[:-1])
                 )
-
-        # Check if the code can be executed
+        # 1. Execution error & Simulation error Check
         execution_error, simulation_error, execution_error_info, floating_node = run_code(
             code_path
         )
@@ -1186,6 +1190,7 @@ def work(
         dc_sweep_success = 0
 
         if execution_error == 0 and simulation_error == 0:
+            # 4 checks start: Only for non-complex task
             if task_type not in complex_task_type:
                 _, code_netlist = None, answer_code
                 code_netlist += output_netlist_template
@@ -1205,7 +1210,7 @@ def work(
                 with open(netlist_file_path, "w") as fwrite_netlist:
                     fwrite_netlist.write("\n".join(result.stdout.split("\n")[1:]))
 
-                ## special for Opamp: dc sweep
+                # 2. DC Sweep check: only for "Opamp" and "Amplifier"
 
                 if "Opamp" in task_type or "Amplifier" in task_type:
                     vinn_name = "in"
@@ -1291,9 +1296,12 @@ def work(
                             os.rename(code_path + ".bak", code_path)
                 # dc sweep finish
 
+                # 3. Requirement and Simulation OP Check
                 warning, warning_message = check_netlist(
                     netlist_path, operating_point_path, input, output, task_id, task_type
                 )
+
+                # 4. Function Check
                 if warning == 0:
                     func_error, func_error_message = check_function(task_id, code_path, task_type)
                     func_error_message = func_error_message.replace(
@@ -1356,6 +1364,7 @@ def work(
         execution_error_info = execution_error_info.replace("Unsupported Ngspice version 38", "")
         execution_error_info = execution_error_info.replace("Unsupported Ngspice version 36", "")
 
+        # Suggestion Part
         if dc_sweep_error == 1:
             new_prompt = "According to dc sweep analysis, changing the input voltage does not change the output voltage. Please check the netlist and rewrite the complete code.\n"
             new_prompt += "Reference operating point:\n"
@@ -1428,8 +1437,9 @@ def work(
             flog.write(f"Money quota is used up. Exceed quota: {money_quota}\n")
             return None
 
-        retry = True
-        while retry:
+        retry_quota = 0
+        while retry_quota <= 5:
+            retry_quota += 1
             try:
                 if any(model in args.model for model in opensource_models):
                     print(f"start {args.model} completion")
@@ -1473,6 +1483,7 @@ def work(
             except openai.APIStatusError as e:
                 print("Encountered an APIStatusError. Details:")
                 print(e)
+                print(f"API Retry Quota: {5 - retry_quota} times left")
                 print("sleep 30 seconds")
                 time.sleep(30)
 
