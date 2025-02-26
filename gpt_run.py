@@ -139,7 +139,7 @@ def extract_code(generated_content: str) -> tuple[int, str]:
     first_match = next(matches, None)
     try:
         code = first_match.group(1)
-        print("code", code)
+        print(f"code\n{code}")
         code = "\n".join([line for line in code.split("\n") if len(line.strip()) > 0])
     except:
         code = ""
@@ -869,6 +869,53 @@ def kill_tmux_session(session_name: str) -> None:
         print(f"Failed to kill tmux session '{session_name}'. Session might not exist.")
 
 
+def get_model_dir(task_type: str, task_id: int, it: int) -> tuple[str, str]:
+    if "ft:gpt-3.5" in args.model:
+        if "a:9HyyBpNI" in args.model:
+            model_dir = "gpt3p5-ft-A"
+        elif "b:9Hzb5l4S" in args.model:
+            model_dir = "gpt3p5-ft-B"
+        elif "c:9I0X557K" in args.model:
+            model_dir = "gpt3p5-ft-C"
+        else:
+            raise AssertionError
+    elif "gpt-3" in args.model:
+        model_dir = "gpt3p5"
+    elif "gpt-4" in args.model:
+        model_dir = "gpt4"
+    elif "o3-mini" in args.model:
+        model_dir = "o3mini"
+    elif "deepseek" in args.model:
+        model_dir = "deepseek"
+    elif any(model in args.model for model in opensource_models):
+        model_dir = str(args.model).replace(":", "-")
+    else:
+        model_dir = "unknown"
+    if "ft-A" in model_dir:
+        assert task_id in [0, 3, 6, 9, 14, 10, 11]
+    elif "ft-B" in model_dir:
+        assert task_id in [1, 4, 7, 12, 10, 11]
+    elif "ft-C" in model_dir:
+        assert task_id in [2, 5, 8, 13, 10, 11]
+    if args.ngspice:
+        model_dir += "_ngspice"
+
+    if args.no_prompt:
+        model_dir += "_no_prompt"
+    elif args.no_context:
+        model_dir += "_no_context"
+    elif args.no_chain:
+        model_dir += "_no_chain"
+
+    if args.num_of_retry > 3:
+        model_dir += f"_retry_{args.num_of_retry}"
+    if task_type in complex_task_type and not args.skill:
+        model_dir += "_no_skill"
+    log_path = Path(f"{model_dir}/p{task_id}/{it}")
+    log_path.mkdir(parents=True, exist_ok=True)
+    return model_dir, log_path.as_posix()
+
+
 def work(
     task: str,
     input: str,
@@ -886,6 +933,7 @@ def work(
     total_tokens = 0
     total_prompt_tokens = 0
     total_completion_tokens = 0
+    model_dir, log_path = get_model_dir(task_type=task_type, task_id=task_id, it=it)
 
     if task_type not in complex_task_type or args.skill is False:
         if "llama" in args.model:
@@ -939,6 +987,9 @@ def work(
             prompt = prompt.replace("8. Avoid using subcircuits.", "")
             # bias_voltage = 2.5
 
+        for subcircuit in subcircuits:
+            shutil.copy(f"subcircuit_lib/p{subcircuit}_lib.py", log_path)
+
         call_info = get_call_info(subcircuits)
         prompt = (
             prompt.replace("[SUBCIRCUITS_INFO]", subcircuits_info)
@@ -968,57 +1019,8 @@ def work(
         flog.write(f"Money quota is used up. Exceed quota: {money_quota}\n")
         return money_quota
 
-    if "ft:gpt-3.5" in args.model:
-        if "a:9HyyBpNI" in args.model:
-            model_dir = "gpt3p5-ft-A"
-        elif "b:9Hzb5l4S" in args.model:
-            model_dir = "gpt3p5-ft-B"
-        elif "c:9I0X557K" in args.model:
-            model_dir = "gpt3p5-ft-C"
-        else:
-            raise AssertionError
-    elif "gpt-3" in args.model:
-        model_dir = "gpt3p5"
-    elif "gpt-4" in args.model:
-        model_dir = "gpt4"
-    elif "o3-mini" in args.model:
-        model_dir = "o3mini"
-    elif "deepseek" in args.model:
-        model_dir = "deepseek"
-    elif any(model in args.model for model in opensource_models):
-        model_dir = str(args.model).replace(":", "-")
-    else:
-        model_dir = "unknown"
-    if "ft-A" in model_dir:
-        assert task_id in [0, 3, 6, 9, 14, 10, 11]
-    elif "ft-B" in model_dir:
-        assert task_id in [1, 4, 7, 12, 10, 11]
-    elif "ft-C" in model_dir:
-        assert task_id in [2, 5, 8, 13, 10, 11]
-    if args.ngspice:
-        model_dir += "_ngspice"
-
-    if args.no_prompt:
-        model_dir += "_no_prompt"
-    elif args.no_context:
-        model_dir += "_no_context"
-    elif args.no_chain:
-        model_dir += "_no_chain"
-
-    if args.num_of_retry > 3:
-        model_dir += f"_retry_{args.num_of_retry}"
-
-    if task_type in complex_task_type and not args.skill:
-        model_dir += "_no_skill"
-
-    if not os.path.exists(model_dir):
-        with contextlib.suppress(Exception):
-            os.mkdir(model_dir)
-    if not os.path.exists(f"{model_dir}/p{task_id}"):
-        with contextlib.suppress(Exception):
-            os.mkdir(f"{model_dir}/p{task_id}")
-
     while retry:
+        # 生成第一段代碼，因為最一開始沒有代碼可以跑check，所以這裡需要先讓LLM產出初始代碼
         if any(model in args.model for model in opensource_models):
             print(f"start {args.model} completion")
             signal.signal(signal.SIGALRM, signal_handler)
@@ -1056,7 +1058,7 @@ def work(
                     model=args.model,
                     messages=messages,
                     mode=MULTI_AGENT_MODE,
-                    work_dir=f"{model_dir}/p{task_id}/{it}",
+                    work_dir=log_path,
                     use_docker=USE_DOCKER,
                 )
                 break
@@ -1132,7 +1134,7 @@ def work(
         fwrite_output.flush()
 
     # delete files
-    existing_code_files = os.listdir(f"{model_dir}/p{task_id}")
+    existing_code_files = os.listdir(Path(log_path).parent.as_posix())
     for existing_code_file in existing_code_files:
         if existing_code_file.endswith(".sp"):
             os.remove(f"{model_dir}/p{task_id}/{existing_code_file}")
@@ -1141,20 +1143,21 @@ def work(
             os.remove(f"{model_dir}/p{task_id}/{existing_code_file}")
             print("remove file: ", existing_code_file)
 
-    if os.path.exists(f"{model_dir}/p{task_id}/{it}"):
-        existing_code_files = os.listdir(f"{model_dir}/p{task_id}/{it}")
+    if os.path.exists(log_path):
+        existing_code_files = os.listdir(log_path)
         for existing_code_file in existing_code_files:
             if os.path.isfile(f"{model_dir}/p{task_id}/{it}/{existing_code_file}"):
                 with contextlib.suppress(Exception):
                     os.remove(f"{model_dir}/p{task_id}/{it}/{existing_code_file}")
                 print("remove file: ", existing_code_file)
 
+    # 這裡是拿第一段代碼 送進去 check，第二次的completion 會帶有check的結果，如果有錯他會繼續在這個迴圈內解決 (retry)
     while code_id < args.num_of_retry:
         messages.append({"role": "assistant", "content": answer})
 
-        if not os.path.exists(f"{model_dir}/p{task_id}/{it}"):
+        if not os.path.exists(log_path):
             with contextlib.suppress(Exception):
-                os.mkdir(f"{model_dir}/p{task_id}/{it}")
+                os.mkdir(log_path)
 
         code_path = f"{model_dir}/p{task_id}/{it}/p{task_id}_{it}_{code_id}.py"
         if args.ngspice:
@@ -1465,7 +1468,7 @@ def work(
                         model=args.model,
                         messages=messages,
                         mode=MULTI_AGENT_MODE,
-                        work_dir=f"{model_dir}/p{task_id}/{it}",
+                        work_dir=log_path,
                         use_docker=USE_DOCKER,
                     )
                     break

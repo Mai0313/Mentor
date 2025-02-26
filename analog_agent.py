@@ -302,6 +302,9 @@ class AnalogAgent(BaseModel):
                 *list(recipient.executor.chat_messages.values()),
                 *list(recipient.assistant.chat_messages.values()),
             ])
+            console.print(recipient.assistant.get_total_usage())
+            console.print(recipient.assistant.get_actual_usage())
+            recipient.assistant.print_usage_summary()
 
         message_with_codes: list[CodeBlock] = []
         # for messages_list in all_histories:
@@ -534,7 +537,7 @@ class AnalogAgent(BaseModel):
         nested_config = {
             "autobuild_init_config": {
                 "config_file_or_env": "./configs/OAI_CONFIG_LIST",
-                "builder_model": "aide-o3-mini",
+                "builder_model": model,  # "aide-o3-mini",
                 "agent_model": model,
                 "max_agents": 10,
             },
