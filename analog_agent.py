@@ -1,5 +1,5 @@
 import os
-from typing import Any, Literal
+from typing import Any, Literal, Optional
 from pathlib import Path
 import datetime
 
@@ -157,6 +157,15 @@ def convert2markdown(path: str) -> list[dict[str, str]]:
     return markdown_docs
 
 
+class AutogenUsage(BaseModel):
+    cost: Optional[float] = Field(default=0.0, title="Cost of the API call")
+    prompt_tokens: Optional[int] = Field(default=0, title="Number of tokens in the prompt")
+    completion_tokens: Optional[int] = Field(default=0, title="Number of tokens in the completion")
+    total_tokens: Optional[int] = Field(
+        default=0, title="Total number of tokens in the prompt and completion"
+    )
+
+
 class ChatResultConverter(BaseModel):
     chat_result: ChatResult = Field(
         ...,
@@ -169,6 +178,13 @@ class ChatResultConverter(BaseModel):
         default=None,
         title="Chat Result Override",
         description="The real result from the groupchat or captain agent may not contain within the chat_result, so you can override the chat_result with this field by retrieving the messages from the assistant within the groups.",
+        frozen=False,
+        deprecated=False,
+    )
+    usage_data_override: dict[str, Any] | None = Field(
+        default=None,
+        title="Usage Data Override",
+        description="The usage data may not contain within the chat_result, so you can override the usage data with this field.",
         frozen=False,
         deprecated=False,
     )
@@ -203,20 +219,25 @@ class ChatResultConverter(BaseModel):
     @computed_field
     @property
     def usage(self) -> CompletionUsage:
-        cost_dict = self.chat_result.cost["usage_including_cached_inference"]
-        if cost_dict:
-            for value in cost_dict.values():
+        usage_data = AutogenUsage()
+
+        if self.usage_data_override:
+            for value in self.usage_data_override.values():
                 if isinstance(value, dict):
-                    completion_tokens = value.get("completion_tokens", 0)
-                    prompt_tokens = value.get("prompt_tokens", 0)
-                    total_tokens = value.get("total_tokens", 0)
-                    result = CompletionUsage(
-                        completion_tokens=completion_tokens,
-                        prompt_tokens=prompt_tokens,
-                        total_tokens=total_tokens,
-                    )
-                    return result
-        return CompletionUsage(completion_tokens=0, prompt_tokens=0, total_tokens=0)
+                    usage_data = AutogenUsage(**value)
+        else:
+            cost_dict = self.chat_result.cost.get("usage_including_cached_inference")
+            if cost_dict:
+                for value in cost_dict.values():
+                    if isinstance(value, dict):
+                        usage_data = AutogenUsage(**value)
+
+        usage = CompletionUsage(
+            completion_tokens=usage_data.completion_tokens,
+            prompt_tokens=usage_data.prompt_tokens,
+            total_tokens=usage_data.total_tokens,
+        )
+        return usage
 
     @computed_field
     @property
@@ -243,7 +264,6 @@ class ChatResultConverter(BaseModel):
         return choices
 
     def convert_to_chat_completion(self) -> ChatCompletion:
-        # try:
         chat_completion_result = ChatCompletion(
             id="1",
             choices=self.choices,
@@ -252,8 +272,6 @@ class ChatResultConverter(BaseModel):
             object="chat.completion",
             usage=self.usage,
         )
-        # except Exception:
-        #     console.print(f"Failed to convert to ChatCompletion:\n{self.chat_result}")
         return chat_completion_result
 
 
@@ -293,21 +311,16 @@ class AnalogAgent(BaseModel):
         recipient: CaptainAgent | autogen.ConversableAgent,
         summary_args: dict[str, Any],
     ) -> str:
-        all_histories = [
-            *list(sender.chat_messages.values()),
-            *list(recipient.chat_messages.values()),
-        ]
+        sender_messages = list(sender.chat_messages.values())[-1]
+        recipient_messages = list(recipient.chat_messages.values())[-1]
+        messages = [*sender_messages, *recipient_messages]
         if isinstance(recipient, CaptainAgent):
-            all_histories.extend([
-                *list(recipient.executor.chat_messages.values()),
-                *list(recipient.assistant.chat_messages.values()),
-            ])
-            console.print(recipient.assistant.get_total_usage())
-            console.print(recipient.assistant.get_actual_usage())
-            recipient.assistant.print_usage_summary()
+            executor_messages = list(recipient.executor.chat_messages.values())[-1]
+            assistant_messages = list(recipient.assistant.chat_messages.values())[-1]
+            messages.extend([*executor_messages, *assistant_messages])
 
         message_with_codes: list[CodeBlock] = []
-        # for messages_list in all_histories:
+        # for messages_list in messages:
         #     for message in messages_list:
         #         message_content = message.get("content")
         #         if message_content is None:
@@ -342,7 +355,7 @@ class AnalogAgent(BaseModel):
             model = OpenAIModel(model_name="aide-gpt-4o", openai_client=client)
             agent = Agent(model=model, result_type=CodeBlock)
             response = agent.run_sync(
-                user_prompt=f"{all_histories}\nPlease extract the final result code block from the content. The output should be a python code block only."
+                user_prompt=f"{messages}\nPlease extract the final result code block from the content. The output should be a python code block only."
             )
             if response.data:
                 last_message = response.data.code_in_markdown
@@ -379,7 +392,9 @@ class AnalogAgent(BaseModel):
             api_version=llm_config["config_list"][0]["api_version"],
             http_client=httpx.Client(headers=llm_config["config_list"][0]["default_headers"]),
         )
-        result = client.chat.completions.create(messages=messages, model=model, temperature=0.5)
+        result = client.chat.completions.create(
+            messages=messages, model=model, temperature=llm_config["temperature"]
+        )
         return result
 
     def use_groupchat(
@@ -538,7 +553,7 @@ class AnalogAgent(BaseModel):
             },
             "autobuild_build_config": {
                 "default_llm_config": {
-                    "temperature": 0.5,
+                    "temperature": llm_config["temperature"],
                     "top_p": 0.95,
                     "max_tokens": 2048,
                     "cache_seed": llm_config.get("cache_seed"),
@@ -556,9 +571,9 @@ class AnalogAgent(BaseModel):
             #     "tool_root": "tools",
             #     "retriever": "all-mpnet-base-v2"
             # },
-            "group_chat_config": {"max_round": 10},
+            "group_chat_config": {"max_round": 30},
             "group_chat_llm_config": None,
-            "max_turns": 5,
+            "max_turns": 10,
         }
 
         captain_user_proxy = UserProxyAgent(
@@ -577,7 +592,7 @@ class AnalogAgent(BaseModel):
                 "last_n_messages": 1,
                 "use_docker": self.use_docker,
             },
-            agent_config_save_path=work_dir,
+            agent_config_save_path=Path(work_dir).parent.absolute().as_posix(),
             nested_config=nested_config,
             # tool_lib="./tools",
             # is_termination_msg=lambda x: "TERMINATE" in x.get("content"),
@@ -592,12 +607,17 @@ class AnalogAgent(BaseModel):
             messages.append({"role": "user", "content": "All Docs is in ./docs"})
         chat_result = captain_user_proxy.initiate_chat(
             captain_agent,
-            message=f"{messages}\nPlease just seek_experts_help.",
+            message=f"{messages}\nPlease just seek_experts_help\nMake sure the code should not have singular matrix issue.",
             max_turns=1,
             summary_method=self._summary_method,
             cache=cache,
         )
-        converter = ChatResultConverter(chat_result=chat_result)
+        # console.print(captain_agent.executor.build_history)
+        captain_agent.assistant.print_usage_summary(mode="total")
+        usage_data_override = captain_agent.assistant.get_total_usage()
+        converter = ChatResultConverter(
+            chat_result=chat_result, usage_data_override=usage_data_override
+        )
         result = converter.convert_to_chat_completion()
         return result
 

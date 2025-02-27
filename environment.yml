@@ -96,6 +96,7 @@ dependencies:
       - fastapi==0.115.8
       - fastavro==1.10.0
       - filelock==3.17.0
+      - fire==0.7.0
       - flatbuffers==25.2.10
       - fonttools==4.56.0
       - fsspec==2025.2.0
@@ -209,6 +210,7 @@ dependencies:
       - pysqlite3-binary==0.5.4
       - python-dateutil==2.9.0.post0
       - python-dotenv==1.0.1
+      - python-graphviz==0.20.3
       - python-pptx==1.0.2
       - pytz==2025.1
       - pyyaml==6.0.2
@@ -218,6 +220,7 @@ dependencies:
       - rich==13.9.4
       - rsa==4.9
       - safetensors==0.5.2
+      - schemdraw==0.19
       - scikit-learn==1.6.1
       - scipy==1.15.2
       - sentence-transformers==3.4.1

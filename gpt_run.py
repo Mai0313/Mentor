@@ -1035,6 +1035,20 @@ def work(
     ]
     retry_quota = 0
 
+    problem_check_file = Path(f"problem_check/{task_type}.py")
+    if not args.ngspice and problem_check_file.exists():
+        # shutil.copy(problem_check_file.as_posix(), log_path)
+        problem_check_file.read_text()
+        # file_content = file_content.replace("sys.exit(2)", "pass")
+        # file_content = file_content.replace("sys.exit(0)", "pass")
+        # file_content = file_content.replace("print(", "raise ValueError(")
+        figpath = f"{model_dir}/p{task_id}/{it}/p{task_id}_{it}_figure"
+        messages.append({
+            "role": "user",
+            "content": f"Save the fig into this {figpath}",
+            # "content": f"Remember to use {file_content} in the end of your PySpice code for checking, once the plot is generated, the code is correct; you can ignore rest of error.",
+        })
+
     if money_quota < 0:
         flog.write(f"Money quota is used up. Exceed quota: {money_quota}\n")
         return money_quota
@@ -1106,6 +1120,12 @@ def work(
     if args.ngspice and ".end" in raw_code:
         raw_code = raw_code.replace(".end", "")
 
+    ##################################################################################################
+    # 原作者認為這段不會影響到 LLM評分 與 PySpice code的正確性，所以我們可以在下面直接跳過這一段
+    # 但這段不能直接註解掉，因為後面的code會用到這一段的變數，改動方法是在後面加上 `code = raw_code`
+    # 應該是偏向 future work 的部分
+    # ref: https://github.com/laiyao1/AnalogCoder/issues/5
+    # 備註：此篇回答可能有一點不明確 所以 Wei 和 Peter 有透過微信的群組詢問過作者本人 確認他的意思
     code_id = 0
     if not args.ngspice:
         if task_type not in complex_task_type:
@@ -1129,6 +1149,10 @@ def work(
                 code = "import math\n" + code
     else:
         code = raw_code
+
+    # 重新 assign code 變數
+    code = raw_code
+    ##################################################################################################
 
     with open(f"{model_dir}/p{task_id}/p{task_id}_{it}_input.txt", "w") as fwrite_input:
         fwrite_input.write(prompt)
