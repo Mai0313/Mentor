@@ -26,3 +26,23 @@ conda env update -f environment.yml
 ```bash
 conda env export -f environment.yml
 ```
+
+### How to run
+
+- 執行 第 1 到 24題
+
+```bash
+./run.sh 1 24
+```
+
+- 執行 第 5, 7, 10 題
+
+```bash
+./run.sh 5 7 10
+```
+
+- 執行 第5題
+
+```bash
+./run.sh 5
+```
