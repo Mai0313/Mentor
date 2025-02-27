@@ -1038,12 +1038,12 @@ def work(
     problem_check_file = Path(f"problem_check/{task_type}.py")
     if not args.ngspice and problem_check_file.exists():
         # shutil.copy(problem_check_file.as_posix(), log_path)
-        problem_check_file.read_text()
+        # file_content = problem_check_file.read_text()
         # file_content = file_content.replace("sys.exit(2)", "pass")
         # file_content = file_content.replace("sys.exit(0)", "pass")
         # file_content = file_content.replace("print(", "raise ValueError(")
         messages.append(
-            {"role": "user", "content": f"Save the fig into this path {log_path}"}
+            {"role": "user", "content": f"Remember to save the fig under {log_path}."}
             # {
             #     "role": "user",
             #     "content": f"Remember to use {file_content} in the end of your PySpice code for checking, once the plot is generated, the code is correct; you can ignore rest of error.",
