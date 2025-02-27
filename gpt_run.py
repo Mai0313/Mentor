@@ -14,6 +14,8 @@ import openai
 from openai import AzureOpenAI
 import pandas as pd
 from analog_agent import get_chat_completion
+from rich.console import Console
+from rich.markdown import Markdown
 from autogen.oai.openai_utils import OAI_PRICE1K
 from openai.types.chat.chat_completion import ChatCompletion
 
@@ -49,7 +51,7 @@ USE_DOCKER: Literal["mtkomcr.mediatek.inc/srv-aith/mtkllm-sdk-analog", False] = 
 )
 
 args = parser.parse_args()
-
+console = Console()
 opensource_models = [
     "mistral",
     "wizardcoder",
@@ -141,7 +143,8 @@ def extract_code(generated_content: str) -> tuple[int, str]:
     first_match = next(matches, None)
     try:
         code = first_match.group(1)
-        print(f"code\n{code}")
+        console.print("Extracted Code:")
+        console.print(Markdown(f"```python\n{code}```"))
         code = "\n".join([line for line in code.split("\n") if len(line.strip()) > 0])
     except:
         code = ""
@@ -1682,4 +1685,6 @@ def main():
 
 
 if __name__ == "__main__":
+    console.print(f"Executing Task ID: {args.task_id}\n")
+    console.print(args.__dict__)
     main()
