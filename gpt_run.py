@@ -40,7 +40,8 @@ parser.add_argument("--retrieval", action="store_true", default=True)
 parser.add_argument("--api_key", type=str)
 
 MULTI_AGENT_MODE: Literal["original", "captain", "captain+rag", "groupchat", "groupchat+rag"] = (
-    "captain"
+    # "captain",
+    "groupchat+rag"
 )
 USE_DOCKER: Literal["mtkomcr.mediatek.inc/srv-aith/mtkllm-sdk-analog", False] = (
     False  # "mtkomcr.mediatek.inc/srv-aith/mtkllm-sdk-analog"
@@ -68,6 +69,7 @@ complex_task_type = [
     "Adder",
     "Subtractor",
     "Schmitt",
+    "None"
 ]
 bias_usage = """Due to the operational range of the op-amp being 0 to 5V, please connect the nodes that were originally grounded to a 2.5V DC power source.
 Please increase the gain as much as possible to maintain oscillation.

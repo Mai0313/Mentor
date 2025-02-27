@@ -62,6 +62,7 @@ def retrieve_data(query: str) -> str:
         >>> query = "What is the Product Version of Bandgap Reference Verification"
         >>> retrieved_result = retrieve_data(query=query)
     """
+    print('>>>>>>>>>>>> Hi Hi the retrieve data is called😍😍😍😍😍😍😍😍😍😍😍😍😍😍😍😍😍😍😍😍😍😍😍😍😍😍😍😍😍😍😍😍😍😍😍😍😍😍')
     docs_path = Path("./docs").glob("**/*.*")
     subcircuit_lib = Path("./subcircuit_lib").glob("**/*.*")
     all_docs = [*docs_path, *subcircuit_lib]
@@ -141,7 +142,7 @@ def convert2markdown(path: str) -> list[dict[str, str]]:
         api_key="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJBSURFIiwic3ViIjoiQUlERV9HQUlTRiIsImF1ZCI6WyJBSURFIl0sImlhdCI6MTY3ODg0NjkwNiwianRpIjoiZjdiYWVmMDItNzljYy00YTY3LTg5MWItYWIxOWM2MjBkY2MxIn0.0Sfk0QgU5RntmaIM0ALrOuk109dvQQttaigot8TPZZc",
         azure_endpoint="https://mlop-azure-gateway.mediatek.inc",
         api_version="2024-08-01-preview",
-        http_client=httpx.Client(verify=False, headers={"X-User-Id": "srv_dvc_tma001"}),
+        http_client=httpx.Client(verify=False, headers={"X-User-Id": "DS906659"}),
     )
     md = MarkItDown(llm_client=client, llm_model="aide-gpt-4o")
     markdown_docs: list[dict[str, str]] = []
@@ -380,7 +381,7 @@ class AnalogAgent(BaseModel):
         #     http_client=httpx.Client(headers=llm_config["config_list"][0]["default_headers"]),
         # )
         client = AzureOpenAI(
-            api_key="hihi",
+            api_key="hihi@DS906659",
             azure_endpoint="https://tma.mediatek.inc/tma/sdk/api/v1",
             api_version="2024-08-01-preview",
         )
@@ -480,7 +481,7 @@ class AnalogAgent(BaseModel):
         #     is_termination_msg=lambda x: "TERMINATE" in x.get("content"),
         # )
         proxies = [pi_agent]
-        agents = [circuit_agent, cos_agent, testbench_agent]
+        agents = [circuit_agent, testbench_agent]
         if use_rag is True:
             # autogen.agentchat.register_function(
             #     f=retrieve_data,
@@ -491,7 +492,8 @@ class AnalogAgent(BaseModel):
             # )
             for agent in agents:
                 d_retrieve_content = agent.register_for_llm(
-                    description="retrieve the information you need or if you have any question, you can use this function to get the answer.",
+                    description="retrieve the information whenever you need to design a circuit, query the question about the current design step.",
+                    # description="You must call this function first.",
                     api_style="tool",
                 )(retrieve_data)
 
@@ -509,7 +511,7 @@ class AnalogAgent(BaseModel):
         # Start chatting with boss_aid as this is the user proxy agent.
         chat_result = pi_agent.initiate_chat(
             recipient=manager,
-            message=f"{messages}, the final answer must contain a PySpice Code in Python.",
+            message=f"{messages}. Please help me design the circuit mentioned above. You must think the necessary steps at first and then tell all the steps you will do. Call retrieve_data for each step except steps about writing PySpice code. The final answer must contain a PySpice Code in Python.",
             summary_method=self._summary_method,
         )
         converter = ChatResultConverter(chat_result=chat_result)

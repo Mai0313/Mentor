@@ -3,7 +3,7 @@
 #### Setup Manually
 
 ```bash
-conda create -n analog python=3.10 -y
+conda create -n analog python=3.10.16 -y
 conda activate analog
 conda install -c conda-forge ngspice=32 uv -y
 uv pip install -r pyproject.toml
