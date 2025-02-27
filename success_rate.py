@@ -2,130 +2,143 @@ import re
 from pathlib import Path
 from collections import defaultdict
 
-import httpx
-from openai import AzureOpenAI
 from rich.table import Table
 from rich.console import Console
 
+# Error 訊息與記錄鍵值的對應
+ERRORS = [
+    ("dc sweep error", "dc_sweep_error", "DC Sweep Error Rate"),
+    ("empty code error", "empty_code_error", "Empty Code Error Rate"),
+    ("simulation error", "simulation_error", "Simulation Error Rate"),
+    ("execution error", "execution_error", "Execution Error Rate"),
+    ("mosfet connection error", "mosfet_error", "Mosfet Connection Error Rate"),
+    ("function error", "function_error", "Function Error Rate"),
+]
 
-def parse_logs_in_folder(
-    folder_path: str = "./logs", num_per_task: int = 5, llm_comment: bool = False
+
+def process_log_file(file_path: Path) -> dict:
+    """分析單個 log 檔案，回傳一個字典，記錄 code 成功次數與各種 error 的計數。"""
+    counters = {
+        "pass1": 0,
+        "pass5": 0,
+        "total": 0,
+        "dc_sweep_error": 0,
+        "empty_code_error": 0,
+        "simulation_error": 0,
+        "execution_error": 0,
+        "mosfet_error": 0,
+        "function_error": 0,
+    }
+    with file_path.open(encoding="utf-8") as f:
+        for line in f:
+            # code_id:0 reports success
+            if "code_id:0	success." in line:
+                counters["pass1"] += 1
+                counters["pass5"] += 1
+                counters["total"] += 1
+            # 其他 code_id 如果報 success，只統計 pass@5
+            elif "success." in line:
+                counters["pass5"] += 1
+                counters["total"] += 1
+            else:
+                # 依序檢查錯誤訊息
+                for err_message, err_key, _ in ERRORS:
+                    if err_message in line:
+                        counters[err_key] += 1
+                        counters["total"] += 1
+                        break  # 一行內只符合一種錯誤，故 break
+    return counters
+
+
+def display_model_scores(
+    console: Console, model_name: str, scores: list, folder_path: str, num_per_task: int
 ) -> None:
-    """This function reads all '.txt' log files in the specified folder and parses
-    them to calculate.
-
-    1) pass@1 count: count how many times code_id:0 reports "success."
-    2) pass@5 count: count how many times any code_id from 0 to 4 reports "success."
-
-    The log filenames follow the structure <datetime>_<model_name>_<problem number>_log.txt.
-    For each problem, the function assumes there are 5 iterations (it: 0..4). The final rates are calculated by dividing these counts by total_iterations (which is set to 5).
-
-    Args:
-        folder_path (str): The path to the folder containing the log files. Defaults to "./logs".
-        num_per_task (int): The number of iterations per task. Defaults to 5.
-        llm_comment (bool): Whether to use LLM to comment on the results. Defaults to False.
-
-    Returns:
-        None: This function prints each model's success rates in separate Rich tables.
+    """依據傳入的 scores 列表 (每個元素為字典，包含 problem_number 與各項計數)
+    組成一個 Rich Table 並輸出。
     """
-    # Initialize Rich console
-    console = Console()
-
-    # Dictionary to store scores for each model
-    model_scores = defaultdict(list)
-
-    # Init AzureOpenAI
-    client = AzureOpenAI(
-        api_key="hihi@srv_it_eas1_tester",
-        azure_endpoint="https://tma.mediatek.inc/tma/sdk/api/v1",
-        api_version="2024-08-01-preview",
-        http_client=httpx.Client(verify=False, headers={"X-User-Id": "srv_dvc_tma001"}),
+    table = Table(
+        title=f"{model_name} Success Rates from [bold green]{folder_path}[/bold green]",
+        show_header=True,
+        header_style="bold blue",
     )
+    # 設定表格欄位
+    table.add_column("Task ID", justify="right")
+    table.add_column("pass@1 Rate", justify="right")
+    table.add_column("pass@5 Rate", justify="right")
+    for _, _, col_title in ERRORS:
+        table.add_column(col_title, justify="right")
+    table.add_column("Error Found", justify="right")
 
-    # Regex to identify <datetime>_<model_name>_<problem number>_log.txt
-    filename_pattern = re.compile(r"^.*_(.+?)_(\d+)_log\.txt$")
+    # 對各個問題依 problem_number 排序
+    for score in sorted(scores, key=lambda x: x["problem_number"]):
+        total = score["total"] if score["total"] > 0 else 1  # 避免除 0
 
+        pass1_rate = score["pass1"] / num_per_task
+        pass5_rate = score["pass5"] / num_per_task
+
+        # 若有缺少 round，顯示缺失回合數；否則顯示 Pass
+        if score["pass1"] != num_per_task and score["pass5"] != num_per_task:
+            error_comment = f"Missing {num_per_task - score['pass5']} rounds"
+        else:
+            error_comment = "Pass"
+
+        # 設定顏色：
+        # 注意：原始邏輯中 pass@1 rate 與 pass@5 rate 用不同的顏色標示
+        pass1_color = "yellow" if pass1_rate < 0.5 else "green"
+        pass5_color = "red" if pass5_rate < 0.5 else "green"
+        error_comment_color = "red" if error_comment != "Pass" else "green"
+
+        # 格式化率顯示百分比
+        row = [
+            str(score["problem_number"]),
+            f"[{pass1_color}]{pass1_rate * 100:.2f}%[/{pass1_color}]",
+            f"[{pass5_color}]{pass5_rate * 100:.2f}%[/{pass5_color}]",
+        ]
+        # 處理各種 error 的 rate (若 error count > 0 用 yellow 否則用 green)
+        for _, err_key, _ in ERRORS:
+            err_rate = score[err_key] / total
+            err_color = "yellow" if err_rate > 0.0 else "green"
+            row.append(f"[{err_color}]{err_rate * 100:.2f}%[/{err_color}]")
+
+        row.append(f"[{error_comment_color}]{error_comment}[/{error_comment_color}]")
+        table.add_row(*row)
+
+    console.print(table)
     console.print("\n")
 
-    # Traverse the folder to parse any '.txt' files matching our pattern
-    log_files = Path(folder_path).rglob("*.txt")
-    for file_path in log_files:
-        file_content = file_path.read_text()
-        short_comment = ""
-        if llm_comment is True:
-            response = client.chat.completions.create(
-                messages=[
-                    {
-                        "role": "user",
-                        "content": f"Here is the experiment log content for LLM evaluation\n{file_content}",
-                    },
-                    {
-                        "role": "user",
-                        "content": "Please give a one line comment for this result. What are the root causes of the errors it might be.",
-                    },
-                ],
-                model="aide-gpt-4o",
-            )
-            short_comment = response.choices[0].message.content
+
+def parse_logs_in_folder(folder_path: str = "./logs", num_per_task: int = 5) -> None:
+    """讀取指定資料夾下的所有 .txt log 檔，並依據檔名格式 <datetime>_<model_name>_<problem number>_log.txt解析 log 內容
+    計算包含：
+        1) pass@1: 計算 code_id:0 的成功次數
+        2) pass@5: 計算任意 code_id (0-4) 的成功次數
+    最後以 Rich table 輸出各個 model 的成功率與錯誤率。
+    """
+    console = Console()
+    console.print("\n")
+
+    # 用 defaultdict 儲存不同 model 的分數資料 (list 每個元素為一個 dict)
+    model_scores = defaultdict(list)
+    # 檔名規則: <datetime>_<model_name>_<problem number>_log.txt
+    filename_pattern = re.compile(r"^.*_(.+?)_(\d+)_log\.txt$")
+
+    # 遍歷資料夾中所有 .txt 檔案
+    for file_path in Path(folder_path).rglob("*.txt"):
         match = filename_pattern.match(file_path.name)
         if not match:
             continue
 
         model_name = match.group(1)
         problem_number = int(match.group(2))
-        with open(file_path, encoding="utf-8") as f:
-            pass1, pass5 = 0, 0
-            for line in f:
-                if "code_id:0	success." in line:
-                    pass1 += 1
-                    pass5 += 1
-                elif "success." in line:
-                    pass5 += 1
-            model_scores[model_name].append([problem_number, pass1, pass5, short_comment])
 
-    # Create and print tables for each model
+        counters = process_log_file(file_path)
+        counters["problem_number"] = problem_number
+
+        model_scores[model_name].append(counters)
+
+    # 根據 model 分別顯示結果
     for model_name, scores in model_scores.items():
-        # Create a Rich table for the current model
-        table = Table(
-            title=f"{model_name} Success Rates from [bold green]{folder_path}[/bold green]",
-            show_header=True,
-            header_style="bold blue",
-        )
-        table.add_column("Problem Number", justify="right")
-        table.add_column("pass@1 Rate", justify="right")
-        table.add_column("pass@5 Rate", justify="right")
-        table.add_column("Short Comment by LLM", justify="right")
-
-        # Add rows to the table
-        for score in sorted(scores, key=lambda x: x[0]):
-            problem_number = score[0]
-            pass1_rate = score[1] / num_per_task
-            pass5_rate = score[2] / num_per_task
-            short_comment = score[3]
-
-            # table.add_row(
-            #     str(problem_number), f"{pass1_rate * 100:.2f}%", f"{pass5_rate * 100:.2f}%"
-            # )
-            # Add rows with color;
-            # color rules:
-            # 1. pass@1 rate < 0.5: red
-            # 2. pass@5 rate < 0.5: yellow
-            # 3. pass@1 rate >= 0.5 and pass@5 rate >= 0.5: green
-            pass1_color = "yellow" if pass1_rate < 0.5 else "green"
-            pass5_color = "red" if pass5_rate < 0.5 else "green"
-
-            # Add rows with color
-            table.add_row(
-                str(problem_number),
-                f"[{pass1_color}]{pass1_rate * 100:.2f}%[/{pass1_color}]",
-                f"[{pass5_color}]{pass5_rate * 100:.2f}%[/{pass5_color}]",
-                short_comment,
-            )
-
-        # Print the table using Rich console
-        console.print(table)
-        # Add a newline between tables
-        console.print("\n")
+        display_model_scores(console, model_name, scores, folder_path, num_per_task)
 
 
 if __name__ == "__main__":
