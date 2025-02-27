@@ -1042,12 +1042,13 @@ def work(
         # file_content = file_content.replace("sys.exit(2)", "pass")
         # file_content = file_content.replace("sys.exit(0)", "pass")
         # file_content = file_content.replace("print(", "raise ValueError(")
-        figpath = f"{model_dir}/p{task_id}/{it}/p{task_id}_{it}_figure"
-        messages.append({
-            "role": "user",
-            "content": f"Save the fig into this {figpath}",
-            # "content": f"Remember to use {file_content} in the end of your PySpice code for checking, once the plot is generated, the code is correct; you can ignore rest of error.",
-        })
+        messages.append(
+            {"role": "user", "content": f"Save the fig into this path {log_path}"}
+            # {
+            #     "role": "user",
+            #     "content": f"Remember to use {file_content} in the end of your PySpice code for checking, once the plot is generated, the code is correct; you can ignore rest of error.",
+            # },
+        )
 
     if money_quota < 0:
         flog.write(f"Money quota is used up. Exceed quota: {money_quota}\n")
