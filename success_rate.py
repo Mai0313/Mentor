@@ -120,7 +120,9 @@ def parse_logs_in_folder(folder_path: str = "./logs", num_per_task: int = 5) -> 
     # 用 defaultdict 儲存不同 model 的分數資料 (list 每個元素為一個 dict)
     model_scores = defaultdict(list)
     # 檔名規則: <datetime>_<model_name>_<problem number>_log.txt
-    filename_pattern = re.compile(r"^.*_(.+?)_(\d+)_log\.txt$")
+    # filename_pattern = re.compile(r"^.*(.+?)(\d+)_log(?:_no_skill)?")
+    # 檔名規則: <datetime>_<model_name>_<problem number>_log.txt 或 _no_skill
+    filename_pattern = re.compile(r"^(?:.*?)(.+?)(\d+)_log(?:_no_skill)?")
 
     # 遍歷資料夾中所有 .txt 檔案
     for file_path in Path(folder_path).rglob("*.txt"):
