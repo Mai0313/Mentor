@@ -484,7 +484,7 @@ class AnalogAgent(BaseModel):
             for proxy in proxies:
                 proxy.register_for_execution()(d_retrieve_content)
         groupchat = autogen.GroupChat(
-            agents=[*proxies, executor, *agents],
+            agents=[*proxies, *agents, executor],
             messages=[],
             max_round=12,
             speaker_selection_method="auto",
