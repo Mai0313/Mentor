@@ -44,7 +44,7 @@ parser.add_argument("--retrieval", action="store_true", default=True)
 parser.add_argument("--api_key", type=str)
 
 MULTI_AGENT_MODE: Literal["original", "captain", "captain+rag", "groupchat", "groupchat+rag"] = (
-    "groupchat+rag"
+    "groupchat"
 )
 USE_DOCKER: Literal["mtkomcr.mediatek.inc/srv-aith/mtkllm-sdk-analog", False] = (
     False  # "mtkomcr.mediatek.inc/srv-aith/mtkllm-sdk-analog"

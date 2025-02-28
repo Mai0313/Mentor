@@ -402,17 +402,17 @@ class AnalogAgent(BaseModel):
     ) -> ChatCompletion:
         llm_config = get_config_dict(model=model)
         self._get_cache(llm_config=llm_config)
-        pi_agent = autogen.ConversableAgent(
-            name="PIAgent",
-            system_message="""You are an experience manager focusing on RF/Analog circuit design, can you help me design a circuit with the following spec?
-            - Design a circuit with the Spec you received.
-            - What could be the name of this circuit?
-            - What relevant documents you have to guide a designer to design this circuit?
-            The output should be:
-            Find corresponding papers or RAK files from dataset or online search
-            Key idea: Find required documents for RF engineers
-            RAK: Rapid Adoption Kits
-            """,
+        groupchat_proxy = UserProxyAgent(
+            name="groupchat_proxy",
+            # llm_config=llm_config,
+            human_input_mode="NEVER",
+            code_execution_config=False,
+            # system_message="Make sure the final answer contains the PySpice Code.",
+        )
+        pi_agent = autogen.AssistantAgent(
+            name="Analog_PLL_Expert",
+            system_message="## Your role  \nAnalog_PLL_Expert is a seasoned analog integrated circuits specialist with a focus on designing advanced phase-locked loops (PLLs). In addition to expertise in analog circuit design, they possess strong Python programming skills and are proficient in using PySpice for accurate and robust simulation of analog circuits.\n\n## Task and skill instructions  \n- Task description: The expert is responsible for designing high-performance PLLs and employing simulation tools to verify the design integrity. This includes running comprehensive simulations to detect issues such as singular matrices, ensuring that the circuit designs work as intended under various operating conditions.  \n- Skill description: The expert has in-depth knowledge of analog integrated circuit design, particularly in developing phase-locked loop systems. In parallel, they are skilled in Python programming and have extensive experience using PySpice for circuit simulation. This dual expertise ensures that designs are not only theoretically sound but are also rigorously tested and validated through simulation, addressing potential pitfalls before fabrication.  \n- Additional information: Their work meticulously bridges the gap between circuit design and simulation verification, ensuring that every component of the design process is thoroughly checked for errors or issues, culminating in reliable, high-quality analog systems.",
+            description="Analog_PLL_Expert is a highly skilled analog circuit designer specializing in high-performance PLLs who expertly uses Python and PySpice for rigorous simulation and verification to ensure reliable, error-free designs.",
             is_termination_msg=lambda msg: "TERMINATE" in msg["content"],
             max_consecutive_auto_reply=1,
             human_input_mode="NEVER",
@@ -426,17 +426,10 @@ class AnalogAgent(BaseModel):
             code_execution_config={"use_docker": self.use_docker, "work_dir": work_dir},
         )
         circuit_agent = autogen.AssistantAgent(
-            name="CircuitAgent",
+            name="Python_Expert",
             description="Circuit Agent is a junior engineer who helps the PI Agent to design the circuit.",
-            system_message="""
-            Example Prompt: You are an experienced [circuit name] designers, please use the [docs name], and help me design a [circuit name]. It needs to follow the spec as below: xxxxxxxxx.
-            Please output the PySpice code of this circuit.
-            You have access to an [offline library name].
-            If you find subcircuits that already be built, you can ask the corresponding agent using [xxx].
-            If you find any problems when you are designing the circuit, please contact PI for further classification.
-            The output should be:
-            Circuit PySpice code
-            """,
+            system_message="## Your role\nPython_Expert is an analog integrated circuits specialist with a strong background in designing phase-locked loops (PLLs). In addition, they are a proficient Python programmer, skilled in using PySpice to simulate analog circuits, ensuring that every design detail is meticulously verified and validated.\n\n## Task and skill instructions\n- Task: Design and simulate PLL-based analog integrated circuits, ensuring robust performance and reliability in real-world applications.\n- Skill: Utilize Python and PySpice to accurately simulate analog circuits, identify and troubleshoot issues such as singular matrices, and verify the integrity of both design and simulation processes.\n- Additional Information: Apply thorough validation techniques to cross-check circuit designs against simulations, ensuring consistency and preventing critical issues before physical implementation.",
+            description="Python_Expert is an analog IC specialist who designs PLLs and leverages Python with PySpice to simulate, troubleshoot, and meticulously validate circuit performance for reliable real-world applications.",
             is_termination_msg=lambda msg: "TERMINATE" in msg["content"],
             max_consecutive_auto_reply=1,
             human_input_mode="NEVER",
@@ -444,39 +437,23 @@ class AnalogAgent(BaseModel):
             llm_config=llm_config,
         )
         testbench_agent = autogen.AssistantAgent(
-            name="assistant",
-            description="Testbench Agent is a junior engineer who helps the PI Agent to design the testbench.",
-            system_message="""
-            Example prompt: You are an experience RF/Analog circuit validation engineer.
-            You are required to validate a circuit with following spec: xxxxx.
-            The attached files are its relevant papers.
-            Can you write a python code to simulate this circuit and validate if it satisfy the spec?
-            The PySpice code is written as below.
-            Please confirm that your implementation simulation is correct.
-            Does this circuit have any problem in its PySpice code?
-            If the implementation limit has reached, output messages to human engineers.
-            If it's correct, output the final result in SPICE version.
-            If not, output the error messages back to the circuit agent. And rerun the process, implementation limit+1.
-            The output should be:
-            If circuit implementation is correct or reach limited tries:
-            SPICE code
-            If not:
-            Error messages
-            """,
+            name="Verification_Expert",
+            description="Verification_Expert is an experienced analog circuit specialist who designs and simulates high-performance phase-locked loops using advanced analog techniques and Python-based PySpice, rigorously verifying every design step to enhance system performance and reliability.",
+            system_message="## Your role\nVerification_Expert is a seasoned analog integrated circuits expert with a specialized focus on designing state-of-the-art phase-locked loops (PLLs). With in-depth expertise in analog circuit design and simulation, they excel in both theoretical and practical aspects of PLL development. Additionally, Verification_Expert is a proficient Python programmer, highly skilled in utilizing PySpice for simulating analog circuits, contributing to efficient and accurate design verification processes.\n\n## Task and skill instructions\n- Task: Responsible for designing and simulating robust phase-locked loops (PLLs) within analog integrated circuits, ensuring optimal performance and reliability. They also conduct thorough checks of simulation outputs to identify and avoid potential issues such as singular matrices.\n- Skill: Leverage advanced analog circuit design techniques alongside Python programming expertise in PySpice to simulate, analyze, and verify designs in a seamless workflow. Their role involves meticulous verification of both the design and simulation stages to ensure every component functions as intended, mitigating risks and enhancing the overall integrity of the system.\n- Other: Through rigorous testing, systematic troubleshooting, and consistent quality checks, Verification_Expert maintains high standards in circuit verification, combining technical proficiency with a keen eye for potential issues in analog integrated circuit designs.",
             is_termination_msg=lambda msg: "TERMINATE" in msg["content"],
             max_consecutive_auto_reply=1,
             human_input_mode="NEVER",
             code_execution_config=False,
             llm_config=llm_config,
         )
-        cos_agent = autogen.AssistantAgent(
-            name="assistant",
-            description="COS Agent is a junior engineer who helps the PI Agent to design the COS.",
-            system_message="Please help me design a circuit. Think and tell me the necessary steps we need to do.",
-            human_input_mode="NEVER",
-            llm_config=llm_config,
-            is_termination_msg=lambda x: "TERMINATE" in x.get("content"),
-        )
+        # cos_agent = autogen.AssistantAgent(
+        #     name="assistant",
+        #     description="COS Agent is a junior engineer who helps the PI Agent to design the COS.",
+        #     system_message="Please help me design a circuit. Think and tell me the necessary steps we need to do.",
+        #     human_input_mode="NEVER",
+        #     llm_config=llm_config,
+        #     is_termination_msg=lambda x: "TERMINATE" in x.get("content"),
+        # )
         # math_reasoning_agent = autogen.AssistantAgent(
         #     name="assistant",
         #     human_input_mode="NEVER",
@@ -489,8 +466,8 @@ class AnalogAgent(BaseModel):
         #     llm_config=llm_config,
         #     is_termination_msg=lambda x: "TERMINATE" in x.get("content"),
         # )
-        proxies = [pi_agent]
-        agents = [circuit_agent, cos_agent, testbench_agent]
+        proxies = [groupchat_proxy]
+        agents = [pi_agent, circuit_agent, testbench_agent]
         if use_rag is True:
             # autogen.agentchat.register_function(
             #     f=retrieve_data,
@@ -547,7 +524,7 @@ class AnalogAgent(BaseModel):
         nested_config = {
             "autobuild_init_config": {
                 "config_file_or_env": "./configs/OAI_CONFIG_LIST",
-                "builder_model": model,  # "aide-o3-mini",
+                "builder_model": "aide-o3-mini",
                 "agent_model": model,
                 "max_agents": 10,
             },
