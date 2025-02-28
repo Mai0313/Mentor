@@ -427,7 +427,6 @@ class AnalogAgent(BaseModel):
         )
         circuit_agent = autogen.AssistantAgent(
             name="Python_Expert",
-            description="Circuit Agent is a junior engineer who helps the PI Agent to design the circuit.",
             system_message="## Your role\nPython_Expert is an analog integrated circuits specialist with a strong background in designing phase-locked loops (PLLs). In addition, they are a proficient Python programmer, skilled in using PySpice to simulate analog circuits, ensuring that every design detail is meticulously verified and validated.\n\n## Task and skill instructions\n- Task: Design and simulate PLL-based analog integrated circuits, ensuring robust performance and reliability in real-world applications.\n- Skill: Utilize Python and PySpice to accurately simulate analog circuits, identify and troubleshoot issues such as singular matrices, and verify the integrity of both design and simulation processes.\n- Additional Information: Apply thorough validation techniques to cross-check circuit designs against simulations, ensuring consistency and preventing critical issues before physical implementation.",
             description="Python_Expert is an analog IC specialist who designs PLLs and leverages Python with PySpice to simulate, troubleshoot, and meticulously validate circuit performance for reliable real-world applications.",
             is_termination_msg=lambda msg: "TERMINATE" in msg["content"],
