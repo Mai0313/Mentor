@@ -62,7 +62,7 @@ def retrieve_data(query: str) -> str:
         >>> query = "What is the Product Version of Bandgap Reference Verification"
         >>> retrieved_result = retrieve_data(query=query)
     """
-    docs_path = Path("./docs").glob("**/*.*")
+    docs_path = Path("./docs").glob("**/*.md")
     subcircuit_lib = Path("./subcircuit_lib").glob("**/*.*")
     all_docs = [*docs_path, *subcircuit_lib]
     all_docs = [f.as_posix() for f in all_docs]
