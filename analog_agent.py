@@ -33,6 +33,7 @@ from chromadb.utils.embedding_functions.openai_embedding_function import OpenAIE
 console = Console()
 warnings.filterwarnings("ignore", category=ResourceWarning)
 
+MAX_ROUND = 12
 
 def get_config_dict(model: str) -> dict[str, Any]:
     config_list = config_list_from_json(
@@ -414,7 +415,7 @@ class AnalogAgent(BaseModel):
             RAK: Rapid Adoption Kits
             """,
             is_termination_msg=lambda msg: "TERMINATE" in msg["content"],
-            max_consecutive_auto_reply=1,
+            max_consecutive_auto_reply=MAX_ROUND,
             human_input_mode="NEVER",
             code_execution_config=False,
             llm_config=llm_config,
@@ -438,7 +439,7 @@ class AnalogAgent(BaseModel):
             Circuit PySpice code
             """,
             is_termination_msg=lambda msg: "TERMINATE" in msg["content"],
-            max_consecutive_auto_reply=1,
+            max_consecutive_auto_reply=MAX_ROUND,
             human_input_mode="NEVER",
             code_execution_config=False,
             llm_config=llm_config,
@@ -464,7 +465,7 @@ class AnalogAgent(BaseModel):
             Error messages
             """,
             is_termination_msg=lambda msg: "TERMINATE" in msg["content"],
-            max_consecutive_auto_reply=1,
+            max_consecutive_auto_reply=MAX_ROUND,
             human_input_mode="NEVER",
             code_execution_config=False,
             llm_config=llm_config,
@@ -510,7 +511,7 @@ class AnalogAgent(BaseModel):
         groupchat = autogen.GroupChat(
             agents=[*proxies, executor, *agents],
             messages=[],
-            max_round=12,
+            max_round=MAX_ROUND,
             speaker_selection_method="auto",
             allow_repeat_speaker=False,
         )
