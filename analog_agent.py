@@ -420,6 +420,7 @@ class AnalogAgent(BaseModel):
             code_execution_config=False,
             llm_config=llm_config,
         )
+        pi_agent.register_hook("process_last_received_message", lambda content: f"{content}\n\nPlease help me design the mentioned circuit. Think and tell me the necessary steps.\nLet's think step by step.")
         executor = autogen.UserProxyAgent(
             name="executor",
             human_input_mode="NEVER",
@@ -520,7 +521,7 @@ class AnalogAgent(BaseModel):
         # Start chatting with boss_aid as this is the user proxy agent.
         chat_result = pi_agent.initiate_chat(
             recipient=manager,
-            message=f"{messages}, the final answer must contain a PySpice Code in Python. Please help me design a circuit. Think and tell me the necessary steps we need to do.",
+            message=f"{messages}, the final answer must contain a PySpice Code in Python.",
             summary_method=self._summary_method,
         )
         converter = ChatResultConverter(chat_result=chat_result)
