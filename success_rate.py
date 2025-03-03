@@ -115,7 +115,6 @@ def parse_logs_in_folder(folder_path: str = "./logs", num_per_task: int = 5) -> 
     最後以 Rich table 輸出各個 model 的成功率與錯誤率。
     """
     console = Console()
-    console.print("\n")
 
     # 用 defaultdict 儲存不同 model 的分數資料 (list 每個元素為一個 dict)
     model_scores = defaultdict(list)
@@ -130,7 +129,9 @@ def parse_logs_in_folder(folder_path: str = "./logs", num_per_task: int = 5) -> 
         if not match:
             continue
 
-        model_name = match.group(1)
+        model_info = match.group(1)
+        exp_date, model_name, *_ = model_info.split("_")
+        console.print(f"Experiment Date: {exp_date}", justify="center")
         problem_number = int(match.group(2))
 
         counters = process_log_file(file_path)
@@ -139,6 +140,10 @@ def parse_logs_in_folder(folder_path: str = "./logs", num_per_task: int = 5) -> 
         model_scores[model_name].append(counters)
 
     # 根據 model 分別顯示結果
+    if not model_scores:
+        console.print(f"No log files found in {folder_path}")
+        return
+    console.print("\n")
     for model_name, scores in model_scores.items():
         display_model_scores(console, model_name, scores, folder_path, num_per_task)
 

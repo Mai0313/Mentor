@@ -5,6 +5,7 @@
 ```bash
 conda create -n analog python=3.10 -y
 conda activate analog
+export https_proxy=http://mtkdrone01.mediatek.inc:23984
 conda install -c conda-forge ngspice=32 uv -y
 uv pip install -r pyproject.toml
 ```

@@ -5,7 +5,7 @@ import sys
 import time
 import shutil
 import signal
-from typing import Any, Literal, Optional
+from typing import Any, Optional
 from pathlib import Path
 import argparse
 import subprocess
@@ -43,17 +43,31 @@ parser.add_argument("--no_context", action="store_true", default=False)
 parser.add_argument("--no_chain", action="store_true", default=False)
 parser.add_argument("--retrieval", action="store_true", default=True)
 parser.add_argument("--api_key", type=str)
-
-MULTI_AGENT_MODE: Literal["original", "captain", "captain+rag", "groupchat", "groupchat+rag"] = (
-    # "groupchat",
-    # "original"
-    "captain"
+parser.add_argument(
+    "--mode",
+    type=str,
+    default="groupchat",
+    help="it can be 'original', 'captain', 'captain+rag', 'groupchat' or 'groupchat+rag'",
 )
-USE_DOCKER: Literal["mtkomcr.mediatek.inc/srv-aith/mtkllm-sdk-analog", False] = (
-    False  # "mtkomcr.mediatek.inc/srv-aith/mtkllm-sdk-analog"
-)
-
+parser.add_argument("--config", type=str, default="./configs/agents/groupchat_wo_cos.yaml")
 args = parser.parse_args()
+
+MODEL = args.model
+TEMP = args.temperature
+NUM_PER_TASK = args.num_per_task
+NUM_OF_RETRY = args.num_of_retry
+NUM_OF_DONE = args.num_of_done
+TASK_ID = args.task_id
+NGSPICE = args.ngspice
+NO_PROMPT = args.no_prompt
+SKILL = args.skill
+NO_CONTEXT = args.no_context
+NO_CHAIN = args.no_chain
+RETRIEVAL = args.retrieval
+API_KEY = args.api_key
+MULTI_AGENT_MODE = args.mode
+GROUPCHAT_CONFIG = args.config
+
 console = Console()
 opensource_models = [
     "mistral",
@@ -1110,7 +1124,7 @@ def work(
                     messages=messages,
                     mode=MULTI_AGENT_MODE,
                     work_dir=log_path,
-                    use_docker=USE_DOCKER,
+                    groupchat_config=GROUPCHAT_CONFIG,
                     task=task,
                     task_type=task_type,
                     input_nodes=input,
@@ -1223,7 +1237,7 @@ def work(
         else:
             answer_code = code
 
-        if task_type in complex_task_type and args.skill is True:
+        if task_type in complex_task_type and args.skill is True and "rag" not in MULTI_AGENT_MODE:
             for subcircuit in subcircuits:
                 shutil.copy(
                     f"subcircuit_lib/p{subcircuit}_lib.py", "/".join(code_path.split("/")[:-1])
@@ -1517,7 +1531,7 @@ def work(
                         messages=messages,
                         mode=MULTI_AGENT_MODE,
                         work_dir=log_path,
-                        use_docker=USE_DOCKER,
+                        groupchat_config=GROUPCHAT_CONFIG,
                         task=task,
                         task_type=task_type,
                         input_nodes=input,
@@ -1600,7 +1614,7 @@ def get_retrieval(task: str, task_id: int, log_path: str) -> list[int]:
                 messages=messages,
                 mode="original",
                 work_dir=".",
-                use_docker=USE_DOCKER,
+                groupchat_config=GROUPCHAT_CONFIG,
                 task="",
                 task_type="",
                 input_nodes="",

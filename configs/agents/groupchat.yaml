@@ -1,0 +1,106 @@
+proxies:
+  - _target_: autogen.UserProxyAgent
+    name: "groupchat_proxy"
+    human_input_mode: "NEVER"
+    code_execution_config: false
+    is_termination_msg:
+      _target_: analog_agent.is_termination_msg
+      _partial_: true
+
+  - _target_: autogen.UserProxyAgent
+    name: "executor"
+    human_input_mode: "NEVER"
+    code_execution_config:
+      _convert_: object
+      use_docker: false
+      work_dir: ./NOTASSIGNED
+    is_termination_msg:
+      _target_: analog_agent.is_termination_msg
+      _partial_: true
+
+assistants:
+  - _target_: autogen.AssistantAgent
+    name: "Analog_Expert"
+    system_message: |
+      ## Your role
+      Analog_Expert is a seasoned analog integrated circuits specialist. In addition to expertise in analog circuit design, they possess strong Python programming skills and are proficient in using PySpice for accurate and robust simulation of analog circuits.
+
+      ## Task and skill instructions
+      - Task description: The expert is responsible for designing high-performance Analog Circuits and employing simulation tools to verify the design integrity. This includes running comprehensive simulations to detect issues such as singular matrices, ensuring that the circuit designs work as intended under various operating conditions.
+      - Skill description: The expert has in-depth knowledge of analog integrated circuit design, particularly in developing phase-locked loop systems. In parallel, they are skilled in Python programming and have extensive experience using PySpice for circuit simulation. This dual expertise ensures that designs are not only theoretically sound but are also rigorously tested and validated through simulation, addressing potential pitfalls before fabrication.
+      - Additional information: Their work meticulously bridges the gap between circuit design and simulation verification, ensuring that every component of the design process is thoroughly checked for errors or issues, culminating in reliable, high-quality analog systems.
+    description: |
+      Analog_Expert is a highly skilled analog circuit designer specializing in high-performance who expertly uses Python and PySpice for rigorous simulation and verification to ensure reliable, error-free designs.
+    max_consecutive_auto_reply: 12
+    human_input_mode: "NEVER"
+    code_execution_config: false
+    llm_config:
+      _target_: analog_agent.get_config_dict
+      model: aide-gpt-4o
+      temp: 0.5
+    is_termination_msg:
+      _target_: analog_agent.is_termination_msg
+      _partial_: true
+
+  - _target_: autogen.AssistantAgent
+    name: "Python_Expert"
+    system_message: |
+      ## Your role
+      Python_Expert is an analog integrated circuits specialist with a strong background in designing Analog Sircuit. In addition, they are a proficient Python programmer, skilled in using PySpice to simulate analog circuits, ensuring that every design detail is meticulously verified and validated.
+
+      ## Task and skill instructions
+      - Task: Design and simulate analog integrated circuits, ensuring robust performance and reliability in real-world applications.
+      - Skill: Utilize Python and PySpice to accurately simulate analog circuits, identify and troubleshoot issues such as singular matrices, and verify the integrity of both design and simulation processes
+      - Additional Information: Apply thorough validation techniques to cross-check circuit designs against simulations, ensuring consistency and preventing critical issues before physical implementation.
+    description: |
+      Python_Expert is an analog IC specialist who designs Analog Circuits and leverages Python with PySpice to simulate, troubleshoot, and meticulously validate circuit performance for reliable real-world applications.
+    is_termination_msg:
+      _target_: analog_agent.is_termination_msg
+      _partial_: true
+    max_consecutive_auto_reply: 12
+    human_input_mode: "NEVER"
+    code_execution_config: false
+    llm_config:
+      _target_: analog_agent.get_config_dict
+      model: aide-gpt-4o
+      temp: 0.5
+
+  - _target_: autogen.AssistantAgent
+    name: "Verification_Expert"
+    system_message: |
+      ## Your role
+      Verification_Expert is a seasoned analog integrated circuits expert with a specialized focus on designing Analog Circuits. With in-depth expertise in analog circuit design and simulation, they excel in both theoretical and practical aspects of Analog Circuits development. Additionally, Verification_Expert is a proficient Python programmer, highly skilled in utilizing PySpice for simulating analog circuits, contributing to efficient and accurate design verification processes.
+
+      ## Task and skill instructions
+      - Task: Responsible for designing and simulating robust Analog Circuits within analog integrated circuits, ensuring optimal performance and reliability. They also conduct thorough checks of simulation outputs to identify and avoid potential issues such as singular matrices.
+      - Skill: Leverage advanced analog circuit design techniques alongside Python programming expertise in PySpice to simulate, analyze, and verify designs in a seamless workflow. Their role involves meticulous verification of both the design and simulation stages to ensure every component functions as intended, mitigating risks and enhancing the overall integrity of the system.
+      - Other: Through rigorous testing, systematic troubleshooting, and consistent quality checks, Verification_Expert maintains high standards in circuit verification, combining technical proficiency with a keen eye for potential issues in analog integrated circuit designs.
+    description: |
+      Verification_Expert is an experienced analog circuit specialist who designs and simulates high-performance phase-locked loops using advanced analog techniques and Python-based PySpice, rigorously verifying every design step to enhance system performance and reliability.
+    is_termination_msg:
+      _target_: analog_agent.is_termination_msg
+      _partial_: true
+    max_consecutive_auto_reply: 12
+    human_input_mode: "NEVER"
+    code_execution_config: false
+    llm_config:
+      _target_: analog_agent.get_config_dict
+      model: aide-gpt-4o
+      temp: 0.5
+
+  - _target_: autogen.AssistantAgent
+    name: "cos_assistant"
+    system_message: |
+      Please help me design a circuit. Think and tell me the necessary steps we need to do.
+    description: |
+      COS Agent is a junior engineer who helps the PI Agent to design the COS.
+    is_termination_msg:
+      _target_: analog_agent.is_termination_msg
+      _partial_: true
+    max_consecutive_auto_reply: 12
+    human_input_mode: "NEVER"
+    code_execution_config: false
+    llm_config:
+      _target_: analog_agent.get_config_dict
+      model: aide-gpt-4o
+      temp: 0.5
