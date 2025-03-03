@@ -103,16 +103,16 @@ def retrieve_data(query: str) -> str:
     all_docs = [*docs_path, *subcircuit_lib]
     all_docs = [f.as_posix() for f in all_docs]
     llm_config = get_config_dict(model="aide-gpt-4o")
-    rag_agent = autogen.AssistantAgent(name="RetrievalAgent", llm_config=llm_config, silent=True)
-    rag_user_proxy = RetrieveUserProxyAgent(
-        name="RetrieveAgent",
+    rag_assistant = autogen.AssistantAgent(name="RetrieveAssistant", llm_config=llm_config, silent=True)
+    rag_proxy_agent = RetrieveUserProxyAgent(
+        name="RetrieveProxyAgent",
         human_input_mode="NEVER",
         max_consecutive_auto_reply=3,
         retrieve_config={
             "task": "default",
             "docs_path": all_docs,
             "must_break_at_empty_line": False,
-            "model": llm_config["config_list"][0]["model"],
+            "model": "gpt-4o",
             "vector_db": None,
             "client": chromadb.Client(Settings(anonymized_telemetry=False)),
             "get_or_create": True,
@@ -128,26 +128,17 @@ def retrieve_data(query: str) -> str:
             "embedding_model": None,
         },
         code_execution_config=False,  # we don't want to execute code in this case.
-        description="Assistant who has extra content retrieval power for solving difficult problems.",
-        silent=True,
+        silent=True
     )
-    groupchat = autogen.GroupChat(
-        agents=[rag_user_proxy, rag_agent],
-        messages=[],
-        max_round=12,
-        speaker_selection_method="round_robin",
-    )
-    manager = autogen.GroupChatManager(groupchat=groupchat, llm_config=llm_config, silent=True)
-    retrieve_result = rag_user_proxy.initiate_chat(
-        recipient=manager,
-        message=rag_user_proxy.message_generator,
+    chat_result = rag_proxy_agent.initiate_chat(
+        recipient=rag_assistant,
+        message=rag_proxy_agent.message_generator,
         problem=query,
         # 這個會決定 LLM 能參考多少文件，要讓她拿到正確資訊，就要全部允許他看
         n_results=len(all_docs),
         # summary_method="last_msg",
-        silent=True,
     )
-    return retrieve_result.chat_history[-1]["content"]
+    return chat_result.chat_history[-1]["content"]
 
 
 def read_prompt(filepath: str) -> str:

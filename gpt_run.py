@@ -68,6 +68,9 @@ API_KEY = args.api_key
 MULTI_AGENT_MODE = args.mode
 GROUPCHAT_CONFIG = args.config
 
+if "rag" in MULTI_AGENT_MODE and SKILL is True:
+    raise ValueError("rag mode does not support skill mode.")
+
 console = Console()
 opensource_models = [
     "mistral",
