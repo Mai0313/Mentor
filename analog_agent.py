@@ -405,6 +405,7 @@ class AnalogAgent(BaseModel):
         self._get_cache(llm_config=llm_config)
         pi_agent = autogen.ConversableAgent(
             name="PIAgent",
+            description="PI Agent is a senior engineer who takes the problem specification and then breakdown the necessary steps to do.",
             system_message="""You are an experience manager focusing on RF/Analog circuit design, can you help me design a circuit with the following spec?
             - Design a circuit with the Spec you received.
             - What could be the name of this circuit?
@@ -420,6 +421,7 @@ class AnalogAgent(BaseModel):
             code_execution_config=False,
             llm_config=llm_config,
         )
+        pi_agent.register_hook("process_last_received_message", lambda content: f"{content}\n\nPlease help me design the mentioned circuit. Think and tell me the necessary steps.\nLet's think step by step.")
         executor = autogen.UserProxyAgent(
             name="executor",
             human_input_mode="NEVER",
@@ -445,24 +447,18 @@ class AnalogAgent(BaseModel):
             llm_config=llm_config,
         )
         testbench_agent = autogen.AssistantAgent(
-            name="assistant",
-            description="Testbench Agent is a junior engineer who helps the PI Agent to design the testbench.",
+            name="TestbenchAgent",
+            description="Testbench Agent is a junior engineer who helps the PI Agent to design the testbench. It specialize at writing and debuggin testbench written in PySpice.",
             system_message="""
             Example prompt: You are an experience RF/Analog circuit validation engineer.
-            You are required to validate a circuit with following spec: xxxxx.
-            The attached files are its relevant papers.
-            Can you write a python code to simulate this circuit and validate if it satisfy the spec?
-            The PySpice code is written as below.
-            Please confirm that your implementation simulation is correct.
-            Does this circuit have any problem in its PySpice code?
-            If the implementation limit has reached, output messages to human engineers.
-            If it's correct, output the final result in SPICE version.
+            You are required to validate a circuit based on given PySpice code.
+            You must append PySpice code to simulate the circuit and validate if it satisfy the spec.
+            Please call the executor to run the testbench.
+            There might be attached files, such as relevant papers for the circuit.
+            If it's correct, output the final circuit in PySpice.
             If not, output the error messages back to the circuit agent. And rerun the process, implementation limit+1.
-            The output should be:
-            If circuit implementation is correct or reach limited tries:
-            SPICE code
-            If not:
-            Error messages
+
+            - NOTE: Output "TERMINATE" in the last line if you think the analog circuit design task has beed finished. That is, the PySpice codes are written, you have checked the implementation, and the executor has executed the PySpice testbench code successfully.
             """,
             is_termination_msg=lambda msg: "TERMINATE" in msg["content"],
             max_consecutive_auto_reply=MAX_ROUND,
@@ -470,14 +466,14 @@ class AnalogAgent(BaseModel):
             code_execution_config=False,
             llm_config=llm_config,
         )
-        cos_agent = autogen.AssistantAgent(
-            name="assistant",
-            description="COS Agent is a junior engineer who helps the PI Agent to design the COS.",
-            system_message="Please help me design a circuit. Think and tell me the necessary steps we need to do.",
-            human_input_mode="NEVER",
-            llm_config=llm_config,
-            is_termination_msg=lambda x: "TERMINATE" in x.get("content"),
-        )
+        # cos_agent = autogen.AssistantAgent(
+        #     name="assistant",
+        #     description="COS Agent is a junior engineer who helps the PI Agent to design the COS.",
+        #     system_message="Please help me design a circuit. Think and tell me the necessary steps we need to do.",
+        #     human_input_mode="NEVER",
+        #     llm_config=llm_config,
+        #     is_termination_msg=lambda x: "TERMINATE" in x.get("content"),
+        # )
         # math_reasoning_agent = autogen.AssistantAgent(
         #     name="assistant",
         #     human_input_mode="NEVER",
@@ -491,7 +487,7 @@ class AnalogAgent(BaseModel):
         #     is_termination_msg=lambda x: "TERMINATE" in x.get("content"),
         # )
         proxies = [pi_agent]
-        agents = [circuit_agent, cos_agent, testbench_agent]
+        agents = [circuit_agent, testbench_agent]
         if use_rag is True:
             # autogen.agentchat.register_function(
             #     f=retrieve_data,

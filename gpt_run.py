@@ -44,6 +44,8 @@ parser.add_argument("--retrieval", action="store_true", default=True)
 parser.add_argument("--api_key", type=str)
 
 MULTI_AGENT_MODE: Literal["original", "captain", "captain+rag", "groupchat", "groupchat+rag"] = (
+    # "groupchat",
+    # "original"
     "captain"
 )
 USE_DOCKER: Literal["mtkomcr.mediatek.inc/srv-aith/mtkllm-sdk-analog", False] = (
@@ -72,6 +74,7 @@ complex_task_type = [
     "Adder",
     "Subtractor",
     "Schmitt",
+    "BGR",
 ]
 bias_usage = """Due to the operational range of the op-amp being 0 to 5V, please connect the nodes that were originally grounded to a 2.5V DC power source.
 Please increase the gain as much as possible to maintain oscillation.
@@ -159,6 +162,8 @@ def extract_code(generated_content: str) -> tuple[int, str]:
     new_code = ""
     for line in code.split("\n"):
         new_code += line + "\n"
+        # 這邊有時候LLM噴 simulator = circuit.simulator(temperature=25, nominal_temperature=25)
+        # 就會把LLM寫的simulation code跟problem check的simulation code一起附上
         if "circuit.simulator()" in line:
             break
 
@@ -1140,6 +1145,8 @@ def work(
             figure_path = f"{model_dir}/p{task_id}/{it}/p{task_id}_{it}_{code_id}_figure"
             if task_type == "Oscillator":
                 code = raw_code + pyspice_template_complex.replace("[FIGURE_PATH]", figure_path)
+            elif task_type == "BGR":
+                code = raw_code + pyspice_template_complex
             else:
                 if args.skill:
                     code = raw_code + pyspice_template_complex.replace(

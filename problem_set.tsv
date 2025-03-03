@@ -23,3 +23,4 @@ Id	Level	Circuit	Input	Output	Type	Submodule Name
 22	Hard	A non-inverting Schmitt trigger with positive feedback op-map	Vin	Vout	Schmitt	Unknown
 23	Hard	A voltage-controlled oscillator	Vin	Vout	VCO	Unknown
 24	Hard	A phase-locked loop	clk_ref	clk_p	PLL	Unknown
+25	Hard	Bandgap Reference Circuit	-	Vout	BGR	Unknown
