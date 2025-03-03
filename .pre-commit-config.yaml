@@ -18,7 +18,7 @@ exclude: metagpt
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: v0.9.6
+    rev: v0.9.9
     hooks:
       - id: ruff
         types_or: [ python, pyi, jupyter ]
@@ -106,7 +106,7 @@ repos:
   #         - "Types-attrs"
 
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.6.1
+    rev: 0.6.3
     hooks:
       - id: uv-sync
       - id: uv-lock
