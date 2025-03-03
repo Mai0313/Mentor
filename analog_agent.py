@@ -33,8 +33,6 @@ from chromadb.utils.embedding_functions.openai_embedding_function import OpenAIE
 console = Console()
 warnings.filterwarnings("ignore", category=ResourceWarning)
 
-MAX_ROUND = 12
-
 def get_config_dict(model: str) -> dict[str, Any]:
     config_list = config_list_from_json(
         env_or_file="./configs/OAI_CONFIG_LIST", filter_dict={"model": model}
@@ -63,7 +61,7 @@ def retrieve_data(query: str) -> str:
         >>> query = "What is the Product Version of Bandgap Reference Verification"
         >>> retrieved_result = retrieve_data(query=query)
     """
-    docs_path = Path("./docs").glob("**/*.*")
+    docs_path = Path("./docs").glob("**/*.md")
     subcircuit_lib = Path("./subcircuit_lib").glob("**/*.*")
     all_docs = [*docs_path, *subcircuit_lib]
     all_docs = [f.as_posix() for f in all_docs]
@@ -403,20 +401,19 @@ class AnalogAgent(BaseModel):
     ) -> ChatCompletion:
         llm_config = get_config_dict(model=model)
         self._get_cache(llm_config=llm_config)
-        pi_agent = autogen.ConversableAgent(
-            name="PIAgent",
-            description="PI Agent is a senior engineer who takes the problem specification and then breakdown the necessary steps to do.",
-            system_message="""You are an experience manager focusing on RF/Analog circuit design, can you help me design a circuit with the following spec?
-            - Design a circuit with the Spec you received.
-            - What could be the name of this circuit?
-            - What relevant documents you have to guide a designer to design this circuit?
-            The output should be:
-            Find corresponding papers or RAK files from dataset or online search
-            Key idea: Find required documents for RF engineers
-            RAK: Rapid Adoption Kits
-            """,
+        groupchat_proxy = UserProxyAgent(
+            name="groupchat_proxy",
+            # llm_config=llm_config,
+            human_input_mode="NEVER",
+            code_execution_config=False,
+            # system_message="Make sure the final answer contains the PySpice Code.",
+        )
+        pi_agent = autogen.AssistantAgent(
+            name="Analog_Expert",
+            system_message="## Your role  \nAnalog_Expert is a seasoned analog integrated circuits specialist. In addition to expertise in analog circuit design, they possess strong Python programming skills and are proficient in using PySpice for accurate and robust simulation of analog circuits.\n\n## Task and skill instructions  \n- Task description: The expert is responsible for designing high-performance Analog Circuits and employing simulation tools to verify the design integrity. This includes running comprehensive simulations to detect issues such as singular matrices, ensuring that the circuit designs work as intended under various operating conditions.  \n- Skill description: The expert has in-depth knowledge of analog integrated circuit design, particularly in developing phase-locked loop systems. In parallel, they are skilled in Python programming and have extensive experience using PySpice for circuit simulation. This dual expertise ensures that designs are not only theoretically sound but are also rigorously tested and validated through simulation, addressing potential pitfalls before fabrication.  \n- Additional information: Their work meticulously bridges the gap between circuit design and simulation verification, ensuring that every component of the design process is thoroughly checked for errors or issues, culminating in reliable, high-quality analog systems.",
+            description="Analog_Expert is a highly skilled analog circuit designer specializing in high-performance who expertly uses Python and PySpice for rigorous simulation and verification to ensure reliable, error-free designs.",
             is_termination_msg=lambda msg: "TERMINATE" in msg["content"],
-            max_consecutive_auto_reply=MAX_ROUND,
+            max_consecutive_auto_reply=12,
             human_input_mode="NEVER",
             code_execution_config=False,
             llm_config=llm_config,
@@ -429,39 +426,21 @@ class AnalogAgent(BaseModel):
             code_execution_config={"use_docker": self.use_docker, "work_dir": work_dir},
         )
         circuit_agent = autogen.AssistantAgent(
-            name="CircuitAgent",
-            description="Circuit Agent is a junior engineer who helps the PI Agent to design the circuit.",
-            system_message="""
-            Example Prompt: You are an experienced [circuit name] designers, please use the [docs name], and help me design a [circuit name]. It needs to follow the spec as below: xxxxxxxxx.
-            Please output the PySpice code of this circuit.
-            You have access to an [offline library name].
-            If you find subcircuits that already be built, you can ask the corresponding agent using [xxx].
-            If you find any problems when you are designing the circuit, please contact PI for further classification.
-            The output should be:
-            Circuit PySpice code
-            """,
+            name="Python_Expert",
+            system_message="## Your role\nPython_Expert is an analog integrated circuits specialist with a strong background in designing Analog Sircuit. In addition, they are a proficient Python programmer, skilled in using PySpice to simulate analog circuits, ensuring that every design detail is meticulously verified and validated.\n\n## Task and skill instructions\n- Task: Design and simulate analog integrated circuits, ensuring robust performance and reliability in real-world applications.\n- Skill: Utilize Python and PySpice to accurately simulate analog circuits, identify and troubleshoot issues such as singular matrices, and verify the integrity of both design and simulation processes.\n- Additional Information: Apply thorough validation techniques to cross-check circuit designs against simulations, ensuring consistency and preventing critical issues before physical implementation.",
+            description="Python_Expert is an analog IC specialist who designs Analog Circuits and leverages Python with PySpice to simulate, troubleshoot, and meticulously validate circuit performance for reliable real-world applications.",
             is_termination_msg=lambda msg: "TERMINATE" in msg["content"],
-            max_consecutive_auto_reply=MAX_ROUND,
+            max_consecutive_auto_reply=12,
             human_input_mode="NEVER",
             code_execution_config=False,
             llm_config=llm_config,
         )
         testbench_agent = autogen.AssistantAgent(
-            name="TestbenchAgent",
-            description="Testbench Agent is a junior engineer who helps the PI Agent to design the testbench. It specialize at writing and debuggin testbench written in PySpice.",
-            system_message="""
-            Example prompt: You are an experience RF/Analog circuit validation engineer.
-            You are required to validate a circuit based on given PySpice code.
-            You must append PySpice code to simulate the circuit and validate if it satisfy the spec.
-            Please call the executor to run the testbench.
-            There might be attached files, such as relevant papers for the circuit.
-            If it's correct, output the final circuit in PySpice.
-            If not, output the error messages back to the circuit agent. And rerun the process, implementation limit+1.
-
-            - NOTE: Output "TERMINATE" in the last line if you think the analog circuit design task has beed finished. That is, the PySpice codes are written, you have checked the implementation, and the executor has executed the PySpice testbench code successfully.
-            """,
+            name="Verification_Expert",
+            description="Verification_Expert is an experienced analog circuit specialist who designs and simulates high-performance phase-locked loops using advanced analog techniques and Python-based PySpice, rigorously verifying every design step to enhance system performance and reliability.",
+            system_message="## Your role\nVerification_Expert is a seasoned analog integrated circuits expert with a specialized focus on designing Analog Circuits. With in-depth expertise in analog circuit design and simulation, they excel in both theoretical and practical aspects of Analog Circuits development. Additionally, Verification_Expert is a proficient Python programmer, highly skilled in utilizing PySpice for simulating analog circuits, contributing to efficient and accurate design verification processes.\n\n## Task and skill instructions\n- Task: Responsible for designing and simulating robust Analog Circuits within analog integrated circuits, ensuring optimal performance and reliability. They also conduct thorough checks of simulation outputs to identify and avoid potential issues such as singular matrices.\n- Skill: Leverage advanced analog circuit design techniques alongside Python programming expertise in PySpice to simulate, analyze, and verify designs in a seamless workflow. Their role involves meticulous verification of both the design and simulation stages to ensure every component functions as intended, mitigating risks and enhancing the overall integrity of the system.\n- Other: Through rigorous testing, systematic troubleshooting, and consistent quality checks, Verification_Expert maintains high standards in circuit verification, combining technical proficiency with a keen eye for potential issues in analog integrated circuit designs.",
             is_termination_msg=lambda msg: "TERMINATE" in msg["content"],
-            max_consecutive_auto_reply=MAX_ROUND,
+            max_consecutive_auto_reply=12,
             human_input_mode="NEVER",
             code_execution_config=False,
             llm_config=llm_config,
@@ -505,9 +484,9 @@ class AnalogAgent(BaseModel):
             for proxy in proxies:
                 proxy.register_for_execution()(d_retrieve_content)
         groupchat = autogen.GroupChat(
-            agents=[*proxies, executor, *agents],
+            agents=[*proxies, *agents, executor],
             messages=[],
-            max_round=MAX_ROUND,
+            max_round=12,
             speaker_selection_method="auto",
             allow_repeat_speaker=False,
         )
@@ -516,7 +495,7 @@ class AnalogAgent(BaseModel):
         # Start chatting with boss_aid as this is the user proxy agent.
         chat_result = pi_agent.initiate_chat(
             recipient=manager,
-            message=f"{messages}, the final answer must contain a PySpice Code in Python.",
+            message=f"{messages}, the final answer must contain a PySpice Code in Python. You should use `retrieve_data` function to retrieve the information you need before making the correct decision and plan for your main PySpice Code. The code should be fully tested before terminated.",
             summary_method=self._summary_method,
         )
         converter = ChatResultConverter(chat_result=chat_result)
@@ -544,7 +523,7 @@ class AnalogAgent(BaseModel):
         nested_config = {
             "autobuild_init_config": {
                 "config_file_or_env": "./configs/OAI_CONFIG_LIST",
-                "builder_model": model,  # "aide-o3-mini",
+                "builder_model": "aide-o3-mini",
                 "agent_model": model,
                 "max_agents": 10,
             },

@@ -1,6 +1,6 @@
 ### Quick Start
 
-#### Setup Manually
+#### Setup Manually (Recommanded)
 
 ```bash
 conda create -n analog python=3.10 -y

@@ -967,7 +967,7 @@ def work(
     total_completion_tokens = 0
     model_dir, log_path = get_model_dir(task_type=task_type, task_id=task_id, it=it)
 
-    if task_type not in complex_task_type or args.skill is False:
+    if task_type not in complex_task_type or args.skill is False or "rag" in MULTI_AGENT_MODE:
         if "llama" in args.model:
             prompt_path = "prompt_template.md"
         elif args.ngspice:
