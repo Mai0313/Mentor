@@ -28,9 +28,10 @@ def check_bandgap_reference(vout_values):
 
     # Check if Vout is stable across temperature variations (allow ≤ 100mV variation)
     max_variation = max(vout_values) - min(vout_values)
-    if max_variation > 0.1:  # 100mV
-        return False
-    return True
+    # if max_variation > 0.1:  # 100mV
+    #     return False
+    # return True
+    return max_variation <= 0.1
 
 
 # Evaluate the circuit performance across the temperature sweep

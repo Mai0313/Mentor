@@ -16,6 +16,7 @@ import pandas as pd
 from analog_agent import get_chat_completion
 from rich.console import Console
 from rich.markdown import Markdown
+from autogen.code_utils import extract_code as extract_code_ag2
 from autogen.oai.openai_utils import OAI_PRICE1K
 from openai.types.chat.chat_completion import ChatCompletion
 
@@ -926,9 +927,9 @@ def get_model_dir(task_type: str, task_id: int, it: int) -> tuple[str, str]:
         model_dir += f"_retry_{args.num_of_retry}"
     if task_type in complex_task_type and not args.skill:
         model_dir += "_no_skill"
-    log_path = Path(f"{model_dir}/p{task_id}/{it}")
+    log_path = Path(f"./logs/{model_dir}/p{task_id}/{it}")
     log_path.mkdir(parents=True, exist_ok=True)
-    return model_dir, log_path.as_posix()
+    return log_path.as_posix()
 
 
 def cal_quota(
@@ -960,14 +961,14 @@ def work(
     task_type: str,
     flog: io.TextIOWrapper,
     money_quota: int = 100,
-    subcircuits: Optional[list[int]] = None,
 ) -> int:
     global generator
 
     total_tokens = 0
     total_prompt_tokens = 0
     total_completion_tokens = 0
-    model_dir, log_path = get_model_dir(task_type=task_type, task_id=task_id, it=it)
+    log_path = get_model_dir(task_type=task_type, task_id=task_id, it=it)
+    log_path_parent = Path(log_path).parent
 
     if task_type not in complex_task_type or args.skill is False or "rag" in MULTI_AGENT_MODE:
         if "llama" in args.model:
@@ -1008,6 +1009,8 @@ def work(
         prompt = prompt.replace("[TASK]", task)
         prompt = prompt.replace("[INPUT]", input)
         prompt = prompt.replace("[OUTPUT]", output)
+        if task_type in complex_task_type and args.skill:
+            subcircuits = get_retrieval(task=task_type, task_id=args.task_id, log_path=log_path)
         subcircuits_info = get_subcircuits_info(subcircuits)
         note_info, bias_voltage = get_note_info(subcircuits)
         if task_type == "Oscillator":
@@ -1035,10 +1038,10 @@ def work(
     if background is not None:
         prompt += "\n\nHint Background: \n" + background + "\n## Answer \n"
 
-    with open("execution_error.md") as fopen_exe_error:
+    with open("./configs/prompt/execution_error.md") as fopen_exe_error:
         prompt_exe_error = fopen_exe_error.read()
 
-    with open("simulation_error.md") as fopen_sim_error:
+    with open("./configs/prompt/simulation_error.md") as fopen_sim_error:
         prompt_sim_error = fopen_sim_error.read()
 
     messages = [
@@ -1131,7 +1134,7 @@ def work(
         answer = completion["message"]["content"]
 
     empty_code_error, raw_code = extract_code(answer)
-    operating_point_path = f"{model_dir}/p{task_id}/{it}/p{task_id}_{it}_{0}_op.txt"
+    operating_point_path = f"{log_path}/p{task_id}_{it}_{0}_op.txt"
     if not args.ngspice and "simulator = circuit.simulator()" not in raw_code:
         raw_code += "\nsimulator = circuit.simulator()\n"
     if args.ngspice and ".end" in raw_code:
@@ -1150,7 +1153,7 @@ def work(
         else:
             with open(f"problem_check/{task_type}.py") as f:
                 pyspice_template_complex = f.read()
-            figure_path = f"{model_dir}/p{task_id}/{it}/p{task_id}_{it}_{code_id}_figure"
+            figure_path = f"{log_path}/p{task_id}_{it}_{code_id}_figure"
             if task_type == "Oscillator":
                 code = raw_code + pyspice_template_complex.replace("[FIGURE_PATH]", figure_path)
             elif task_type == "BGR":
@@ -1176,10 +1179,10 @@ def work(
         code = raw_code
     ##################################################################################################
 
-    with open(f"{model_dir}/p{task_id}/p{task_id}_{it}_input.txt", "w") as fwrite_input:
+    with open(f"{log_path_parent}/p{task_id}_{it}_input.txt", "w") as fwrite_input:
         fwrite_input.write(prompt)
         fwrite_input.flush()
-    with open(f"{model_dir}/p{task_id}/p{task_id}_{it}_output.txt", "w") as fwrite_output:
+    with open(f"{log_path_parent}/p{task_id}_{it}_output.txt", "w") as fwrite_output:
         fwrite_output.write(answer)
         fwrite_output.flush()
 
@@ -1187,25 +1190,25 @@ def work(
     existing_code_files = os.listdir(Path(log_path).parent.as_posix())
     for existing_code_file in existing_code_files:
         if existing_code_file.endswith(".sp"):
-            os.remove(f"{model_dir}/p{task_id}/{existing_code_file}")
+            os.remove(f"{log_path_parent}/{existing_code_file}")
             print("remove file: ", existing_code_file)
         if existing_code_file.endswith("_op.txt"):
-            os.remove(f"{model_dir}/p{task_id}/{existing_code_file}")
+            os.remove(f"{log_path_parent}/{existing_code_file}")
             print("remove file: ", existing_code_file)
 
     if os.path.exists(log_path):
         existing_code_files = os.listdir(log_path)
         for existing_code_file in existing_code_files:
-            if os.path.isfile(f"{model_dir}/p{task_id}/{it}/{existing_code_file}"):
+            if os.path.isfile(f"{log_path}/{existing_code_file}"):
                 with contextlib.suppress(Exception):
-                    os.remove(f"{model_dir}/p{task_id}/{it}/{existing_code_file}")
+                    os.remove(f"{log_path}/{existing_code_file}")
                 print("remove file: ", existing_code_file)
 
     # 這裡是拿第一段代碼 送進去 check，第二次的completion 會帶有check的結果，如果有錯他會繼續在這個迴圈內解決 (retry)
     while code_id < args.num_of_retry:
         messages.append({"role": "assistant", "content": answer})
 
-        code_path = f"{model_dir}/p{task_id}/{it}/p{task_id}_{it}_{code_id}.py"
+        code_path = f"{log_path}/p{task_id}_{it}_{code_id}.py"
         if args.ngspice:
             code_path = code_path.replace(".py", ".sp")
         with open(code_path, "w") as fwrite_code:
@@ -1240,19 +1243,15 @@ def work(
             if task_type not in complex_task_type:
                 _, code_netlist = None, answer_code
                 code_netlist += output_netlist_template
-                code_netlist_path = (
-                    f"{model_dir}/p{task_id}/{it}/p{task_id}_{it}_{code_id}_netlist_gen.py"
-                )
+                code_netlist_path = f"{log_path}/p{task_id}_{it}_{code_id}_netlist_gen.py"
                 with open(code_netlist_path, "w") as fwrite_code_netlist:
                     fwrite_code_netlist.write(code_netlist)
 
-                netlist_path = f"{model_dir}/p{task_id}/{it}/p{task_id}_{it}_{code_id}_netlist.sp"
+                netlist_path = f"{log_path}/p{task_id}_{it}_{code_id}_netlist.sp"
                 result = subprocess.run(
                     ["python", "-u", code_netlist_path], check=True, text=True, capture_output=True
                 )
-                netlist_file_path = (
-                    f"{model_dir}/p{task_id}/{it}/p{task_id}_{it}_{code_id}_netlist.sp"
-                )
+                netlist_file_path = f"{log_path}/p{task_id}_{it}_{code_id}_netlist.sp"
                 with open(netlist_file_path, "w") as fwrite_netlist:
                     fwrite_netlist.write("\n".join(result.stdout.split("\n")[1:]))
 
@@ -1264,10 +1263,8 @@ def work(
                     with open(netlist_file_path) as f:
                         netlist_content = f.read()
                     vinn_name, vinp_name = get_vin_name(netlist_content, task_type)
-                    dc_sweep_code_path = (
-                        f"{model_dir}/p{task_id}/{it}/p{task_id}_{it}_{code_id}_dc_sweep.py"
-                    )
-                    dc_file_path = f"{model_dir}/p{task_id}/{it}/p{task_id}_{it}_{code_id}_dc.txt"
+                    dc_sweep_code_path = f"{log_path}/p{task_id}_{it}_{code_id}_dc_sweep.py"
+                    dc_file_path = f"{log_path}/p{task_id}_{it}_{code_id}_dc.txt"
                     _, dc_sweep_code = None, answer_code
                     if "simulator = circuit.simulator()" not in dc_sweep_code:
                         dc_sweep_code += "\nsimulator = circuit.simulator()\n"
@@ -1314,23 +1311,17 @@ def work(
                         # All dc sweep passed
                         # generate a new netlist with the best voltage, replace _gen.py and .sp
                         new_code_netlist = new_code + output_netlist_template
-                        code_netlist_path = (
-                            f"{model_dir}/p{task_id}/{it}/p{task_id}_{it}_{code_id}_netlist_gen.py"
-                        )
+                        code_netlist_path = f"{log_path}/p{task_id}_{it}_{code_id}_netlist_gen.py"
                         with open(code_netlist_path, "w") as fwrite_code_netlist:
                             fwrite_code_netlist.write(new_code_netlist)
-                        netlist_path = (
-                            f"{model_dir}/p{task_id}/{it}/p{task_id}_{it}_{code_id}_netlist.sp"
-                        )
+                        netlist_path = f"{log_path}/p{task_id}_{it}_{code_id}_netlist.sp"
                         result = subprocess.run(
                             ["python", "-u", code_netlist_path],
                             check=True,
                             text=True,
                             capture_output=True,
                         )
-                        netlist_file_path = (
-                            f"{model_dir}/p{task_id}/{it}/p{task_id}_{it}_{code_id}_netlist.sp"
-                        )
+                        netlist_file_path = f"{log_path}/p{task_id}_{it}_{code_id}_netlist.sp"
                         with open(netlist_file_path, "w") as fwrite_netlist:
                             fwrite_netlist.write("\n".join(result.stdout.split("\n")[1:]))
                         dc_sweep_success = 1
@@ -1370,7 +1361,7 @@ def work(
                                 f"total_tokens\t{total_tokens}\ttotal_prompt_tokens\t{total_prompt_tokens}\ttotal_completion_tokens\t{total_completion_tokens}\n"
                             )
                             with open(
-                                f"{model_dir}/p{task_id}/{it}/token_info_{total_tokens}_{total_prompt_tokens}_{total_completion_tokens}_{code_id}",
+                                f"{log_path}/token_info_{total_tokens}_{total_prompt_tokens}_{total_completion_tokens}_{code_id}",
                                 "w",
                             ):
                                 pass
@@ -1397,7 +1388,7 @@ def work(
                         f"total_tokens\t{total_tokens}\ttotal_prompt_tokens\t{total_prompt_tokens}\ttotal_completion_tokens\t{total_completion_tokens}\n"
                     )
                     with open(
-                        f"{model_dir}/p{task_id}/{it}/token_info_{total_tokens}_{total_prompt_tokens}_{total_completion_tokens}_{code_id}",
+                        f"{log_path}/token_info_{total_tokens}_{total_prompt_tokens}_{total_completion_tokens}_{code_id}",
                         "w",
                     ):
                         pass
@@ -1421,7 +1412,7 @@ def work(
 
             flog.write(f"task:{task_id}\tit:{it}\tcode_id\t{code_id}\tdc sweep error\n")
             flog.flush()
-            with open(f"{model_dir}/p{task_id}/{it}/dc_sweep_error_{code_id}", "w"):
+            with open(f"{log_path}/dc_sweep_error_{code_id}", "w"):
                 pass
         else:
             if dc_sweep_success == 1:
@@ -1434,19 +1425,19 @@ def work(
                 )
                 flog.write(f"task:{task_id}\tit:{it}\tcode_id\t{code_id}\tempty code error\n")
                 flog.flush()
-                with open(f"{model_dir}/p{task_id}/{it}/empty_error_{code_id}", "w"):
+                with open(f"{log_path}/empty_error_{code_id}", "w"):
                     pass
             elif simulation_error == 1:
                 new_prompt += prompt_sim_error.replace("[NODE]", floating_node)
                 flog.write(f"task:{task_id}\tit:{it}\tcode_id:{code_id}\tsimulation error\n")
                 flog.flush()
-                with open(f"{model_dir}/p{task_id}/{it}/simulation_error_{code_id}", "w"):
+                with open(f"{log_path}/simulation_error_{code_id}", "w"):
                     pass
             elif execution_error == 1:
                 new_prompt += prompt_exe_error.replace("[ERROR]", execution_error_info)
                 flog.write(f"task:{task_id}\tit:{it}\tcode_id:{code_id}\texecution error\n")
                 flog.flush()
-                with open(f"{model_dir}/p{task_id}/{it}/execution_error_{code_id}", "w"):
+                with open(f"{log_path}/execution_error_{code_id}", "w"):
                     pass
             elif warning == 1:
                 new_prompt += warning_message
@@ -1454,14 +1445,14 @@ def work(
                     f"task:{task_id}\tit:{it}\tcode_id:{code_id}\tmosfet connection error\n"
                 )
                 flog.flush()
-                with open(f"{model_dir}/p{task_id}/{it}/mosfet_connection_error_{code_id}", "w"):
+                with open(f"{log_path}/mosfet_connection_error_{code_id}", "w"):
                     pass
             elif func_error == 1:
                 new_prompt += func_error_message
                 new_prompt += "\nPlease rewrite the corrected complete code."
                 flog.write(f"task:{task_id}\tit:{it}\tcode_id:{code_id}\tfunction error\n")
                 flog.flush()
-                with open(f"{model_dir}/p{task_id}/{it}/function_error_{code_id}", "w"):
+                with open(f"{log_path}/function_error_{code_id}", "w"):
                     pass
             else:
                 raise AssertionError
@@ -1470,7 +1461,7 @@ def work(
         )
         flog.write(f"money_quota\t{money_quota:.10f}\n")
         with open(
-            f"{model_dir}/p{task_id}/{it}/token_info_{total_tokens}_{total_prompt_tokens}_{total_completion_tokens}_{code_id}",
+            f"{log_path}/token_info_{total_tokens}_{total_prompt_tokens}_{total_completion_tokens}_{code_id}",
             "w",
         ):
             pass
@@ -1544,7 +1535,7 @@ def work(
             money_quota, total_tokens, total_prompt_tokens, total_completion_tokens, completion
         )
 
-        with open(f"{model_dir}/p{task_id}/p{task_id}_{it}_input.txt", "w") as fwrite_input:
+        with open(f"{log_path_parent}/p{task_id}_{it}_input.txt", "w") as fwrite_input:
             fwrite_input.write("\n----------\n")
             fwrite_input.write(new_prompt)
             fwrite_input.flush()
@@ -1554,19 +1545,19 @@ def work(
             else:
                 answer = completion["message"]["content"]
 
-        with open(f"{model_dir}/p{task_id}/p{task_id}_{it}_output.txt", "w") as fwrite_output:
+        with open(f"{log_path_parent}/p{task_id}_{it}_output.txt", "w") as fwrite_output:
             fwrite_output.write("\n----------\n")
             fwrite_output.write(answer)
 
         empty_code_error, code = extract_code(answer)
 
-        operating_point_path = f"{model_dir}/p{task_id}/{it}/p{task_id}_{it}_{code_id}_op.txt"
+        operating_point_path = f"{log_path}/p{task_id}_{it}_{code_id}_op.txt"
         if "simulator = circuit.simulator()" not in code:
             code += "\nsimulator = circuit.simulator()\n"
         if task_type not in complex_task_type:
             code += pyspice_template.replace("[OP_PATH]", operating_point_path)
         else:
-            figure_path = f"{model_dir}/p{task_id}/{it}/p{task_id}_{it}_{code_id}_figure"
+            figure_path = f"{log_path}/p{task_id}_{it}_{code_id}_figure"
             if task_type == "Oscillator":
                 code += pyspice_template_complex.replace("[FIGURE_PATH]", figure_path)
             else:
@@ -1582,19 +1573,19 @@ def work(
                 code = "import math\n" + code
 
     # save messages
-    with open(f"{model_dir}/p{task_id}/{it}/p{task_id}_{it}_messages.txt", "w") as fwrite:
+    with open(f"{log_path}/p{task_id}_{it}_messages.txt", "w") as fwrite:
         fwrite.write(str(messages))
     return money_quota
 
 
-def get_retrieval(task: str, task_id: int) -> list[int]:
+def get_retrieval(task: str, task_id: int, log_path: str) -> list[int]:
     # use the real RAG here
-    with open("retrieval_prompt.md") as f:
+    with open("./configs/prompt/retrieval_prompt.md") as f:
         prompt = f.read()
     prompt = prompt.replace("[TASK]", task)
     messages = [
         {"role": "system", "content": "You are an analog integrated circuits expert."},
-        {"role": "user", "content": prompt},
+        {"role": "user", "content": f"{prompt}, For example ```[11]```"},
     ]
     if "aide" in args.model and args.retrieval:
         try:
@@ -1621,22 +1612,19 @@ def get_retrieval(task: str, task_id: int) -> list[int]:
             print("sleep 30 seconds")
             time.sleep(30)
         answer = completion.choices[0].message.content
-        print(f"Answer:\n{answer}")
+        console.print("Answer:")
+        extracted_codes = extract_code_ag2(text=answer)
+        lang, answer = extracted_codes[0]
+        answer_md = f"```{lang}\n{answer}\n```"
+        console.print(Markdown(answer_md))
 
-        output_dir = Path(f"{args.model.replace('-', '')}/p{task_id!s}")
-        output_dir.mkdir(parents=True, exist_ok=True)
-        fretre_path = output_dir / "retrieve.txt"
+        fretre_path = Path(log_path) / "retrieve.txt"
 
         with open(fretre_path, "w") as fretre:
-            fretre.write(answer)
-        regex = r".*?```.*?\n(.*?)```"
-        matches = re.finditer(regex, answer, re.DOTALL)
-        first_match = next(matches, None)
-        match_res = first_match.group(1)
-        print(f"match_res\n{match_res}")
+            fretre.write(answer_md)
         # 原本使用 `eval`，但 `eval` 只能執行單行代碼
         # 這裡要改成 `exec`
-        subcircuits = eval(match_res)
+        subcircuits = eval(f"{answer}")
         # subcircuits = exec(match_res)
     else:
         # use default subcircuits
@@ -1694,9 +1682,6 @@ def main():
             # )
             flog.write(f"task: {circuit_id}, it: {it}\n")
             flog.flush()
-            subcircuits = None
-            if circuit_type in complex_task_type and args.skill:
-                subcircuits = get_retrieval(task=circuit_name, task_id=args.task_id)
             remaining_money = work(
                 task=circuit_name,
                 input=circuit_input.strip(),
@@ -1707,7 +1692,6 @@ def main():
                 task_type=circuit_type,
                 flog=flog,
                 money_quota=remaining_money,
-                subcircuits=subcircuits,
             )
             if remaining_money < 0:
                 break

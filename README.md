@@ -3,7 +3,7 @@
 New: Our paper has been accepted by **AAAI'25**.
 
 <p align="center">
-  <img src="AnalogCoder_label.png" alt="alt text"width="100">
+  <img src="./configs/images/AnalogCoder_label.png" alt="alt text"width="100">
 </p>
 
 The code implemented for AAAI'25 paper **AnalogCoder: Analog Circuit Design via Training-Free Code Generation**.
@@ -15,11 +15,11 @@ The code implemented for AAAI'25 paper **AnalogCoder: Analog Circuit Design via 
 <sup>3</sup> The Chinese University of Hong Kong.
 
 <a href="https://mmlab-hku.com/" target="_blank">
-    <img src="hkummlab.png" alt="Image 1" style="width: 30%;"/>
+    <img src="./configs/images/hkummlab.png" alt="Image 1" style="width: 30%;"/>
   </a>
 
 <a href="https://www.cerc.utexas.edu/utda/" target="_blank">
-    <img src="utda.jpg" alt="Image 2" style="width: 20%;"/>
+    <img src="./configs/images/utda.jpg" alt="Image 2" style="width: 20%;"/>
   </a>
 
 \[[Paper](https://arxiv.org/pdf/2405.14918)\]
@@ -27,7 +27,7 @@ The code implemented for AAAI'25 paper **AnalogCoder: Analog Circuit Design via 
 # Introduction
 
 <p align="center">
-  <img src="teaser.png" alt="alt text"width="800">
+  <img src="./configs/images/teaser.png" alt="alt text"width="800">
 </p>
 
 **Analog circuit design** is a significant task in modern chip technology, focusing on selecting component types, connectivity, and parameters to ensure proper circuit functionality. Despite advances made by Large Language Models (LLMs) in digital circuit design, the **complexity** and **scarcity of data** in analog circuitry pose significant challenges. To mitigate these issues, we introduce **AnalogCoder**, the *first* training-free LLM agent for designing analog circuits that converts tasks into **Python code generation**.

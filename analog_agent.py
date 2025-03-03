@@ -427,12 +427,12 @@ class AnalogAgent(BaseModel):
             api_version=llm_config["config_list"][0]["api_version"],
             http_client=httpx.Client(headers=llm_config["config_list"][0]["default_headers"]),
         )
-        if "o1" not in model:
+        if "o1" in model:
+            result = client.chat.completions.create(messages=messages, model=model)
+        else:
             result = client.chat.completions.create(
                 messages=messages, model=model, temperature=llm_config["temperature"]
             )
-        else:
-            result = client.chat.completions.create(messages=messages, model=model)
         return result
 
     def testbench_hook(
@@ -749,7 +749,6 @@ class AnalogAgent(BaseModel):
                     "content": "You should use `retrieve_data` function to retrieve the information you need before making the correct decision and plan for your main PySpice Code.",
                 })
         groupchat = autogen.GroupChat(
-            agents=[*proxies, *agents, executor],
             agents=[*proxies, *agents, executor],
             messages=[],
             max_round=12,
