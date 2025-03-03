@@ -497,13 +497,6 @@ class AnalogAgent(BaseModel):
     ) -> ChatCompletion:
         llm_config = get_config_dict(model=model)
         self._get_cache(llm_config=llm_config)
-        groupchat_proxy = UserProxyAgent(
-            name="groupchat_proxy",
-            # llm_config=llm_config,
-            human_input_mode="NEVER",
-            code_execution_config=False,
-            # system_message="Make sure the final answer contains the PySpice Code.",
-        )
         pi_agent = autogen.AssistantAgent(
             name="Analog_Expert",
             system_message="## Your role  \nAnalog_Expert is a seasoned analog integrated circuits specialist. In addition to expertise in analog circuit design, they possess strong Python programming skills and are proficient in using PySpice for accurate and robust simulation of analog circuits.\n\n## Task and skill instructions  \n- Task description: The expert is responsible for designing high-performance Analog Circuits and employing simulation tools to verify the design integrity. This includes running comprehensive simulations to detect issues such as singular matrices, ensuring that the circuit designs work as intended under various operating conditions.  \n- Skill description: The expert has in-depth knowledge of analog integrated circuit design, particularly in developing phase-locked loop systems. In parallel, they are skilled in Python programming and have extensive experience using PySpice for circuit simulation. This dual expertise ensures that designs are not only theoretically sound but are also rigorously tested and validated through simulation, addressing potential pitfalls before fabrication.  \n- Additional information: Their work meticulously bridges the gap between circuit design and simulation verification, ensuring that every component of the design process is thoroughly checked for errors or issues, culminating in reliable, high-quality analog systems.",
