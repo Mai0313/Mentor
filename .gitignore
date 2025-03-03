@@ -174,8 +174,8 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-/configs/OAI_CONFIG_LIST
-/configs/OAI_CONFIG_LIST.*
-!configs/OAI_CONFIG_LIST.example
+/configs/llm/OAI_CONFIG_LIST
+/configs/llm/OAI_CONFIG_LIST.*
+!configs/llm/OAI_CONFIG_LIST.example
 **/p[0-9]*/
 prompt_template_complex_with_sub_*.md

@@ -55,23 +55,23 @@ repos:
       - id: debug-statements
       - id: check-symlinks
 
-  # md formatting
-  - repo: https://github.com/executablebooks/mdformat
-    rev: 0.7.22
-    hooks:
-      - id: mdformat
-        args:
-          - --number
-        additional_dependencies:
-          - mdformat-gfm
-          - mdformat-web
-          - mdformat-ruff
-          - mdformat-config
-          - mdformat-tables
-          - mdformat-footnote
-          - mdformat_frontmatter
-          - mdformat-pyproject
-          - mdformat-mkdocs[recommended]
+  # # md formatting
+  # - repo: https://github.com/executablebooks/mdformat
+  #   rev: 0.7.22
+  #   hooks:
+  #     - id: mdformat
+  #       args:
+  #         - --number
+  #       additional_dependencies:
+  #         - mdformat-gfm
+  #         - mdformat-web
+  #         - mdformat-ruff
+  #         - mdformat-config
+  #         - mdformat-tables
+  #         - mdformat-footnote
+  #         - mdformat_frontmatter
+  #         - mdformat-pyproject
+  #         - mdformat-mkdocs[recommended]
 
   # jupyter notebook cell output clearing
   - repo: https://github.com/kynan/nbstripout
@@ -79,12 +79,12 @@ repos:
     hooks:
       - id: nbstripout
 
-  - repo: https://github.com/codespell-project/codespell
-    rev: v2.4.1
-    hooks:
-      - id: codespell
-        additional_dependencies:
-          - tomli
+  # - repo: https://github.com/codespell-project/codespell
+  #   rev: v2.4.1
+  #   hooks:
+  #     - id: codespell
+  #       additional_dependencies:
+  #         - tomli
 
   # - repo: local
   #   hooks:

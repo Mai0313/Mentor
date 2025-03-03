@@ -33,9 +33,10 @@ from chromadb.utils.embedding_functions.openai_embedding_function import OpenAIE
 console = Console()
 warnings.filterwarnings("ignore", category=ResourceWarning)
 
+
 def get_config_dict(model: str) -> dict[str, Any]:
     config_list = config_list_from_json(
-        env_or_file="./configs/OAI_CONFIG_LIST", filter_dict={"model": model}
+        env_or_file="./configs/llm/OAI_CONFIG_LIST", filter_dict={"model": model}
     )
     llm_config = {
         "timeout": 60,
@@ -418,7 +419,10 @@ class AnalogAgent(BaseModel):
             code_execution_config=False,
             llm_config=llm_config,
         )
-        pi_agent.register_hook("process_last_received_message", lambda content: f"{content}\n\nPlease help me design the mentioned circuit. Think and tell me the necessary steps.\nLet's think step by step.")
+        pi_agent.register_hook(
+            "process_last_received_message",
+            lambda content: f"{content}\n\nPlease help me design the mentioned circuit. Think and tell me the necessary steps.\nLet's think step by step.",
+        )
         executor = autogen.UserProxyAgent(
             name="executor",
             human_input_mode="NEVER",
@@ -493,7 +497,7 @@ class AnalogAgent(BaseModel):
         manager = autogen.GroupChatManager(groupchat=groupchat, llm_config=llm_config)
 
         # Start chatting with boss_aid as this is the user proxy agent.
-        chat_result = pi_agent.initiate_chat(
+        chat_result = groupchat_proxy.initiate_chat(
             recipient=manager,
             message=f"{messages}, the final answer must contain a PySpice Code in Python. You should use `retrieve_data` function to retrieve the information you need before making the correct decision and plan for your main PySpice Code. The code should be fully tested before terminated.",
             summary_method=self._summary_method,
@@ -522,7 +526,7 @@ class AnalogAgent(BaseModel):
         cache = self._get_cache(llm_config=llm_config)
         nested_config = {
             "autobuild_init_config": {
-                "config_file_or_env": "./configs/OAI_CONFIG_LIST",
+                "config_file_or_env": "./configs/llm/OAI_CONFIG_LIST",
                 "builder_model": "aide-o3-mini",
                 "agent_model": model,
                 "max_agents": 10,

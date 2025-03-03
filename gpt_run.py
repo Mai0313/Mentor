@@ -969,20 +969,20 @@ def work(
 
     if task_type not in complex_task_type or args.skill is False or "rag" in MULTI_AGENT_MODE:
         if "llama" in args.model:
-            prompt_path = "prompt_template.md"
+            prompt_path = "./configs/prompt/prompt_template.md"
         elif args.ngspice:
-            prompt_path = "prompt_template_ngspice.md"
+            prompt_path = "./configs/prompt/prompt_template_ngspice.md"
         elif any(model in args.model for model in opensource_models):
-            prompt_path = "prompt_template.md"
+            prompt_path = "./configs/prompt/prompt_template.md"
         else:
-            prompt_path = "prompt_template.md"
+            prompt_path = "./configs/prompt/prompt_template.md"
 
         if args.no_prompt:
-            prompt_path = "prompt_template_wo_prompt.md"
+            prompt_path = "./configs/prompt/prompt_template_wo_prompt.md"
         elif args.no_context:
-            prompt_path = "prompt_template_wo_context.md"
+            prompt_path = "./configs/prompt/prompt_template_wo_context.md"
         elif args.no_chain:
-            prompt_path = "prompt_template_wo_chain_of_thought.md"
+            prompt_path = "./configs/prompt/prompt_template_wo_chain_of_thought.md"
 
         with open(prompt_path) as fopen:
             prompt = fopen.read()
@@ -1000,7 +1000,7 @@ def work(
             bias_voltage = 2.5
 
     else:
-        with open("prompt_template_complex.md") as fopen:
+        with open("./configs/prompt/prompt_template_complex.md") as fopen:
             prompt = fopen.read()
 
         prompt = prompt.replace("[TASK]", task)
@@ -1024,7 +1024,9 @@ def work(
             .replace("[NOTE_INFO]", note_info)
             .replace("[CALL_INFO]", call_info)
         )
-        with open(f"prompt_template_complex_with_sub_{task_type}.md", "w") as fwrite_prompt:
+        with open(
+            f"./configs/prompt/prompt_template_complex_with_sub_{task_type}.md", "w"
+        ) as fwrite_prompt:
             fwrite_prompt.write(prompt)
 
     # Background is not used now
