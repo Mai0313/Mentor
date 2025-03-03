@@ -898,6 +898,8 @@ def get_model_dir(task_type: str, task_id: int, it: int) -> tuple[str, str]:
         model_dir = "gpt4"
     elif "o3-mini" in args.model:
         model_dir = "o3mini"
+    elif "o1" in args.model:
+        model_dir = "gpto1"
     elif "deepseek" in args.model:
         model_dir = "deepseek"
     elif any(model in args.model for model in opensource_models):
@@ -1106,6 +1108,10 @@ def work(
                     mode=MULTI_AGENT_MODE,
                     work_dir=log_path,
                     use_docker=USE_DOCKER,
+                    task=task,
+                    task_type=task_type,
+                    input_nodes=input,
+                    output_nodes=output,
                 )
                 break
             except openai.APIStatusError as e:
@@ -1119,7 +1125,7 @@ def work(
         money_quota, total_tokens, total_prompt_tokens, total_completion_tokens, completion
     )
 
-    if "gpt" in args.model or "deepseek" in args.model:
+    if "aide" in args.model or "deepseek" in args.model:
         answer = completion.choices[0].message.content
     else:
         answer = completion["message"]["content"]
@@ -1164,7 +1170,10 @@ def work(
         code = raw_code
 
     # 重新 assign code 變數
-    code = raw_code
+    if task_type not in complex_task_type:
+        code = raw_code + pyspice_template.replace("[OP_PATH]", operating_point_path)
+    else:
+        code = raw_code
     ##################################################################################################
 
     with open(f"{model_dir}/p{task_id}/p{task_id}_{it}_input.txt", "w") as fwrite_input:
@@ -1325,7 +1334,8 @@ def work(
                         with open(netlist_file_path, "w") as fwrite_netlist:
                             fwrite_netlist.write("\n".join(result.stdout.split("\n")[1:]))
                         dc_sweep_success = 1
-                    except:
+                    except Exception as e:
+                        print(f"error: {e}")
                         # recover the raw file
                         if os.path.exists(code_path + ".bak"):
                             if os.path.exists(code_path):
@@ -1470,6 +1480,8 @@ def work(
             break
         messages.append({"role": "user", "content": new_prompt})
 
+        messages = messages[0:1] + messages[-2:]
+
         if money_quota < 0:
             flog.write(f"Money quota is used up. Exceed quota: {money_quota}\n")
             return None
@@ -1515,6 +1527,10 @@ def work(
                         mode=MULTI_AGENT_MODE,
                         work_dir=log_path,
                         use_docker=USE_DOCKER,
+                        task=task,
+                        task_type=task_type,
+                        input_nodes=input,
+                        output_nodes=output,
                     )
                     break
             except openai.APIStatusError as e:
@@ -1533,7 +1549,7 @@ def work(
             fwrite_input.write(new_prompt)
             fwrite_input.flush()
 
-            if "gpt" in args.model or "deepseek" in args.model:
+            if "aide" in args.model or "deepseek" in args.model:
                 answer = completion.choices[0].message.content
             else:
                 answer = completion["message"]["content"]
@@ -1580,7 +1596,7 @@ def get_retrieval(task: str, task_id: int) -> list[int]:
         {"role": "system", "content": "You are an analog integrated circuits expert."},
         {"role": "user", "content": prompt},
     ]
-    if "gpt" in args.model and args.retrieval:
+    if "aide" in args.model and args.retrieval:
         try:
             # # add autogen groupchat
             # completion = client.chat.completions.create(
@@ -1594,6 +1610,10 @@ def get_retrieval(task: str, task_id: int) -> list[int]:
                 mode="original",
                 work_dir=".",
                 use_docker=USE_DOCKER,
+                task="",
+                task_type="",
+                input_nodes="",
+                output_nodes="",
             )
         except openai.APIStatusError as e:
             print("Encountered an APIStatusError. Details:")
@@ -1675,7 +1695,7 @@ def main():
             flog.write(f"task: {circuit_id}, it: {it}\n")
             flog.flush()
             subcircuits = None
-            if circuit_type in complex_task_type:
+            if circuit_type in complex_task_type and args.skill:
                 subcircuits = get_retrieval(task=circuit_name, task_id=args.task_id)
             remaining_money = work(
                 task=circuit_name,

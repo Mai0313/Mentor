@@ -179,3 +179,5 @@ cython_debug/
 !configs/llm/OAI_CONFIG_LIST.example
 **/p[0-9]*/
 prompt_template_complex_with_sub_*.md
+
+gpt4*/
