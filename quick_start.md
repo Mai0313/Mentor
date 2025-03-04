@@ -1,6 +1,6 @@
-### Quick Start
+## Quick Start
 
-#### Setup Manually (Recommanded)
+### Setup Manually (Recommanded)
 
 ```bash
 conda create -n analog python=3.10 -y
@@ -9,6 +9,16 @@ export https_proxy=http://mtkdrone01.mediatek.inc:23984
 conda install -c conda-forge ngspice=32 uv -y
 uv pip install -r pyproject.toml
 ```
+
+### Using Conda Pack
+
+- Unzip `/mnt/nfs/tma/analog.tar.gz` into your `envs` folder
+
+```bash
+cp /mnt/nfs/tma/analog.tar.gz ~/analog.tar.gz
+```
+
+- [Reference](https://blog.csdn.net/ds1302__/article/details/120027173)
 
 ### Setup using environment.yml
 
