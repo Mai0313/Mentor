@@ -73,6 +73,23 @@ print(source)
 """
 
 
+class MessageModel(BaseModel):
+    role: str = Field(
+        default="",
+        title="Role of the Message",
+        description="Role of the Message, if model is o1, it should not be `system`.",
+        frozen=False,
+        deprecated=False,
+    )
+    content: str = Field(
+        default="",
+        title="Content of the Message",
+        description="Content of the Message",
+        frozen=False,
+        deprecated=False,
+    )
+
+
 def get_config_dict(model: str, temp: float = 0.5) -> dict[str, Any]:
     config_list = config_list_from_json(
         env_or_file="./configs/llm/OAI_CONFIG_LIST", filter_dict={"model": model}
@@ -406,6 +423,46 @@ class AnalogAgent(BaseModel):
         content = path.read_text()
         return content
 
+    def convert_init_message(self, messages: list[dict[str, str]]) -> dict[str, str]:
+        """This function will convert `chat_completion` format into AG2 `init_chat` format.
+
+        init_chat can accept dict[str, Any], but chat_completion will be list[dict[str, Any]].
+
+        Args:
+            messages (list[dict[str, str]]): The messages you want to convert.
+
+        Returns:
+            dict[str, str]: The converted messages.
+                Output will follow this order: `system` -> `assistant` -> `user`.
+
+        Examples:
+            === "python"
+
+            ```python
+            messages = [
+                {"role": "assistant", "content": "You should be kind."},
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": "Hi there!"},
+            ]
+            analog_agent = AnalogAgent()
+            parsed_message_dict = analog_agent.convert_init_message(messages=messages)
+            print(parsed_message_dict)
+            # >>> {'system': 'You are a helpful assistant.', 'assistant': 'You should be kind.', 'user': 'Hi there!'}
+            ```
+        """
+        dict_order = ["system", "assistant", "user"]
+        if not isinstance(messages, list):
+            return {"role": "user", "content": f"{messages}"}
+        parsed_messages = [MessageModel(**message) for message in messages]
+        message_dict: dict[str, str] = {}
+        for parsed_message in parsed_messages:
+            if parsed_message.role in message_dict:
+                message_dict[parsed_message.role] += "\n" + parsed_message.content
+            else:
+                message_dict[parsed_message.role] = parsed_message.content
+        message_dict = {key: message_dict[key] for key in dict_order if key in message_dict}
+        return message_dict
+
     def use_chat_completion(self, model: str, messages: list[dict[str, str]]) -> ChatCompletion:
         messages[-1]["content"] += (
             "\nYou should only output the Pyspice python code in code block."
@@ -722,8 +779,6 @@ class AnalogAgent(BaseModel):
         """
         llm_config = get_config_dict(model=model)
         cache = self._get_cache(llm_config=llm_config)
-        pilot_prompt_path = Path("./configs/prompt/prompt_pilot.md")
-        pilot_prompt = pilot_prompt_path.read_text()
         nested_config = {
             "autobuild_init_config": {
                 "config_file_or_env": "./configs/llm/OAI_CONFIG_LIST",
@@ -762,6 +817,7 @@ class AnalogAgent(BaseModel):
             human_input_mode="NEVER",
             code_execution_config=False,
             # system_message="Make sure the final answer contains the PySpice Code.",
+            silent=True,
         )
         captain_agent = CaptainAgent(
             name="captain_agent",
@@ -777,11 +833,10 @@ class AnalogAgent(BaseModel):
             # tool_lib="./tools",
             # is_termination_msg=lambda x: "TERMINATE" in x.get("content"),
         )
-        messages.append({"role": "system", "content": pilot_prompt})
-        messages.append({
-            "role": "user",
-            "content": "Please just seek_experts_help\nMake sure the code should not have singular matrix issue.",
-        })
+        # extra_prompt_path = Path("./configs/prompt/prompt4checks.md")
+        # extra_prompt = extra_prompt_path.read_text()
+        # messages.append({"role": "user", "content": extra_prompt})
+        messages.append({"role": "user", "content": "Please just seek_experts_help"})
 
         if use_rag is True:
             d_retrieve_content = captain_agent.assistant.register_for_llm(
@@ -793,6 +848,7 @@ class AnalogAgent(BaseModel):
                 "role": "user",
                 "content": "You should use `retrieve_data` function to retrieve the information you need before making the correct decision and plan for your main PySpice Code.",
             })
+        # message = self.convert_init_message(messages=messages)
         chat_result = captain_user_proxy.initiate_chat(
             captain_agent,
             message=f"{messages}",

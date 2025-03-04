@@ -1,4 +1,3 @@
-import io
 import os
 import re
 import sys
@@ -900,7 +899,7 @@ def kill_tmux_session(session_name: str) -> None:
         print(f"Failed to kill tmux session '{session_name}'. Session might not exist.")
 
 
-def get_model_dir(task_type: str, task_id: int, it: int) -> str:
+def get_model_dir(task_type: str, task_id: int, it: int) -> Path:
     if "ft:gpt-3.5" in args.model:
         if "a:9HyyBpNI" in args.model:
             model_dir = "gpt3p5-ft-A"
@@ -946,7 +945,7 @@ def get_model_dir(task_type: str, task_id: int, it: int) -> str:
         model_dir += "_no_skill"
     log_path = Path(f"./logs/{model_dir}/p{task_id}/{it}")
     log_path.mkdir(parents=True, exist_ok=True)
-    return log_path.as_posix()
+    return log_path
 
 
 def cal_quota(
@@ -976,16 +975,19 @@ def work(
     it: int,
     background: None,
     task_type: str,
-    flog: io.TextIOWrapper,
+    log_file_path: Path,
     money_quota: int = 100,
 ) -> int:
     global generator
+
+    with open(log_file_path, "w") as log_file:
+        log_file.write(f"task: {task_id}, it: {it}\n")
 
     total_tokens = 0
     total_prompt_tokens = 0
     total_completion_tokens = 0
     log_path = get_model_dir(task_type=task_type, task_id=task_id, it=it)
-    log_path_parent = Path(log_path).parent
+    log_path_parent = log_path.parent
 
     if task_type not in complex_task_type or args.skill is False:
         if "llama" in args.model:
@@ -1075,7 +1077,10 @@ def work(
         # file_content = file_content.replace("sys.exit(0)", "pass")
         # file_content = file_content.replace("print(", "raise ValueError(")
         messages.append(
-            {"role": "user", "content": f"Remember to save the fig under {log_path}."}
+            {
+                "role": "user",
+                "content": f"Remember to save the fig under {log_path.absolute().as_posix()}.",
+            }
             # {
             #     "role": "user",
             #     "content": f"Remember to use {file_content} in the end of your PySpice code for checking, once the plot is generated, the code is correct; you can ignore rest of error.",
@@ -1083,7 +1088,7 @@ def work(
         )
 
     if money_quota < 0:
-        flog.write(f"Money quota is used up. Exceed quota: {money_quota}\n")
+        log_file_path.write_text(f"Money quota is used up. Exceed quota: {money_quota}\n")
         return money_quota
 
     while retry_quota < 2:
@@ -1370,11 +1375,11 @@ def work(
                         print(f"CODE_PATH = {code_path}")
                         os.rename(code_path, code_path.rsplit(".", 1)[0] + "_success.py")
                         if any(model in args.model for model in opensource_models):
-                            flog.write(
+                            log_file_path.write_text(
                                 f"task:{task_id}\tit:{it}\tcode_id:{code_id}\tsuccess.\tcompletion_tokens:{completion.usage.completion_tokens}"
                                 f"\tprompt_tokens:{completion.usage.prompt_tokens}\ttotal_tokens:{completion.usage.total_tokens}\n"
                             )
-                            flog.write(
+                            log_file_path.write_text(
                                 f"total_tokens\t{total_tokens}\ttotal_prompt_tokens\t{total_prompt_tokens}\ttotal_completion_tokens\t{total_completion_tokens}\n"
                             )
                             with open(
@@ -1383,9 +1388,10 @@ def work(
                             ):
                                 pass
                         else:
-                            flog.write(f"task:{task_id}\tit:{it}\tcode_id:{code_id}\tsuccess.\n")
-                        flog.write(f"money_quota\t{money_quota:.10f}\n")
-                        flog.flush()
+                            log_file_path.write_text(
+                                f"task:{task_id}\tit:{it}\tcode_id:{code_id}\tsuccess.\n"
+                            )
+                        log_file_path.write_text(f"money_quota\t{money_quota:.10f}\n")
                         break
             else:
                 os.rename(code_path, code_path.rsplit(".", 1)[0] + "_success.py")
@@ -1397,11 +1403,11 @@ def work(
                     and "qwencode" not in args.model
                     and "mixtral" not in args.model
                 ):
-                    flog.write(
+                    log_file_path.write_text(
                         f"task:{task_id}\tit:{it}\tcode_id:{code_id}\tsuccess.\tcompletion_tokens:{completion.usage.completion_tokens}"
                         f"\tprompt_tokens:{completion.usage.prompt_tokens}\ttotal_tokens:{completion.usage.total_tokens}\n"
                     )
-                    flog.write(
+                    log_file_path.write_text(
                         f"total_tokens\t{total_tokens}\ttotal_prompt_tokens\t{total_prompt_tokens}\ttotal_completion_tokens\t{total_completion_tokens}\n"
                     )
                     with open(
@@ -1410,9 +1416,10 @@ def work(
                     ):
                         pass
                 else:
-                    flog.write(f"task:{task_id}\tit:{it}\tcode_id:{code_id}\tsuccess.\n")
-                flog.write(f"money_quota\t{money_quota:.10f}\n")
-                flog.flush()
+                    log_file_path.write_text(
+                        f"task:{task_id}\tit:{it}\tcode_id:{code_id}\tsuccess.\n"
+                    )
+                log_file_path.write_text(f"money_quota\t{money_quota:.10f}\n")
                 break
 
         # Ignore the compatible error
@@ -1427,8 +1434,10 @@ def work(
                 op_content = f.read()
             new_prompt += op_content
 
-            flog.write(f"task:{task_id}\tit:{it}\tcode_id\t{code_id}\tdc sweep error\n")
-            flog.flush()
+            log_file_path.write_text(
+                f"task:{task_id}\tit:{it}\tcode_id\t{code_id}\tdc sweep error\n"
+            )
+            log_file_path.write_text()
             with open(f"{log_path}/dc_sweep_error_{code_id}", "w"):
                 pass
         else:
@@ -1440,49 +1449,51 @@ def work(
                 new_prompt += (
                     "There is no complete code in your reply. Please generate a complete code."
                 )
-                flog.write(f"task:{task_id}\tit:{it}\tcode_id\t{code_id}\tempty code error\n")
-                flog.flush()
+                log_file_path.write_text(
+                    f"task:{task_id}\tit:{it}\tcode_id\t{code_id}\tempty code error\n"
+                )
                 with open(f"{log_path}/empty_error_{code_id}", "w"):
                     pass
             elif simulation_error == 1:
                 new_prompt += prompt_sim_error.replace("[NODE]", floating_node)
-                flog.write(f"task:{task_id}\tit:{it}\tcode_id:{code_id}\tsimulation error\n")
-                flog.flush()
+                log_file_path.write_text(
+                    f"task:{task_id}\tit:{it}\tcode_id:{code_id}\tsimulation error\n"
+                )
                 with open(f"{log_path}/simulation_error_{code_id}", "w"):
                     pass
             elif execution_error == 1:
                 new_prompt += prompt_exe_error.replace("[ERROR]", execution_error_info)
-                flog.write(f"task:{task_id}\tit:{it}\tcode_id:{code_id}\texecution error\n")
-                flog.flush()
+                log_file_path.write_text(
+                    f"task:{task_id}\tit:{it}\tcode_id:{code_id}\texecution error\n"
+                )
                 with open(f"{log_path}/execution_error_{code_id}", "w"):
                     pass
             elif warning == 1:
                 new_prompt += warning_message
-                flog.write(
+                log_file_path.write_text(
                     f"task:{task_id}\tit:{it}\tcode_id:{code_id}\tmosfet connection error\n"
                 )
-                flog.flush()
                 with open(f"{log_path}/mosfet_connection_error_{code_id}", "w"):
                     pass
             elif func_error == 1:
                 new_prompt += func_error_message
                 new_prompt += "\nPlease rewrite the corrected complete code."
-                flog.write(f"task:{task_id}\tit:{it}\tcode_id:{code_id}\tfunction error\n")
-                flog.flush()
+                log_file_path.write_text(
+                    f"task:{task_id}\tit:{it}\tcode_id:{code_id}\tfunction error\n"
+                )
                 with open(f"{log_path}/function_error_{code_id}", "w"):
                     pass
             else:
                 raise AssertionError
-        flog.write(
+        log_file_path.write_text(
             f"total_tokens\t{total_tokens}\ttotal_prompt_tokens\t{total_prompt_tokens}\ttotal_completion_tokens\t{total_completion_tokens}\n"
         )
-        flog.write(f"money_quota\t{money_quota:.10f}\n")
+        log_file_path.write_text(f"money_quota\t{money_quota:.10f}\n")
         with open(
             f"{log_path}/token_info_{total_tokens}_{total_prompt_tokens}_{total_completion_tokens}_{code_id}",
             "w",
         ):
             pass
-        flog.flush()
         code_id += 1
         if code_id >= args.num_of_retry:
             break
@@ -1491,7 +1502,7 @@ def work(
         messages = messages[0:1] + messages[-2:]
 
         if money_quota < 0:
-            flog.write(f"Money quota is used up. Exceed quota: {money_quota}\n")
+            log_file_path.write_text(f"Money quota is used up. Exceed quota: {money_quota}\n")
             return None
 
         retry_quota = 0
@@ -1595,7 +1606,7 @@ def work(
     return money_quota
 
 
-def get_retrieval(task: str, task_id: int, log_path: str) -> list[int]:
+def get_retrieval(task: str, task_id: int, log_path: Path) -> list[int]:
     # use the real RAG here
     with open("./configs/prompt/retrieval_prompt.md") as f:
         prompt = f.read()
@@ -1635,7 +1646,7 @@ def get_retrieval(task: str, task_id: int, log_path: str) -> list[int]:
         answer_md = f"```{lang}\n{answer}\n```"
         console.print(Markdown(answer_md))
 
-        fretre_path = Path(log_path) / "retrieve.txt"
+        fretre_path = log_path / "retrieve.txt"
 
         with open(fretre_path, "w") as fretre:
             fretre.write(answer_md)
@@ -1680,35 +1691,32 @@ def main():
 
     strftime = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
     if args.ngspice:
-        log_path = f"logs/{strftime}_{args.model}_{circuit_id}_ngspice_log.txt"
+        log_file_path = Path(f"logs/{strftime}_{args.model}_{circuit_id}_ngspice_log.txt")
     elif args.no_prompt:
-        log_path = f"logs/{strftime}_{args.model}_{circuit_id}_no_prompt_log.txt"
+        log_file_path = Path(f"logs/{strftime}_{args.model}_{circuit_id}_no_prompt_log.txt")
     elif args.no_context:
-        log_path = f"logs/{strftime}_{args.model}_{circuit_id}_no_context_log.txt"
+        log_file_path = Path(f"logs/{strftime}_{args.model}_{circuit_id}_no_context_log.txt")
     elif args.no_chain:
-        log_path = f"logs/{strftime}_{args.model}_{circuit_id}_no_chain_log.txt"
+        log_file_path = Path(f"logs/{strftime}_{args.model}_{circuit_id}_no_chain_log.txt")
     elif not args.skill and circuit_type in complex_task_type:
-        log_path = f"logs/{strftime}_{args.model}_{circuit_id}_log_no_skill.txt"
+        log_file_path = Path(f"logs/{strftime}_{args.model}_{circuit_id}_log_no_skill.txt")
     else:
-        log_path = f"logs/{strftime}_{args.model}_{circuit_id}_log.txt"
+        log_file_path = Path(f"logs/{strftime}_{args.model}_{circuit_id}_log.txt")
 
-    with open(log_path, "w") as flog:
-        for it in range(args.num_of_done, args.num_per_task):
-            flog.write(f"task: {circuit_id}, it: {it}\n")
-            flog.flush()
-            remaining_money = work(
-                task=circuit_name,
-                input=circuit_input.strip(),
-                output=circuit_output.strip(),
-                task_id=circuit_id,
-                it=it,
-                background=None,
-                task_type=circuit_type,
-                flog=flog,
-                money_quota=remaining_money,
-            )
-            if remaining_money < 0:
-                break
+    for it in range(args.num_of_done, args.num_per_task):
+        remaining_money = work(
+            task=circuit_name,
+            input=circuit_input.strip(),
+            output=circuit_output.strip(),
+            task_id=circuit_id,
+            it=it,
+            background=None,
+            task_type=circuit_type,
+            log_file_path=log_file_path,
+            money_quota=remaining_money,
+        )
+        if remaining_money < 0:
+            break
 
 
 if __name__ == "__main__":
