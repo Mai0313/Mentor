@@ -25,7 +25,7 @@ dependencies = [
 
 [[tool.uv.index]]
 name = "default"
-url = "https://oa-mirror.mediatek.inc/repository/pypi/simple/"
+url = "https://pypi.org/simple"
 
 [[tool.uv.index]]
 # https://docs.astral.sh/uv/guides/integration/pytorch/#using-a-pytorch-index
@@ -43,6 +43,10 @@ torchvision = [
 torchaudio = [
     { index = "pytorch-cu118" },
 ]
+
+[tool.uv.pip]
+index-url = "https://pypi.org/simple"
+extra-index-url = ["https://download.pytorch.org/whl/cu118"]
 
 # ================== #
 #        RUFF        #
