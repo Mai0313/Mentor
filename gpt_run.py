@@ -900,7 +900,7 @@ def kill_tmux_session(session_name: str) -> None:
         print(f"Failed to kill tmux session '{session_name}'. Session might not exist.")
 
 
-def get_model_dir(task_type: str, task_id: int, it: int) -> tuple[str, str]:
+def get_model_dir(task_type: str, task_id: int, it: int) -> str:
     if "ft:gpt-3.5" in args.model:
         if "a:9HyyBpNI" in args.model:
             model_dir = "gpt3p5-ft-A"
