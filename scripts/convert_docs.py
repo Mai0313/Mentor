@@ -1,3 +1,14 @@
+# /// script
+# requires-python = ">=3.10"
+# dependencies = [
+#     "httpx",
+#     "logfire",
+#     "markitdown",
+#     "openai",
+#     "rich",
+#     "unstructured[all-docs]",
+# ]
+# ///
 from pathlib import Path
 
 import logfire
