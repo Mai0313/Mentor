@@ -1694,9 +1694,6 @@ def main():
 
     with open(log_path, "w") as flog:
         for it in range(args.num_of_done, args.num_per_task):
-            # flog.write(
-            #     "task,it,code_id,result,completion_tokens,prompt_tokens,total_tokens,overall_completion_tokens,overall_prompt_tokens,overall_tokens,quota_left\n"
-            # )
             flog.write(f"task: {circuit_id}, it: {it}\n")
             flog.flush()
             remaining_money = work(
