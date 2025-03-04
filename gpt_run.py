@@ -1240,7 +1240,7 @@ def work(
         else:
             answer_code = code
 
-        if task_type in complex_task_type and args.skill is True and "rag" not in MULTI_AGENT_MODE:
+        if task_type in complex_task_type and args.skill is True:
             for subcircuit in subcircuits:
                 shutil.copy(
                     f"subcircuit_lib/p{subcircuit}_lib.py", "/".join(code_path.split("/")[:-1])
