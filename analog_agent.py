@@ -103,7 +103,9 @@ def retrieve_data(query: str) -> str:
     all_docs = [*docs_path, *subcircuit_lib]
     all_docs = [f.as_posix() for f in all_docs]
     llm_config = get_config_dict(model="aide-gpt-4o")
-    rag_assistant = autogen.AssistantAgent(name="RetrieveAssistant", llm_config=llm_config, silent=True)
+    rag_assistant = autogen.AssistantAgent(
+        name="RetrieveAssistant", llm_config=llm_config, silent=True
+    )
     rag_proxy_agent = RetrieveUserProxyAgent(
         name="RetrieveProxyAgent",
         human_input_mode="NEVER",
@@ -128,7 +130,7 @@ def retrieve_data(query: str) -> str:
             "embedding_model": None,
         },
         code_execution_config=False,  # we don't want to execute code in this case.
-        silent=True
+        silent=True,
     )
     chat_result = rag_proxy_agent.initiate_chat(
         recipient=rag_assistant,
@@ -720,6 +722,8 @@ class AnalogAgent(BaseModel):
         """
         llm_config = get_config_dict(model=model)
         cache = self._get_cache(llm_config=llm_config)
+        pilot_prompt_path = Path("./configs/prompt/prompt_pilot.md")
+        pilot_prompt = pilot_prompt_path.read_text()
         nested_config = {
             "autobuild_init_config": {
                 "config_file_or_env": "./configs/llm/OAI_CONFIG_LIST",
@@ -773,11 +777,25 @@ class AnalogAgent(BaseModel):
             # tool_lib="./tools",
             # is_termination_msg=lambda x: "TERMINATE" in x.get("content"),
         )
-        if use_rag:
-            messages.append({"role": "user", "content": "All Docs is in ./docs"})
+        messages.append({"role": "system", "content": pilot_prompt})
+        messages.append({
+            "role": "user",
+            "content": "Please just seek_experts_help\nMake sure the code should not have singular matrix issue.",
+        })
+
+        if use_rag is True:
+            d_retrieve_content = captain_agent.assistant.register_for_llm(
+                description="retrieve the information you need or if you have any question, you can use this function to get the answer.",
+                api_style="tool",
+            )(retrieve_data)
+            captain_agent.executor.register_for_execution()(d_retrieve_content)
+            messages.append({
+                "role": "user",
+                "content": "You should use `retrieve_data` function to retrieve the information you need before making the correct decision and plan for your main PySpice Code.",
+            })
         chat_result = captain_user_proxy.initiate_chat(
             captain_agent,
-            message=f"{messages}\nPlease just seek_experts_help\nMake sure the code should not have singular matrix issue.",
+            message=f"{messages}",
             max_turns=1,
             summary_method=self._summary_method,
             cache=cache,

@@ -68,8 +68,8 @@ API_KEY = args.api_key
 MULTI_AGENT_MODE = args.mode
 GROUPCHAT_CONFIG = args.config
 
-if "rag" in MULTI_AGENT_MODE and SKILL is True:
-    raise ValueError("rag mode does not support skill mode.")
+# if "rag" in MULTI_AGENT_MODE and SKILL is True:
+#     raise ValueError("rag mode does not support skill mode.")
 
 console = Console()
 opensource_models = [
@@ -987,7 +987,7 @@ def work(
     log_path = get_model_dir(task_type=task_type, task_id=task_id, it=it)
     log_path_parent = Path(log_path).parent
 
-    if task_type not in complex_task_type or args.skill is False or "rag" in MULTI_AGENT_MODE:
+    if task_type not in complex_task_type or args.skill is False:
         if "llama" in args.model:
             prompt_path = "./configs/prompt/prompt_template.md"
         elif args.ngspice:
