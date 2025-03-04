@@ -14,7 +14,7 @@ from pathlib import Path
 import logfire
 from pydantic import Field, BaseModel, computed_field
 from unstructured.staging.base import elements_to_json
-from unstructured.partition.auto import partition
+from unstructured.partition.pdf import partition_pdf
 
 logfire.configure(send_to_logfire=False)
 
@@ -84,17 +84,24 @@ class DocsConverter(BaseModel):
 
     def to_json(self) -> None:
         for docs_path in self.all_docs_paths:
-            file_elements = partition(
+            output_dir = docs_path.parent / docs_path.stem.replace(" ", "_")
+            output_dir.mkdir(parents=True, exist_ok=True)
+            output_filename = (output_dir / docs_path.name).with_suffix(".json")
+
+            file_elements = partition_pdf(
                 filename=docs_path.as_posix(),
-                encoding="utf-8",
                 strategy="hi_res",
                 languages=["eng"],
+                infer_table_structure=True,
+                extract_images_in_pdf=True,
+                extract_image_block_output_dir=output_dir.as_posix(),
+                extract_image_block_types=["Image", "Table"],
+                extract_forms=False,
+                form_extraction_skip_tables=False,
             )
 
             elements_to_json(
-                elements=file_elements,
-                filename=docs_path.with_suffix(".json").as_posix(),
-                encoding="utf-8",
+                elements=file_elements, filename=output_filename.as_posix(), encoding="utf-8"
             )
 
 
