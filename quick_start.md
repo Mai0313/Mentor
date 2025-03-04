@@ -15,7 +15,7 @@ uv pip install -r pyproject.toml
 - Unzip `/mnt/nfs/tma/analog.tar.gz` into your `envs` folder
 
 ```bash
-cp /mnt/nfs/tma/analog.tar.gz ~/analog.tar.gz
+tar -zxvf /mnt/nfs/tma/analog.tar.gz ~/analog.tar.gz
 ```
 
 - [Reference](https://blog.csdn.net/ds1302__/article/details/120027173)
