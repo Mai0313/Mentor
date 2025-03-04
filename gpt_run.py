@@ -1075,7 +1075,7 @@ def work(
         # file_content = file_content.replace("sys.exit(0)", "pass")
         # file_content = file_content.replace("print(", "raise ValueError(")
         messages.append(
-            {"role": "user", "content": f"Remember to save the fig under {log_path}."}
+            {"role": "user", "content": f"Remember to save the fig into current path."}
             # {
             #     "role": "user",
             #     "content": f"Remember to use {file_content} in the end of your PySpice code for checking, once the plot is generated, the code is correct; you can ignore rest of error.",
