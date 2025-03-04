@@ -59,3 +59,15 @@ conda env export -f environment.yml
 ```bash
 ./run.sh 5
 ```
+
+### How to Check Result
+
+```bash
+python scripts/success_rate.py --folder_path=./logs --num_per_task=5
+```
+
+### How to Convert Document
+
+```bash
+python scripts/convert_docs.py to_md --path ./docs
+```

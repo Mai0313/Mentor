@@ -130,8 +130,7 @@ def parse_logs_in_folder(folder_path: str = "./logs", num_per_task: int = 5) -> 
             continue
 
         model_info = match.group(1)
-        exp_date, model_name, *_ = model_info.split("_")
-        console.print(f"Experiment Date: {exp_date}", justify="center")
+        _, model_name, *_ = model_info.split("_")
         problem_number = int(match.group(2))
 
         counters = process_log_file(file_path)
