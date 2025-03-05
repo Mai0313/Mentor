@@ -24,7 +24,8 @@ fi
 num_tasks=$(echo "$tasks" | wc -l)
 
 # 執行 tasks，xargs 會以換行符作分隔符，並以 -n 1 每次丟一個參數進去
-echo "$tasks" | xargs -n 1 -P "$num_tasks" -I {} $PYTHON_PATH gpt_run.py --num_per_task=5 --num_of_retry=5 --task_id={}
+# echo "$tasks" | xargs -n 1 -P "$num_tasks" -I {} sh -c "$PYTHON_PATH gpt_run.py --num_per_task=5 --num_of_retry=5 --mode=captain --task_id={} > conversation_{}.log"
+echo "$tasks" | xargs -n 1 -P "$num_tasks" -I {} $PYTHON_PATH gpt_run.py --num_per_task=5 --num_of_retry=5 --mode=captain --task_id={}
 
 # Version-1:
 # Loop through task_id from 1 to 24

@@ -3,31 +3,50 @@ name = "analogcoder"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.10, <3.13"
 dependencies = [
-    "ag2[captainagent,interop-pydantic-ai,retrievechat]>=0.7.5",
+    "ag2[captainagent,interop-pydantic-ai,rag,retrievechat]>=0.7.5",
+    "aiofiles>=24.1.0",
     "fire>=0.7.0",
+    "hydra-core>=1.3.2",
     "logfire>=3.6.2",
     "markitdown>=0.0.1a4",
     "matplotlib>=3.10.0",
-    "numpy>=2.2.3",
+    "numpy>=1.26.4",
     "openai>=1.64.0",
     "pandas>=2.2.3",
     "pyspice==1.5.0",
     "rich>=13.9.4",
     "scipy>=1.15.2",
+    "torch==2.3.1+cu118",
+    "torchaudio==2.3.1+cu118",
+    "torchvision==0.18.1+cu118",
 ]
 
 [[tool.uv.index]]
 name = "default"
-url = "https://oa-mirror.mediatek.inc/repository/pypi/simple/"
+url = "https://pypi.org/simple"
 
 [[tool.uv.index]]
-name = "pytorch"
+# https://docs.astral.sh/uv/guides/integration/pytorch/#using-a-pytorch-index
+name = "pytorch-cu118"
 url = "https://download.pytorch.org/whl/cu118"
-# If you set it to `true`, it will be moved to the end of the prioritized list.
-# In other words, it will search pypi first, then here.
-default = true
+explicit = true
+
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cu118" },
+]
+torchvision = [
+    { index = "pytorch-cu118" },
+]
+torchaudio = [
+    { index = "pytorch-cu118" },
+]
+
+[tool.uv.pip]
+index-url = "https://pypi.org/simple"
+extra-index-url = ["https://download.pytorch.org/whl/cu118"]
 
 # ================== #
 #        RUFF        #
@@ -382,3 +401,8 @@ filter_commits = false
 topo_order = false
 # sort the commits inside sections by oldest/newest order
 sort_commits = "newest"
+
+[dependency-groups]
+dev = [
+    "conda-pack>=0.8.1",
+]

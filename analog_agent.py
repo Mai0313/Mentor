@@ -10,11 +10,13 @@ logfire.configure(send_to_logfire=False)
 import warnings
 
 import httpx
+import hydra
 from openai import AzureOpenAI, AsyncAzureOpenAI
 import autogen
 from autogen import ChatResult, UserProxyAgent, config_list_from_json
 import chromadb
 from pydantic import Field, BaseModel, computed_field, model_validator
+from omegaconf import OmegaConf
 from markitdown import MarkItDown
 from pydantic_ai import Agent
 from rich.console import Console
@@ -33,18 +35,68 @@ from chromadb.utils.embedding_functions.openai_embedding_function import OpenAIE
 console = Console()
 warnings.filterwarnings("ignore", category=ResourceWarning)
 
-MAX_ROUND = 12
 
-def get_config_dict(model: str) -> dict[str, Any]:
-    config_list = config_list_from_json(
-        env_or_file="./configs/OAI_CONFIG_LIST", filter_dict={"model": model}
+def is_termination_msg(msg: dict[str, str]) -> bool:
+    return "TERMINATE" in msg["content"]
+
+
+dc_sweep_template = """
+import numpy as np
+analysis = simulator.dc(V[IN_NAME]=slice(0, 5, 0.01))
+with open("[DC_PATH]", "w") as fopen:
+    out_voltage = np.array(analysis.Vout)
+    in_voltage = np.array(analysis.V[IN_NAME])
+    print("out_voltage: ", out_voltage)
+    print("in_voltage: ", in_voltage)
+    for item in in_voltage:
+        fopen.write(f"{item:.4f} ")
+    fopen.write("\\n")
+    for item in out_voltage:
+        fopen.write(f"{item:.4f} ")
+    fopen.write("\\n")
+"""
+
+pyspice_template = """
+try:
+    analysis = simulator.operating_point()
+    with open("[OP_PATH]", "w") as fopen:
+        for node in analysis.nodes.values():
+            fopen.write(f"{str(node)}\\t{float(analysis[str(node)][0]):.6f}\\n")
+except Exception as e:
+    print("Analysis failed due to an error:")
+    print(str(e))
+"""
+
+output_netlist_template = """
+source = str(circuit)
+print(source)
+"""
+
+
+class MessageModel(BaseModel):
+    role: str = Field(
+        default="",
+        title="Role of the Message",
+        description="Role of the Message, if model is o1, it should not be `system`.",
+        frozen=False,
+        deprecated=False,
     )
-    llm_config = {
-        "timeout": 60,
-        "temperature": 0.5,
-        "cache_seed": os.getenv("SEED", None),
-        "config_list": config_list,
-    }
+    content: str = Field(
+        default="",
+        title="Content of the Message",
+        description="Content of the Message",
+        frozen=False,
+        deprecated=False,
+    )
+
+
+def get_config_dict(model: str, temp: float = 0.5) -> dict[str, Any]:
+    config_list = config_list_from_json(
+        env_or_file="./configs/llm/OAI_CONFIG_LIST", filter_dict={"model": model}
+    )
+    llm_config = {"timeout": 60, "cache_seed": os.getenv("SEED", None), "config_list": config_list}
+    if "o1" not in model:
+        llm_config["temperature"] = temp
     return llm_config
 
 
@@ -63,28 +115,23 @@ def retrieve_data(query: str) -> str:
         >>> query = "What is the Product Version of Bandgap Reference Verification"
         >>> retrieved_result = retrieve_data(query=query)
     """
-    docs_path = Path("./docs").glob("**/*.*")
+    docs_path = Path("./docs").glob("**/*.md")
     subcircuit_lib = Path("./subcircuit_lib").glob("**/*.*")
     all_docs = [*docs_path, *subcircuit_lib]
     all_docs = [f.as_posix() for f in all_docs]
     llm_config = get_config_dict(model="aide-gpt-4o")
-    rag_agent = autogen.AssistantAgent(
-        name="RetrievalAgent",
-        is_termination_msg=lambda msg: "TERMINATE" in msg["content"],
-        llm_config=llm_config,
-        silent=True,
+    rag_assistant = autogen.AssistantAgent(
+        name="RetrieveAssistant", llm_config=llm_config, silent=True
     )
-    rag_user_proxy = RetrieveUserProxyAgent(
-        name="RetrieveAgent",
-        is_termination_msg=lambda msg: "TERMINATE" in msg["content"],
+    rag_proxy_agent = RetrieveUserProxyAgent(
+        name="RetrieveProxyAgent",
         human_input_mode="NEVER",
-        default_auto_reply="Reply `TERMINATE` if the task is done.",
         max_consecutive_auto_reply=3,
         retrieve_config={
             "task": "default",
             "docs_path": all_docs,
             "must_break_at_empty_line": False,
-            "model": "gpt-4",
+            "model": "gpt-4o",
             "vector_db": None,
             "client": chromadb.Client(Settings(anonymized_telemetry=False)),
             "get_or_create": True,
@@ -100,26 +147,17 @@ def retrieve_data(query: str) -> str:
             "embedding_model": None,
         },
         code_execution_config=False,  # we don't want to execute code in this case.
-        description="Assistant who has extra content retrieval power for solving difficult problems.",
         silent=True,
     )
-    groupchat = autogen.GroupChat(
-        agents=[rag_user_proxy, rag_agent],
-        messages=[],
-        max_round=12,
-        speaker_selection_method="round_robin",
-    )
-    manager = autogen.GroupChatManager(groupchat=groupchat, llm_config=llm_config, silent=True)
-    retrieve_result = rag_user_proxy.initiate_chat(
-        recipient=manager,
-        message=rag_user_proxy.message_generator,
+    chat_result = rag_proxy_agent.initiate_chat(
+        recipient=rag_assistant,
+        message=rag_proxy_agent.message_generator,
         problem=query,
         # 這個會決定 LLM 能參考多少文件，要讓她拿到正確資訊，就要全部允許他看
         n_results=len(all_docs),
         # summary_method="last_msg",
-        silent=True,
     )
-    return retrieve_result.chat_history[-1]["content"]
+    return chat_result.chat_history[-1]["content"]
 
 
 def read_prompt(filepath: str) -> str:
@@ -385,7 +423,50 @@ class AnalogAgent(BaseModel):
         content = path.read_text()
         return content
 
+    def convert_init_message(self, messages: list[dict[str, str]]) -> dict[str, str]:
+        """This function will convert `chat_completion` format into AG2 `init_chat` format.
+
+        init_chat can accept dict[str, Any], but chat_completion will be list[dict[str, Any]].
+
+        Args:
+            messages (list[dict[str, str]]): The messages you want to convert.
+
+        Returns:
+            dict[str, str]: The converted messages.
+                Output will follow this order: `system` -> `assistant` -> `user`.
+
+        Examples:
+            === "python"
+
+            ```python
+            messages = [
+                {"role": "assistant", "content": "You should be kind."},
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": "Hi there!"},
+            ]
+            analog_agent = AnalogAgent()
+            parsed_message_dict = analog_agent.convert_init_message(messages=messages)
+            print(parsed_message_dict)
+            # >>> {'system': 'You are a helpful assistant.', 'assistant': 'You should be kind.', 'user': 'Hi there!'}
+            ```
+        """
+        dict_order = ["system", "assistant", "user"]
+        if not isinstance(messages, list):
+            return {"role": "user", "content": f"{messages}"}
+        parsed_messages = [MessageModel(**message) for message in messages]
+        message_dict: dict[str, str] = {}
+        for parsed_message in parsed_messages:
+            if parsed_message.role in message_dict:
+                message_dict[parsed_message.role] += "\n" + parsed_message.content
+            else:
+                message_dict[parsed_message.role] = parsed_message.content
+        message_dict = {key: message_dict[key] for key in dict_order if key in message_dict}
+        return message_dict
+
     def use_chat_completion(self, model: str, messages: list[dict[str, str]]) -> ChatCompletion:
+        messages[-1]["content"] += (
+            "\nYou should only output the Pyspice python code in code block."
+        )
         llm_config = get_config_dict(model=model)
         client = AzureOpenAI(
             api_key=llm_config["config_list"][0]["api_key"],
@@ -393,34 +474,91 @@ class AnalogAgent(BaseModel):
             api_version=llm_config["config_list"][0]["api_version"],
             http_client=httpx.Client(headers=llm_config["config_list"][0]["default_headers"]),
         )
-        result = client.chat.completions.create(
-            messages=messages, model=model, temperature=llm_config["temperature"]
-        )
+        if "o1" in model:
+            result = client.chat.completions.create(messages=messages, model=model)
+        else:
+            result = client.chat.completions.create(
+                messages=messages, model=model, temperature=llm_config["temperature"]
+            )
         return result
 
-    def use_groupchat(
-        self, model: str, messages: list[dict[str, str]], work_dir: str, use_rag: bool
+    def testbench_hook(
+        self, content: str, task: str, task_type: str, input_nodes: str, output_nodes: str
+    ) -> str:
+        prompt = f"""
+            You are required to create checker functions for {task} with input {input_nodes} and output {output_nodes}.
+            You should perform the checks below ONLY IF NEEDED for {task}.
+            The check functions should generate the error messages and suggestion for improvement.
+            You should also raise the errors.
+
+            The checks you can choose are:
+
+            1. Floating point check to make sure circuit connection is correct.
+                - Add {pyspice_template} to generate and check operating_nodes.
+            2. DC Sweep Check (follow the steps)
+                - start: get vinn name, vinp name from netlist.
+                - first: {dc_sweep_template}
+                - second: get the best voltage.
+                - third: replace V into best voltage, generate a new netlist.
+                - last: check if the netlist pass.
+            3. Requirement Check
+                - First, you should use {output_netlist_template} to generate netlist before checking.
+                - Input Output nodes are in netlist
+                - Input Voltages Verification
+                - Check if netlist is reasonable
+            4. Simulation and Check
+                - Check all MOSFETs connections and rule: Vgs > Vth, Vds > Vgs-Vth
+                    - Check NMOS
+                    - Check PMOS
+            5. Function Check
+                - Check the function of the designed circuit.
+
+            The output should be python code:
+            ```
+                [Pyspice circuit]
+                [your checker functions]
+                [call your checker functions]
+            ```
+        """
+        return f"{content}\n\n{prompt}"
+
+    def circuit_hook(
+        self, content: str, task: str, task_type: str, input_nodes: str, output_nodes: str
+    ) -> str:
+        prompt = f"""
+            ## Your role \nAnalog_{task}_Expert is a seasoned analog integrated circuits specialist with a focus on designing {task_type} with input {input_nodes} and output {output_nodes}. In addition to expertise in analog circuit design, they possess strong Python programming skills and are proficient in using PySpice for accurate and robust simulation of analog circuits.
+            \n\n## Task and skill instructions \n- Task description: The expert is responsible for designing high-performance {task_type} and employing simulation tools to verify the design integrity. This includes running comprehensive simulations to detect issues such as singular matrices, ensuring that the circuit designs work as intended under various operating conditions. \n- Skill description: The expert has in-depth knowledge of analog integrated circuit design, particularly in developing {task_type}. In parallel, they are skilled in Python programming and have extensive experience using PySpice for circuit simulation. This dual expertise ensures that designs are not only theoretically sound but are also rigorously tested and validated through simulation, addressing potential pitfalls before fabrication. \n- Additional information: Their work meticulously bridges the gap between circuit design and simulation verification, ensuring that every component of the design process is thoroughly checked for errors or issues, culminating in reliable, high-quality analog systems.
+        """
+        return f"{content}\n\n{prompt}"
+
+    def use_groupchat_tba(
+        self,
+        model: str,
+        task: str,
+        task_type: str,
+        input_nodes: str,
+        output_nodes: str,
+        messages: list[dict[str, str]],
+        work_dir: str,
+        use_rag: bool,
     ) -> ChatCompletion:
         llm_config = get_config_dict(model=model)
         self._get_cache(llm_config=llm_config)
-        pi_agent = autogen.ConversableAgent(
-            name="PIAgent",
-            system_message="""You are an experience manager focusing on RF/Analog circuit design, can you help me design a circuit with the following spec?
-            - Design a circuit with the Spec you received.
-            - What could be the name of this circuit?
-            - What relevant documents you have to guide a designer to design this circuit?
-            The output should be:
-            Find corresponding papers or RAK files from dataset or online search
-            Key idea: Find required documents for RF engineers
-            RAK: Rapid Adoption Kits
-            """,
+        pi_agent = autogen.AssistantAgent(
+            name="Analog_Expert",
+            system_message="## Your role  \nAnalog_Expert is a seasoned analog integrated circuits specialist. In addition to expertise in analog circuit design, they possess strong Python programming skills and are proficient in using PySpice for accurate and robust simulation of analog circuits.\n\n## Task and skill instructions  \n- Task description: The expert is responsible for designing high-performance Analog Circuits and employing simulation tools to verify the design integrity. This includes running comprehensive simulations to detect issues such as singular matrices, ensuring that the circuit designs work as intended under various operating conditions.  \n- Skill description: The expert has in-depth knowledge of analog integrated circuit design, particularly in developing phase-locked loop systems. In parallel, they are skilled in Python programming and have extensive experience using PySpice for circuit simulation. This dual expertise ensures that designs are not only theoretically sound but are also rigorously tested and validated through simulation, addressing potential pitfalls before fabrication.  \n- Additional information: Their work meticulously bridges the gap between circuit design and simulation verification, ensuring that every component of the design process is thoroughly checked for errors or issues, culminating in reliable, high-quality analog systems.",
+            description="Analog_Expert is a highly skilled analog circuit designer specializing in high-performance who expertly uses Python and PySpice for rigorous simulation and verification to ensure reliable, error-free designs.",
             is_termination_msg=lambda msg: "TERMINATE" in msg["content"],
-            max_consecutive_auto_reply=MAX_ROUND,
+            max_consecutive_auto_reply=2,
             human_input_mode="NEVER",
             code_execution_config=False,
             llm_config=llm_config,
         )
-        pi_agent.register_hook("process_last_received_message", lambda content: f"{content}\n\nPlease help me design the mentioned circuit. Think and tell me the necessary steps.\nLet's think step by step.")
+        pi_agent.register_hook(
+            "process_last_received_message",
+            lambda content: f"{content}\n\nLet's think step by step.",
+        )
+
         executor = autogen.UserProxyAgent(
             name="executor",
             human_input_mode="NEVER",
@@ -428,49 +566,93 @@ class AnalogAgent(BaseModel):
             code_execution_config={"use_docker": self.use_docker, "work_dir": work_dir},
         )
         circuit_agent = autogen.AssistantAgent(
-            name="CircuitAgent",
-            description="Circuit Agent is a junior engineer who helps the PI Agent to design the circuit.",
-            system_message="""
-            Example Prompt: You are an experienced [circuit name] designers, please use the [docs name], and help me design a [circuit name]. It needs to follow the spec as below: xxxxxxxxx.
-            Please output the PySpice code of this circuit.
-            You have access to an [offline library name].
-            If you find subcircuits that already be built, you can ask the corresponding agent using [xxx].
-            If you find any problems when you are designing the circuit, please contact PI for further classification.
-            The output should be:
-            Circuit PySpice code
+            name=f"Analog_{task_type}_expert",
+            description=f"Analog_{task_type}_expert is a seasoned analog integrated circuits specialist with a focus on designing {task} who use Python and PySpice for rigorous simulation and verification to ensure reliable, error-free designs.",
+            # system_message="""
+            # Example Prompt: You are an experienced [circuit name] designers, please use the [docs name], and help me design a [circuit name] with input and output nodes: [Input node], [Output node name].
+            # Please output the PySpice code of this circuit.
+            # You have access to an [offline library name].
+            # If you find subcircuits that already be built, you can ask the corresponding agent using [xxx].
+            # If you find any problems when you are designing the circuit, please contact PI for further classification.
+            # The output should be:
+            # Circuit PySpice code
+            # """,
+            system_message=f"""
+                ## Your role \nAnalog_{task}_Expert is a seasoned analog integrated circuits specialist with a focus on designing {task_type} with input {input_nodes} and output {output_nodes}. In addition to expertise in analog circuit design, they possess strong Python programming skills and are proficient in using PySpice for accurate and robust simulation of analog circuits.
+                \n\n## Task and skill instructions \n- Task description: The expert is responsible for designing high-performance {task_type} and employing simulation tools to verify the design integrity. This includes running comprehensive simulations to detect issues such as singular matrices, ensuring that the circuit designs work as intended under various operating conditions. \n- Skill description: The expert has in-depth knowledge of analog integrated circuit design, particularly in developing {task_type}. In parallel, they are skilled in Python programming and have extensive experience using PySpice for circuit simulation. This dual expertise ensures that designs are not only theoretically sound but are also rigorously tested and validated through simulation, addressing potential pitfalls before fabrication. \n- Additional information: Their work meticulously bridges the gap between circuit design and simulation verification, ensuring that every component of the design process is thoroughly checked for errors or issues, culminating in reliable, high-quality analog systems.
             """,
             is_termination_msg=lambda msg: "TERMINATE" in msg["content"],
-            max_consecutive_auto_reply=MAX_ROUND,
+            max_consecutive_auto_reply=6,
             human_input_mode="NEVER",
             code_execution_config=False,
             llm_config=llm_config,
         )
+        # circuit_agent.register_hook(
+        #     "process_last_received_message", lambda content: self.circuit_hook(content, task, task_type, input_nodes, output_nodes)
+        # )
+
         testbench_agent = autogen.AssistantAgent(
-            name="assistant",
-            description="Testbench Agent is a junior engineer who helps the PI Agent to design the testbench.",
-            system_message="""
-            Example prompt: You are an experience RF/Analog circuit validation engineer.
-            You are required to validate a circuit with following spec: xxxxx.
-            The attached files are its relevant papers.
-            Can you write a python code to simulate this circuit and validate if it satisfy the spec?
-            The PySpice code is written as below.
-            Please confirm that your implementation simulation is correct.
-            Does this circuit have any problem in its PySpice code?
-            If the implementation limit has reached, output messages to human engineers.
-            If it's correct, output the final result in SPICE version.
-            If not, output the error messages back to the circuit agent. And rerun the process, implementation limit+1.
-            The output should be:
-            If circuit implementation is correct or reach limited tries:
-            SPICE code
-            If not:
-            Error messages
-            """,
+            name=f"{task_type}_TestBench_Agent",
+            description=f"{task_type}_TestBench_Agent is a junior engineer who adds the Pyspice circuit checker functions(testbench) to code that Analog_{task_type}_expert generated and check if there are any error.",
             is_termination_msg=lambda msg: "TERMINATE" in msg["content"],
-            max_consecutive_auto_reply=MAX_ROUND,
+            max_consecutive_auto_reply=12,
             human_input_mode="NEVER",
             code_execution_config=False,
             llm_config=llm_config,
         )
+        testbench_agent.register_hook(
+            "process_last_received_message",
+            lambda content: self.testbench_hook(
+                content, task, task_type, input_nodes, output_nodes
+            ),
+        )
+
+        # python_agent = autogen.AssistantAgent(
+        #     name="Python_Expert",
+        #     description=f"""Python_Expert is an analog integrated circuit specialist who designs {task_type} and leverages Python with PySpice to simulate, troubleshoot, and meticulously validate circuit performance for reliable real-world applications.""",
+        #     system_message=f"""
+        #         ## Your role\nPython_Expert is an analog integrated circuits specialist with a strong background in designing {task}. In addition, they are a proficient Python programmer, skilled in using PySpice to simulate analog circuits, ensuring that every design detail is meticulously verified and validated.\n\n## Task and skill instructions\n- Task: Design and simulate {task_type}-based analog integrated circuits, ensuring robust performance and reliability in real-world applications.\n- Skill: Utilize Python and PySpice to accurately simulate analog circuits, identify and troubleshoot issues such as singular matrices, and verify the integrity of both design and simulation processes.\n- Additional Information: Apply thorough validation techniques to cross-check circuit designs against simulations, ensuring consistency and preventing critical issues before physical implementation.
+        #     """,
+        #     is_termination_msg=lambda msg: "TERMINATE" in msg["content"],
+        #     max_consecutive_auto_reply=1,
+        #     human_input_mode="NEVER",
+        #     code_execution_config=False,
+        #     llm_config=llm_config,
+        # )
+        # python_agent.register_hook(
+        #     "process_last_received_message", lambda content: self.python_hook(content, task, task_type, input_nodes, output_nodes)
+        # )
+
+        # verification_agent = autogen.AssistantAgent(
+        #     name=f"{task_type}_verification_agent",
+        #     is_termination_msg=lambda msg: "TERMINATE" in msg["content"],
+        #     max_consecutive_auto_reply=1,
+        #     human_input_mode="NEVER",
+        #     code_execution_config=False,
+        #     llm_config=llm_config,
+        # )
+
+        # dc_sweep_agent = autogen.AssistantAgent(
+        #     name="DCSweep_Checker",
+        #     description=f"DCSweep_Checker is a verification engineer to test if the {task} circuit pass DC Sweep Check.",
+        #     system_message=f"""
+        #         DCSweep_Checker is a verification engineer to test if the {task} circuit pass DC Sweep Check.
+        #         You should follow the steps to perform complete DC Sweep Check:
+
+        #         - start: get vinn name, vinp name from netlist.
+        #         - first: {dc_sweep_template}
+        #         - second: get the best voltage.
+        #         - third: replace V into best voltage, generate a new netlist.
+        #         - last: check if the netlist pass.
+        #     """,
+        #     is_termination_msg=lambda msg: "TERMINATE" in msg["content"],
+        #     max_consecutive_auto_reply=1,
+        #     human_input_mode="NEVER",
+        #     code_execution_config=False,
+        #     llm_config=llm_config,
+        # )
+        # dc_sweep_agent.register_hook("process_last_received_message")
+
         # cos_agent = autogen.AssistantAgent(
         #     name="assistant",
         #     description="COS Agent is a junior engineer who helps the PI Agent to design the COS.",
@@ -491,37 +673,88 @@ class AnalogAgent(BaseModel):
         #     llm_config=llm_config,
         #     is_termination_msg=lambda x: "TERMINATE" in x.get("content"),
         # )
-        proxies = [pi_agent]
-        agents = [circuit_agent, testbench_agent]
+        proxies = []
+        agents = [circuit_agent]
+        groupchat = autogen.GroupChat(
+            agents=[*proxies, *agents, executor],
+            messages=[],
+            max_round=20,
+            speaker_selection_method="auto",
+            allow_repeat_speaker=False,
+        )
+        manager = autogen.GroupChatManager(
+            groupchat=groupchat,
+            llm_config=llm_config,
+            # system_message="If the code answer or error repeat for three times in the chat history, please print TERMINATE to stop the discussion."
+        )
+        # manager.register_hook(
+        #     "process_last_received_message", lambda content: f"{content}\n\n If the code answer or error repeat for three times in the chat history, please print TERMINATE to stop the discussion."
+        # )
+
+        # Start chatting with boss_aid as this is the user proxy agent.
+        chat_result = pi_agent.initiate_chat(
+            recipient=manager,
+            message=f"{messages}, the final answer must and only contain a PySpice Code in Python.",
+            summary_method=self._summary_method,
+        )
+        converter = ChatResultConverter(chat_result=chat_result)
+        result = converter.convert_to_chat_completion()
+        return result
+
+    def use_groupchat(
+        self,
+        model: str,
+        messages: list[dict[str, str]],
+        work_dir: str,
+        use_rag: bool,
+        groupchat_config: str,
+    ) -> ChatCompletion:
+        llm_config = get_config_dict(model=model)
+        self._get_cache(llm_config=llm_config)
+        config = OmegaConf.load(groupchat_config)
+        proxies: list[autogen.UserProxyAgent] = []
+        for proxy_config in config.proxies:
+            proxy: autogen.UserProxyAgent = hydra.utils.instantiate(proxy_config)
+            if isinstance(proxy._code_execution_config, dict):  # noqa: SLF001
+                proxy._code_execution_config.update({"work_dir": work_dir})  # noqa: SLF001
+                proxy._code_execution_config.pop("_convert_")  # noqa: SLF001
+            proxies.append(proxy)
+
+        agents: list[autogen.AssistantAgent] = []
+        for assistant_config in config.assistants:
+            agent: autogen.AssistantAgent = hydra.utils.instantiate(assistant_config)
+            if agent.name == "Analog_Expert":
+                agent.register_hook(
+                    "process_last_received_message",
+                    lambda content: f"{content}\n\nPlease help me design the mentioned circuit. Think and tell me the necessary steps.\nLet's think step by step.",
+                )
+            agents.append(agent)
+
         if use_rag is True:
-            # autogen.agentchat.register_function(
-            #     f=retrieve_data,
-            #     caller=pi_agent,
-            #     executor=executor,
-            #     name=retrieve_data.__name__,
-            #     description=retrieve_data.__doc__,
-            # )
             for agent in agents:
                 d_retrieve_content = agent.register_for_llm(
                     description="retrieve the information you need or if you have any question, you can use this function to get the answer.",
                     api_style="tool",
                 )(retrieve_data)
-
             for proxy in proxies:
                 proxy.register_for_execution()(d_retrieve_content)
+                messages.append({
+                    "role": "user",
+                    "content": "You should use `retrieve_data` function to retrieve the information you need before making the correct decision and plan for your main PySpice Code.",
+                })
         groupchat = autogen.GroupChat(
-            agents=[*proxies, executor, *agents],
+            agents=[*proxies, *agents],
             messages=[],
-            max_round=MAX_ROUND,
+            max_round=12,
             speaker_selection_method="auto",
             allow_repeat_speaker=False,
         )
         manager = autogen.GroupChatManager(groupchat=groupchat, llm_config=llm_config)
 
         # Start chatting with boss_aid as this is the user proxy agent.
-        chat_result = pi_agent.initiate_chat(
+        chat_result = proxies[0].initiate_chat(
             recipient=manager,
-            message=f"{messages}, the final answer must contain a PySpice Code in Python.",
+            message=f"{messages}, the final answer must contain a PySpice Code in Python. The code should be fully tested before terminated.",
             summary_method=self._summary_method,
         )
         converter = ChatResultConverter(chat_result=chat_result)
@@ -548,8 +781,8 @@ class AnalogAgent(BaseModel):
         cache = self._get_cache(llm_config=llm_config)
         nested_config = {
             "autobuild_init_config": {
-                "config_file_or_env": "./configs/OAI_CONFIG_LIST",
-                "builder_model": model,  # "aide-o3-mini",
+                "config_file_or_env": "./configs/llm/OAI_CONFIG_LIST",
+                "builder_model": "aide-o3-mini",
                 "agent_model": model,
                 "max_agents": 10,
             },
@@ -584,6 +817,7 @@ class AnalogAgent(BaseModel):
             human_input_mode="NEVER",
             code_execution_config=False,
             # system_message="Make sure the final answer contains the PySpice Code.",
+            silent=True,
         )
         captain_agent = CaptainAgent(
             name="captain_agent",
@@ -599,17 +833,25 @@ class AnalogAgent(BaseModel):
             # tool_lib="./tools",
             # is_termination_msg=lambda x: "TERMINATE" in x.get("content"),
         )
-        # tools = [convert2markdown]
-        # for tool in tools:
-        #     captain_agent.register_for_execution(
-        #         name=tool.__name__,  # Function name
-        #         description=tool.__doc__,  # Function description, you need to annotated it with `"""`
-        #     )(tool)
-        if use_rag:
-            messages.append({"role": "user", "content": "All Docs is in ./docs"})
+        # extra_prompt_path = Path("./configs/prompt/prompt4checks.md")
+        # extra_prompt = extra_prompt_path.read_text()
+        # messages.append({"role": "user", "content": extra_prompt})
+        messages.append({"role": "user", "content": "Please just seek_experts_help"})
+
+        if use_rag is True:
+            d_retrieve_content = captain_agent.assistant.register_for_llm(
+                description="retrieve the information you need or if you have any question, you can use this function to get the answer.",
+                api_style="tool",
+            )(retrieve_data)
+            captain_agent.executor.register_for_execution()(d_retrieve_content)
+            messages.append({
+                "role": "user",
+                "content": "You should use `retrieve_data` function to retrieve the information you need before making the correct decision and plan for your main PySpice Code.",
+            })
+        # message = self.convert_init_message(messages=messages)
         chat_result = captain_user_proxy.initiate_chat(
             captain_agent,
-            message=f"{messages}\nPlease just seek_experts_help\nMake sure the code should not have singular matrix issue.",
+            message=f"{messages}",
             max_turns=1,
             summary_method=self._summary_method,
             cache=cache,
@@ -629,11 +871,15 @@ def get_chat_completion(
     messages: list[dict[str, str]],
     mode: Literal["original", "captain", "captain+rag", "groupchat", "groupchat+rag"],
     work_dir: str,
-    use_docker: Literal["mtkomcr.mediatek.inc/srv-aith/mtkllm-sdk-analog", False] = False,
+    groupchat_config: str,
+    task: str = "",
+    task_type: str = "",
+    input_nodes: str = "",
+    output_nodes: str = "",
 ) -> ChatCompletion:
     cache_path = Path("./.cache")
     cache_path.mkdir(parents=True, exist_ok=True)
-    analog_agent = AnalogAgent(use_docker=use_docker)
+    analog_agent = AnalogAgent(use_docker=False)
     if mode == "original":
         chat_result = analog_agent.use_chat_completion(model=model, messages=messages)
     elif "captain" in mode:
@@ -648,7 +894,22 @@ def get_chat_completion(
         if "rag" in mode:
             use_rag = True
         chat_result = analog_agent.use_groupchat(
-            model=model, messages=messages, work_dir=work_dir, use_rag=use_rag
+            model=model,
+            messages=messages,
+            work_dir=work_dir,
+            use_rag=use_rag,
+            groupchat_config=groupchat_config,
+        )
+    elif "groupchat+tba" in mode:
+        chat_result = analog_agent.use_groupchat_tba(
+            model=model,
+            task=task,
+            task_type=task_type,
+            input_nodes=input_nodes,
+            output_nodes=output_nodes,
+            messages=messages,
+            work_dir=work_dir,
+            use_rag=use_rag,
         )
     else:
         raise ValueError(f"Invalid mode: {mode}")

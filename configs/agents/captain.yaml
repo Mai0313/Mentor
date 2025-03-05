@@ -1,0 +1,46 @@
+nested_config:
+  autobuild_init_config:
+    config_file_or_env: "./configs/llm/OAI_CONFIG_LIST"
+    builder_model: aide-gpt-4o
+    agent_model: aide-gpt-4o
+    max_agents: 10
+  autobuild_build_config:
+    default_llm_config:
+      temperature: 0.5
+      top_p: 0.95
+      max_tokens: 2048
+      cache_seed: null
+    code_execution_config:
+      timeout: 300
+      work_dir: work_dir
+      last_n_messages: 1
+      use_docker: false
+    coding: true
+    library_path_or_json: null
+  # autobuild_tool_config:
+  #   tool_root: "tools"
+  #   retriever: "all-mpnet-base-v2"
+  group_chat_config:
+    max_round: 30
+  group_chat_llm_config: null
+  max_turns: 10
+
+proxies:
+  - _target_: autogen.UserProxyAgent
+    name: "captain_user_proxy"
+    human_input_mode: "NEVER"
+    code_execution_config: false
+
+assistants:
+  - _target_: autogen.agentchat.contrib.captainagent.captainagent.CaptainAgent
+    name: "captain_agent"
+    code_execution_config:
+      _convert_: object
+      timeout: 300
+      last_n_messages: 1
+      use_docker: false
+    llm_config:
+      _target_: analog_agent.get_config_dict
+      model: aide-gpt-4o
+      temp: 0.5
+    agent_config_save_path: null

@@ -18,7 +18,7 @@ exclude: metagpt
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: v0.9.6
+    rev: v0.9.9
     hooks:
       - id: ruff
         types_or: [ python, pyi, jupyter ]
@@ -55,23 +55,23 @@ repos:
       - id: debug-statements
       - id: check-symlinks
 
-  # md formatting
-  - repo: https://github.com/executablebooks/mdformat
-    rev: 0.7.22
-    hooks:
-      - id: mdformat
-        args:
-          - --number
-        additional_dependencies:
-          - mdformat-gfm
-          - mdformat-web
-          - mdformat-ruff
-          - mdformat-config
-          - mdformat-tables
-          - mdformat-footnote
-          - mdformat_frontmatter
-          - mdformat-pyproject
-          - mdformat-mkdocs[recommended]
+  # # md formatting
+  # - repo: https://github.com/executablebooks/mdformat
+  #   rev: 0.7.22
+  #   hooks:
+  #     - id: mdformat
+  #       args:
+  #         - --number
+  #       additional_dependencies:
+  #         - mdformat-gfm
+  #         - mdformat-web
+  #         - mdformat-ruff
+  #         - mdformat-config
+  #         - mdformat-tables
+  #         - mdformat-footnote
+  #         - mdformat_frontmatter
+  #         - mdformat-pyproject
+  #         - mdformat-mkdocs[recommended]
 
   # jupyter notebook cell output clearing
   - repo: https://github.com/kynan/nbstripout
@@ -79,12 +79,12 @@ repos:
     hooks:
       - id: nbstripout
 
-  - repo: https://github.com/codespell-project/codespell
-    rev: v2.4.1
-    hooks:
-      - id: codespell
-        additional_dependencies:
-          - tomli
+  # - repo: https://github.com/codespell-project/codespell
+  #   rev: v2.4.1
+  #   hooks:
+  #     - id: codespell
+  #       additional_dependencies:
+  #         - tomli
 
   # - repo: local
   #   hooks:
@@ -106,7 +106,7 @@ repos:
   #         - "Types-attrs"
 
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.6.1
+    rev: 0.6.3
     hooks:
       - id: uv-sync
       - id: uv-lock

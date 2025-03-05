@@ -2,3 +2,5 @@ docs/Bandgap[[:space:]]References.pdf filter=lfs diff=lfs merge=lfs -text
 docs/Bandgap[[:space:]]Reference[[:space:]]Verification_RAK.pdf filter=lfs diff=lfs merge=lfs -text
 docs/opamp.pdf filter=lfs diff=lfs merge=lfs -text
 docs/Razavi[[:space:]]BGR.pdf filter=lfs diff=lfs merge=lfs -text
+**/*.pdf filter=lfs diff=lfs merge=lfs -text
+docs/*.md filter=lfs diff=lfs merge=lfs -text
