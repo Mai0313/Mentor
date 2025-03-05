@@ -3,7 +3,7 @@
 #   ./run.sh 1 24        # 執行從 1 到 24 的 tasks
 #   ./run.sh 9 10 11 14  # 執行這四個 task
 
-PYTHON_PATH=~/miniconda3/envs/analog/bin/python
+PYTHON_PATH=~/.conda/envs/analog/bin/python
 
 # 檢查參數數量
 if [ "$#" -lt 1 ]; then
@@ -25,7 +25,7 @@ num_tasks=$(echo "$tasks" | wc -l)
 
 # 執行 tasks，xargs 會以換行符作分隔符，並以 -n 1 每次丟一個參數進去
 # echo "$tasks" | xargs -n 1 -P "$num_tasks" -I {} sh -c "$PYTHON_PATH gpt_run.py --num_per_task=5 --num_of_retry=5 --mode=captain --task_id={} > conversation_{}.log"
-echo "$tasks" | xargs -n 1 -P "$num_tasks" -I {} $PYTHON_PATH gpt_run.py --num_per_task=5 --num_of_retry=5 --mode=captain --task_id={}
+echo "$tasks" | xargs -n 1 -P "$num_tasks" -I {} $PYTHON_PATH gpt_run.py --num_per_task=5 --num_of_retry=5 --mode=groupchat+tba --task_id={}
 
 # Version-1:
 # Loop through task_id from 1 to 24

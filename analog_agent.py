@@ -42,8 +42,10 @@ def is_termination_msg(msg: dict[str, str]) -> bool:
 
 dc_sweep_template = """
 import numpy as np
+import os
 analysis = simulator.dc(V[IN_NAME]=slice(0, 5, 0.01))
-with open("[DC_PATH]", "w") as fopen:
+file_path = "dc_sweep.txt"
+with open("file_path", "w") as fopen:
     out_voltage = np.array(analysis.Vout)
     in_voltage = np.array(analysis.V[IN_NAME])
     print("out_voltage: ", out_voltage)
@@ -70,6 +72,20 @@ except Exception as e:
 output_netlist_template = """
 source = str(circuit)
 print(source)
+"""
+
+best_voltage_template = """
+with open("dc_sweep.txt") as fopen:
+    vin = np.array([float(x) for x in fopen.readline().strip().split(" ")])
+    vout = np.array([float(x) for x in fopen.readline().strip().split(" ")])
+    if np.max(vout) - np.min(vout) < 1e-3:
+        return "failed to find best voltage", 0
+    min_margin = 10.0
+    for i, v in enumerate(vout):
+        if np.abs(v - 2.5) < min_margin:
+            min_margin = np.abs(v - 2.5)
+            best_voltage = vin[i]
+    return "success to find best voltage", best_voltage
 """
 
 
@@ -522,12 +538,143 @@ class AnalogAgent(BaseModel):
         """
         return f"{content}\n\n{prompt}"
 
-    def circuit_hook(
+    # def circuit_hook(
+    #     self, content: str, task: str, task_type: str, input_nodes: str, output_nodes: str
+    # ) -> str:
+    #     prompt = f"""
+    #         ## Your role \nAnalog_{task}_Expert is a seasoned analog integrated circuits specialist with a focus on designing {task_type} with input {input_nodes} and output {output_nodes}. In addition to expertise in analog circuit design, they possess strong Python programming skills and are proficient in using PySpice for accurate and robust simulation of analog circuits.
+    #         \n\n## Task and skill instructions \n- Task description: The expert is responsible for designing high-performance {task_type} and employing simulation tools to verify the design integrity. This includes running comprehensive simulations to detect issues such as singular matrices, ensuring that the circuit designs work as intended under various operating conditions. \n- Skill description: The expert has in-depth knowledge of analog integrated circuit design, particularly in developing {task_type}. In parallel, they are skilled in Python programming and have extensive experience using PySpice for circuit simulation. This dual expertise ensures that designs are not only theoretically sound but are also rigorously tested and validated through simulation, addressing potential pitfalls before fabrication. \n- Additional information: Their work meticulously bridges the gap between circuit design and simulation verification, ensuring that every component of the design process is thoroughly checked for errors or issues, culminating in reliable, high-quality analog systems.
+    #     """
+    #     return f"{content}\n\n{prompt}"
+
+    def dc_sweep_hook(
         self, content: str, task: str, task_type: str, input_nodes: str, output_nodes: str
     ) -> str:
-        prompt = f"""
-            ## Your role \nAnalog_{task}_Expert is a seasoned analog integrated circuits specialist with a focus on designing {task_type} with input {input_nodes} and output {output_nodes}. In addition to expertise in analog circuit design, they possess strong Python programming skills and are proficient in using PySpice for accurate and robust simulation of analog circuits.
-            \n\n## Task and skill instructions \n- Task description: The expert is responsible for designing high-performance {task_type} and employing simulation tools to verify the design integrity. This includes running comprehensive simulations to detect issues such as singular matrices, ensuring that the circuit designs work as intended under various operating conditions. \n- Skill description: The expert has in-depth knowledge of analog integrated circuit design, particularly in developing {task_type}. In parallel, they are skilled in Python programming and have extensive experience using PySpice for circuit simulation. This dual expertise ensures that designs are not only theoretically sound but are also rigorously tested and validated through simulation, addressing potential pitfalls before fabrication. \n- Additional information: Their work meticulously bridges the gap between circuit design and simulation verification, ensuring that every component of the design process is thoroughly checked for errors or issues, culminating in reliable, high-quality analog systems.
+        if task_type == "Opamp":
+            prompt = f"""
+            DCSweep_Checker is a verification engineer to test if the {task} circuit pass DC Sweep Check.
+            You should remain the original code and create a dc_sweep.py add circuit code and check code to perform check.
+            Follow the steps to perform complete DC Sweep Check:
+
+            1. Generate netlist.sp.
+            2. Get Vinn name and Vinp name from netlist.
+            3. If Vinp name exists, then circuit.V(Vinn name) and circuit.V(Vinp name) will be replaced to `circuit.V('dc', 'Vinn', 'Vinp', 0.0)`.
+            4. Replace V[IN_NAME] and execute this template: {dc_sweep_template}. DO NOT MODIFIED ANY TEMPLATE CODE.
+            5. Find the best voltage like {best_voltage_template}.
+            6. Use the original code as a base and replace voltage of Vinn and Vinp in Circuit Code to the best voltage (should be float).
+            7. Run the code with OP test.
+            8. If all success, generate new netlist.sp to replace the old one.
+
+            NO NEED TO GENERATE PLOT.
+            If the dc_sweep.py successfully executed, then the original code passed the dc sweep check.
+        """
+
+        else:
+            prompt = f"""
+            DCSweep_Checker is a verification engineer to test if the {task} circuit pass DC Sweep Check.
+            You should create dc_sweep.py add circuit code and check code to perform check.
+            Follow the steps to perform complete DC Sweep Check:
+
+            1. Generate netlist.sp.
+            2. Get Vinn name and Vinp name from netlist.
+            3. Replace V[IN_NAME] and execute {dc_sweep_template}. DO NOT MODIFIED ANY TEMPLATE CODE.
+            4. Find the best voltage like {best_voltage_template}.
+            5. Use the original code as a base and replace voltage of Vinn and Vinp in Circuit Code to the best voltage (should be float).
+            6. Run the code with OP test.
+            7. If all success, generate new netlist.sp to replace the old one.
+
+            NO NEED TO GENERATE PLOT.
+            If the dc_sweep.py successfully executed, then the original code passed the dc sweep check.
+        """
+        return f"{content}\n\n{prompt}"
+
+    def func_hook(
+        self, content: str, task: str, task_type: str, input_nodes: str, output_nodes: str
+    ) -> str:
+        with open(f"problem_check/{task_type}.py") as test_code_file:
+            test_code = test_code_file.read()
+
+        if task_type == "Opamp" or task_type == "Amplifier":
+            prompt = f"""
+            Function_Checker is a verification engineer who add function check code to circuit to perform check.
+            You should create function_check.py add circuit code and check code to perform check.
+            Follow the steps to preform complete function check for {task}:
+
+            1. Replace voltage of Vinn and Vinp to "dc V ac 1u", for example:
+                circuit.V("inp", "Vinp", circuit.gnd, X.XX) to circuit.V("inp", "Vinp", circuit.gnd, "dc X.XX ac 1u")
+                circuit.V("inp", "Vinn", circuit.gnd, X.XX) to circuit.V("inn", "Vinp", circuit.gnd, "dc X.XX ac 1u")
+            2. Add this code directly to the circuit Pyspice code and **DO NOT MODIFY THIS CHECK CODE**\n\n{test_code}.
+
+            If the function_check.py successfully executed, then the original code passed the function check.
+            If the code execute with error, return the error and your suggestion.
+        """
+        else:
+            prompt = f"""
+            You should create function_check.py add circuit code and check code to perform check for {task}:
+
+            {test_code}
+
+            If the function_check.py successfully executed, then the original code passed the function check.
+            If the code execute with error, return the error and your suggestion.
+        """
+        return f"{content}\n\n{prompt}\n\nPlease revert to the original code if the check passed."
+
+    def mosfets_hook(
+        self, content: str, task: str, task_type: str, input_nodes: str, output_nodes: str
+    ) -> str:
+        prompt = """
+            GENERAL PURPOSE
+            • Always ensure the MOSFET terminals (Drain, Source, Gate) have appropriate voltage levels for the device type.
+            • Check that VGS (Gate-Source Voltage) is set correctly for the intended operation region (cut-off vs. conduction).
+            • For an active (ON) NMOS, typically VDS ≥ 0 and VGS > VTH.
+            • For an active (ON) PMOS, typically VSD ≥ 0 (meaning the source is at a higher potential than the drain) and VSG > |VTH| (or equivalently, VGS < -|VTH|).
+
+            NMOS RULES AND CONCEPTS
+            Drain-to-Source Voltage (VDS)
+            • Do not connect the NMOS drain directly to ground if you expect high-side or switching behavior.
+            • Ensure the drain node is at a higher potential than the source node. A drain voltage lower than the source indicates incorrect connection or reversed orientation for standard low-side configuration.
+            • Typical requirement for conduction: VDS ≥ 0 (Drain ≥ Source).
+
+            Gate-to-Source Voltage (VGS)
+            • For an NMOS to turn on (enhancement mode), VGS must exceed the threshold voltage (VTH).
+            • Avoid having the gate at the same or a lower voltage than the source if you want the transistor to conduct:
+            - If gate = source ⇒ transistor is certainly off.
+            - If gate < source ⇒ transistor is off or reversed.
+            - If gate ≤ source + VTH ⇒ you are below or near threshold, so the MOSFET may be only weakly on or off.
+            • Suggestion: Increase the gate voltage (relative to source) above VTH to operate in the ON region.
+
+            Activation Tip
+            • Ensure VGS > VTH and that the drain is at a higher potential than the source (VDS ≥ 0) if the NMOS is intended to conduct.
+
+            PMOS RULES AND CONCEPTS
+
+            Drain-to-Source Voltage (VDS)
+            • Do not connect the PMOS drain directly to the supply rail (VDD) if you plan on switching or controlling a load.
+            • Typically, for a PMOS in a high-side configuration, the source is at VDD, and the drain is at a lower potential (toward the load).
+            • If the drain > source, this is reversed bias for a PMOS in normal operation.
+            • In many practical circuits, VDS < 0 (Drain < Source) is the expected condition for conduction.
+
+            Gate-to-Source Voltage (VGS)
+            • For a PMOS to turn on (enhancement mode), the gate voltage must be sufficiently below the source voltage.
+            • Avoid having the gate at the same or a higher voltage than the source if you want conduction:
+            - If gate = source ⇒ transistor is off.
+            - If gate > source ⇒ transistor is off or reversed.
+            - If gate ≥ source - |VTH| ⇒ not significantly negative enough to switch on the PMOS.
+            • Suggestion: Decrease the gate voltage (below the source) so that |VGS| > |VTH| to properly bias the PMOS.
+
+            Activation Tip
+            • Ensure VGS < -VTH (numerically negative beyond the threshold) and that the drain is at a sufficiently lower voltage than the source to turn the PMOS on.
+
+            SUMMARY OF CHECKS
+            • NMOS (enhancement mode):
+            - VDS ≥ 0 for proper conduction.
+            - VGS > VTH for “on” state.
+            • PMOS (enhancement mode):
+            - VSD ≥ 0 (Source ≥ Drain) in normal high-side usage.
+            - VGS < -VTH for “on” state.
+            • Avoid tying drain to a rail (ground for NMOS, VDD for PMOS) unless you fully understand the intended switching configuration (e.g., low-side vs. high-side switch).
+            • Ensure the gate is not inadvertently tied to the source; that kills your driving signal unless it's an intentional pass-device configuration.
+            • If the MOSFET is meant to be “on,” confirm that it can handle the required voltage and current, and that the gate voltage can swing as needed to turn it fully on.
         """
         return f"{content}\n\n{prompt}"
 
@@ -540,24 +687,29 @@ class AnalogAgent(BaseModel):
         output_nodes: str,
         messages: list[dict[str, str]],
         work_dir: str,
-        use_rag: bool,
+        use_rag: bool = False,
     ) -> ChatCompletion:
         llm_config = get_config_dict(model=model)
         self._get_cache(llm_config=llm_config)
         pi_agent = autogen.AssistantAgent(
-            name="Analog_Expert",
-            system_message="## Your role  \nAnalog_Expert is a seasoned analog integrated circuits specialist. In addition to expertise in analog circuit design, they possess strong Python programming skills and are proficient in using PySpice for accurate and robust simulation of analog circuits.\n\n## Task and skill instructions  \n- Task description: The expert is responsible for designing high-performance Analog Circuits and employing simulation tools to verify the design integrity. This includes running comprehensive simulations to detect issues such as singular matrices, ensuring that the circuit designs work as intended under various operating conditions.  \n- Skill description: The expert has in-depth knowledge of analog integrated circuit design, particularly in developing phase-locked loop systems. In parallel, they are skilled in Python programming and have extensive experience using PySpice for circuit simulation. This dual expertise ensures that designs are not only theoretically sound but are also rigorously tested and validated through simulation, addressing potential pitfalls before fabrication.  \n- Additional information: Their work meticulously bridges the gap between circuit design and simulation verification, ensuring that every component of the design process is thoroughly checked for errors or issues, culminating in reliable, high-quality analog systems.",
-            description="Analog_Expert is a highly skilled analog circuit designer specializing in high-performance who expertly uses Python and PySpice for rigorous simulation and verification to ensure reliable, error-free designs.",
+            name="Analog_Planning_Expert",
+            description=f"Analog_Planning_Expert is a seasoned analog integrated circuits specialist who plan how to design {task} circuit and check function.",
+            system_message=f"""
+            ## Your role  \nAnalog_Planning_Expert is a seasoned analog integrated circuits specialist who plan how to design a circuit and check function.
+            ## Your Job \n You are good at plannig how the {task} circuit will be designed.
+
+            The final code might be modified by the checkers, please revert it to the orginial one if the circuit pass the checks.
+            """,
             is_termination_msg=lambda msg: "TERMINATE" in msg["content"],
-            max_consecutive_auto_reply=2,
+            max_consecutive_auto_reply=6,
             human_input_mode="NEVER",
             code_execution_config=False,
             llm_config=llm_config,
         )
-        pi_agent.register_hook(
-            "process_last_received_message",
-            lambda content: f"{content}\n\nLet's think step by step.",
-        )
+        # pi_agent.register_hook(
+        #     "process_last_received_message",
+        #     lambda content: f"{content}\n\nLet's think step by step.",
+        # )
 
         executor = autogen.UserProxyAgent(
             name="executor",
@@ -567,19 +719,12 @@ class AnalogAgent(BaseModel):
         )
         circuit_agent = autogen.AssistantAgent(
             name=f"Analog_{task_type}_expert",
-            description=f"Analog_{task_type}_expert is a seasoned analog integrated circuits specialist with a focus on designing {task} who use Python and PySpice for rigorous simulation and verification to ensure reliable, error-free designs.",
-            # system_message="""
-            # Example Prompt: You are an experienced [circuit name] designers, please use the [docs name], and help me design a [circuit name] with input and output nodes: [Input node], [Output node name].
-            # Please output the PySpice code of this circuit.
-            # You have access to an [offline library name].
-            # If you find subcircuits that already be built, you can ask the corresponding agent using [xxx].
-            # If you find any problems when you are designing the circuit, please contact PI for further classification.
-            # The output should be:
-            # Circuit PySpice code
-            # """,
+            description=f"Analog_{task_type}_expert is a seasoned analog integrated circuits specialist with a focus on designing and modify {task} who use Python and PySpice for rigorous simulation and verification to ensure reliable, error-free designs.",
             system_message=f"""
-                ## Your role \nAnalog_{task}_Expert is a seasoned analog integrated circuits specialist with a focus on designing {task_type} with input {input_nodes} and output {output_nodes}. In addition to expertise in analog circuit design, they possess strong Python programming skills and are proficient in using PySpice for accurate and robust simulation of analog circuits.
-                \n\n## Task and skill instructions \n- Task description: The expert is responsible for designing high-performance {task_type} and employing simulation tools to verify the design integrity. This includes running comprehensive simulations to detect issues such as singular matrices, ensuring that the circuit designs work as intended under various operating conditions. \n- Skill description: The expert has in-depth knowledge of analog integrated circuit design, particularly in developing {task_type}. In parallel, they are skilled in Python programming and have extensive experience using PySpice for circuit simulation. This dual expertise ensures that designs are not only theoretically sound but are also rigorously tested and validated through simulation, addressing potential pitfalls before fabrication. \n- Additional information: Their work meticulously bridges the gap between circuit design and simulation verification, ensuring that every component of the design process is thoroughly checked for errors or issues, culminating in reliable, high-quality analog systems.
+                ## Your role \nAnalog_{task}_Expert is a seasoned analog integrated circuits specialist with a focus on designing and modify {task_type} with input {input_nodes} and output {output_nodes}. In addition to expertise in analog circuit design, they possess strong Python programming skills and are proficient in using PySpice for accurate and robust simulation of analog circuits.
+                \n\n## Task description: The expert is responsible for designing {task_type}. To make sure the circuit is executable add this code template to check: {pyspice_template}
+
+                DO NOT MODIFTY THE CODE THAT ARE NOT FROM THIS EXPERT.
             """,
             is_termination_msg=lambda msg: "TERMINATE" in msg["content"],
             max_consecutive_auto_reply=6,
@@ -607,85 +752,82 @@ class AnalogAgent(BaseModel):
             ),
         )
 
-        # python_agent = autogen.AssistantAgent(
-        #     name="Python_Expert",
-        #     description=f"""Python_Expert is an analog integrated circuit specialist who designs {task_type} and leverages Python with PySpice to simulate, troubleshoot, and meticulously validate circuit performance for reliable real-world applications.""",
-        #     system_message=f"""
-        #         ## Your role\nPython_Expert is an analog integrated circuits specialist with a strong background in designing {task}. In addition, they are a proficient Python programmer, skilled in using PySpice to simulate analog circuits, ensuring that every design detail is meticulously verified and validated.\n\n## Task and skill instructions\n- Task: Design and simulate {task_type}-based analog integrated circuits, ensuring robust performance and reliability in real-world applications.\n- Skill: Utilize Python and PySpice to accurately simulate analog circuits, identify and troubleshoot issues such as singular matrices, and verify the integrity of both design and simulation processes.\n- Additional Information: Apply thorough validation techniques to cross-check circuit designs against simulations, ensuring consistency and preventing critical issues before physical implementation.
-        #     """,
-        #     is_termination_msg=lambda msg: "TERMINATE" in msg["content"],
-        #     max_consecutive_auto_reply=1,
-        #     human_input_mode="NEVER",
-        #     code_execution_config=False,
-        #     llm_config=llm_config,
-        # )
-        # python_agent.register_hook(
-        #     "process_last_received_message", lambda content: self.python_hook(content, task, task_type, input_nodes, output_nodes)
-        # )
+        dc_sweep_agent = autogen.AssistantAgent(
+            name="DCSweep_Checker",
+            description=f"DCSweep_Checker is a verification engineer to add code to check if {task} circuit pass DC Sweep Check.",
+            is_termination_msg=lambda msg: "TERMINATE" in msg["content"],
+            max_consecutive_auto_reply=6,
+            human_input_mode="NEVER",
+            code_execution_config=False,
+            # code_execution_config={"use_docker": self.use_docker, "work_dir": work_dir},
+            llm_config=llm_config,
+        )
+        dc_sweep_agent.register_hook(
+            "process_last_received_message",
+            lambda content: self.dc_sweep_hook(
+                content, task, task_type, input_nodes, output_nodes
+            ),
+        )
 
-        # verification_agent = autogen.AssistantAgent(
-        #     name=f"{task_type}_verification_agent",
-        #     is_termination_msg=lambda msg: "TERMINATE" in msg["content"],
-        #     max_consecutive_auto_reply=1,
-        #     human_input_mode="NEVER",
-        #     code_execution_config=False,
-        #     llm_config=llm_config,
-        # )
+        funcheck_agent = autogen.AssistantAgent(
+            name="Function_Checker",
+            description="Function_Checker is a verification engineer who add function check code to circuit to perform check.",
+            is_termination_msg=lambda msg: "TERMINATE" in msg["content"],
+            max_consecutive_auto_reply=6,
+            human_input_mode="NEVER",
+            code_execution_config=False,
+            # code_execution_config={"use_docker": self.use_docker, "work_dir": work_dir},
+            llm_config=llm_config,
+        )
 
-        # dc_sweep_agent = autogen.AssistantAgent(
-        #     name="DCSweep_Checker",
-        #     description=f"DCSweep_Checker is a verification engineer to test if the {task} circuit pass DC Sweep Check.",
-        #     system_message=f"""
-        #         DCSweep_Checker is a verification engineer to test if the {task} circuit pass DC Sweep Check.
-        #         You should follow the steps to perform complete DC Sweep Check:
+        funcheck_agent.register_hook(
+            "process_last_received_message",
+            lambda content: self.func_hook(content, task, task_type, input_nodes, output_nodes),
+        )
 
-        #         - start: get vinn name, vinp name from netlist.
-        #         - first: {dc_sweep_template}
-        #         - second: get the best voltage.
-        #         - third: replace V into best voltage, generate a new netlist.
-        #         - last: check if the netlist pass.
-        #     """,
-        #     is_termination_msg=lambda msg: "TERMINATE" in msg["content"],
-        #     max_consecutive_auto_reply=1,
-        #     human_input_mode="NEVER",
-        #     code_execution_config=False,
-        #     llm_config=llm_config,
-        # )
-        # dc_sweep_agent.register_hook("process_last_received_message")
+        mosfets_agent = autogen.AssistantAgent(
+            name="MOSFETs_connection_checker",
+            description="MOSFETs_connection_checker is a verification engineer who perform MOSFETs connection check.",
+            # system_message="""
+            #     Check all MOSFETs: Vgs > Vth, Vds > Vgs-Vth
+            #         - NMOS
+            #         - PMOS
+            # """,
+            is_termination_msg=lambda msg: "TERMINATE" in msg["content"],
+            max_consecutive_auto_reply=6,
+            human_input_mode="NEVER",
+            code_execution_config=False,
+            # code_execution_config={"use_docker": self.use_docker, "work_dir": work_dir},
+            llm_config=llm_config,
+        )
+        mosfets_agent.register_hook(
+            "process_last_received_message",
+            lambda content: self.mosfets_hook(content, task, task_type, input_nodes, output_nodes),
+        )
 
-        # cos_agent = autogen.AssistantAgent(
-        #     name="assistant",
-        #     description="COS Agent is a junior engineer who helps the PI Agent to design the COS.",
-        #     system_message="Please help me design a circuit. Think and tell me the necessary steps we need to do.",
-        #     human_input_mode="NEVER",
-        #     llm_config=llm_config,
-        #     is_termination_msg=lambda x: "TERMINATE" in x.get("content"),
-        # )
-        # math_reasoning_agent = autogen.AssistantAgent(
-        #     name="assistant",
-        #     human_input_mode="NEVER",
-        #     llm_config=llm_config,
-        #     is_termination_msg=lambda x: "TERMINATE" in x.get("content"),
-        # )
-        # graph_analysis_agent = autogen.AssistantAgent(
-        #     name="assistant",
-        #     human_input_mode="NEVER",
-        #     llm_config=llm_config,
-        #     is_termination_msg=lambda x: "TERMINATE" in x.get("content"),
-        # )
-        proxies = []
-        agents = [circuit_agent]
+        proxies = [pi_agent]
+        agents = [circuit_agent, mosfets_agent]
+        # if task_type in ["Opamp", "Amplifier"]:
+        #     agents.append(dc_sweep_agent)
+        #     agents.append(funcheck_agent)
+        # if task_type in ["CurrentMirror", "Inverter"]:
+        #     agents.append(funcheck_agent)
+
         groupchat = autogen.GroupChat(
             agents=[*proxies, *agents, executor],
             messages=[],
-            max_round=20,
+            max_round=12,
             speaker_selection_method="auto",
             allow_repeat_speaker=False,
         )
         manager = autogen.GroupChatManager(
             groupchat=groupchat,
             llm_config=llm_config,
-            # system_message="If the code answer or error repeat for three times in the chat history, please print TERMINATE to stop the discussion."
+            system_message="""
+            1. The final code might be modified by the checkers, please revert it to the orginial one if the circuit pass the checks.
+            2. If the executor successfully execute code for three time, TERMINATE the discussion.
+            3. Execute code after every modification.
+            """,
         )
         # manager.register_hook(
         #     "process_last_received_message", lambda content: f"{content}\n\n If the code answer or error repeat for three times in the chat history, please print TERMINATE to stop the discussion."
@@ -889,6 +1031,16 @@ def get_chat_completion(
         chat_result = analog_agent.use_captain(
             model=model, messages=messages, work_dir=work_dir, use_rag=use_rag
         )
+    elif "groupchat+tba" in mode:
+        chat_result = analog_agent.use_groupchat_tba(
+            model=model,
+            task=task,
+            task_type=task_type,
+            input_nodes=input_nodes,
+            output_nodes=output_nodes,
+            messages=messages,
+            work_dir=work_dir,
+        )
     elif "groupchat" in mode:
         use_rag = False
         if "rag" in mode:
@@ -899,17 +1051,6 @@ def get_chat_completion(
             work_dir=work_dir,
             use_rag=use_rag,
             groupchat_config=groupchat_config,
-        )
-    elif "groupchat+tba" in mode:
-        chat_result = analog_agent.use_groupchat_tba(
-            model=model,
-            task=task,
-            task_type=task_type,
-            input_nodes=input_nodes,
-            output_nodes=output_nodes,
-            messages=messages,
-            work_dir=work_dir,
-            use_rag=use_rag,
         )
     else:
         raise ValueError(f"Invalid mode: {mode}")

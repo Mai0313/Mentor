@@ -1197,6 +1197,7 @@ def work(
         code = raw_code + pyspice_template.replace("[OP_PATH]", operating_point_path)
     else:
         code = raw_code
+    print(f"***{code}***")
     ##################################################################################################
 
     with open(f"{log_path_parent}/p{task_id}_{it}_input.txt", "w") as fwrite_input:
@@ -1345,8 +1346,10 @@ def work(
                         with open(netlist_file_path, "w") as fwrite_netlist:
                             fwrite_netlist.write("\n".join(result.stdout.split("\n")[1:]))
                         dc_sweep_success = 1
+                        print("dc sweep error 0")
                     except Exception as e:
                         print(f"error: {e}")
+                        print("dc sweep error 1")
                         # recover the raw file
                         if os.path.exists(code_path + ".bak"):
                             if os.path.exists(code_path):
@@ -1468,6 +1471,8 @@ def work(
                 with open(f"{log_path}/mosfet_connection_error_{code_id}", "w"):
                     pass
             elif func_error == 1:
+                print("mosfet connection error 0")
+                print("function error 1")
                 new_prompt += func_error_message
                 new_prompt += "\nPlease rewrite the corrected complete code."
                 flog.write(f"task:{task_id}\tit:{it}\tcode_id:{code_id}\tfunction error\n")
@@ -1475,6 +1480,7 @@ def work(
                 with open(f"{log_path}/function_error_{code_id}", "w"):
                     pass
             else:
+                print("##### ALL 4 CHECKS PASSED #####")
                 raise AssertionError
         flog.write(
             f"total_tokens\t{total_tokens}\ttotal_prompt_tokens\t{total_prompt_tokens}\ttotal_completion_tokens\t{total_completion_tokens}\n"
