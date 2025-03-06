@@ -8,6 +8,7 @@ import re
 from pathlib import Path
 from collections import defaultdict
 
+import pandas as pd
 from rich.table import Table
 from rich.console import Console
 
@@ -98,6 +99,7 @@ def display_model_scores(
     # for _, _, col_title in ERRORS:
     #     table.add_column(col_title, justify="right")
     # table.add_column("Error Found", justify="right")
+    data = []
 
     # 對各個問題依 problem_number 排序
     for score in sorted(scores, key=lambda x: x["problem_number"]):
@@ -138,9 +140,23 @@ def display_model_scores(
 
         # row.append(f"{error_comment}")
         table.add_row(*row)
+        data.append(row)
 
     console.print(table)
     console.print("\n")
+
+    pass_df = pd.DataFrame(
+        data,
+        columns=[
+            "Task ID",
+            "pass@1 Rate",
+            "pass@2 Rate",
+            "pass@3 Rate",
+            "pass@4 Rate",
+            "pass@5 Rate",
+        ],
+    )
+    pass_df.to_excel(f"{model_name}_pass_log.xlsx", index=False)
 
 
 def parse_logs_in_folder(folder_path: str = "./logs_ori_unmod", num_per_task: int = 20) -> None:
