@@ -49,7 +49,7 @@ parser.add_argument(
     default="groupchat",
     help="it can be 'original', 'captain', 'captain+rag', 'groupchat' or 'groupchat+rag'",
 )
-parser.add_argument("--config", type=str, default="./configs/agents/groupchat_wo_cos.yaml")
+parser.add_argument("--config", type=str, default="./configs/agents/groupchat.yaml")
 args = parser.parse_args()
 
 MODEL = args.model
@@ -1142,7 +1142,7 @@ def work(
                 print(e)
                 print(f"API Retry Quota: {2 - retry_quota} times left")
                 print("sleep 30 seconds")
-                time.sleep(30)
+                time.sleep(1)
 
     money_quota, total_tokens, total_prompt_tokens, total_completion_tokens = cal_quota(
         money_quota, total_tokens, total_prompt_tokens, total_completion_tokens, completion
@@ -1555,7 +1555,7 @@ def work(
                 print(e)
                 print(f"API Retry Quota: {2 - retry_quota} times left")
                 print("sleep 30 seconds")
-                time.sleep(30)
+                time.sleep(1)
 
         money_quota, total_tokens, total_prompt_tokens, total_completion_tokens = cal_quota(
             money_quota, total_tokens, total_prompt_tokens, total_completion_tokens, completion
@@ -1636,7 +1636,7 @@ def get_retrieval(task: str, task_id: int, log_path: str) -> list[int]:
             print("Encountered an APIStatusError. Details:")
             print(e)
             print("sleep 30 seconds")
-            time.sleep(30)
+            time.sleep(1)
         answer = completion.choices[0].message.content
         console.print("Answer:")
         extracted_codes = extract_code_ag2(text=answer)

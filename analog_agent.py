@@ -700,12 +700,15 @@ class AnalogAgent(BaseModel):
         self._get_cache(llm_config=llm_config)
         pi_agent = autogen.AssistantAgent(
             name="Analog_Planning_Expert",
-            description=f"Analog_Planning_Expert is a seasoned analog integrated circuits specialist who plan how to design {task} circuit and check function.",
+            description=f"Analog_Planning_Expert is a seasoned analog integrated circuits specialist who's primary task is to plan and outline the design of a {task} circuit. IT WILL NOT OUTPUT ANY CODE.",
             system_message=f"""
-            ## Your role  \nAnalog_Planning_Expert is a seasoned analog integrated circuits specialist who plan how to design a circuit and check function.
-            ## Your Job \n You are good at plannig how the {task} circuit will be designed. And you will dispatch the jobs to Analog_expert and checker agents, such as DCSweep_Checker, Function_Checker, MOSFET_Connection_Checker.
-
-            The final code might be modified by the checkers, please revert it to the orginial one if the circuit pass the checks.
+                1. Propose high-level architectural strategies and topologies for the {task} circuit.
+                2. Identify important performance parameters (e.g., gain, noise, linearity, power consumption, etc.).
+                3. Outline essential pre-layout considerations, such as biasing strategies and transistor sizing guidelines, without delving into specific SPICE netlists or code.
+                4. Perform conceptual or theoretical checks to ensure the feasibility and functionality of the circuit plan.
+                5. Recommend future simulation scenarios (e.g., DC, AC, transient) for verification but do not produce actual simulation or code.
+                6. Provide insights on potential challenges and design trade-offs (e.g., noise vs. power, speed vs. accuracy).
+                7. Generate improvement suggestions at a planning stage, enabling the design team to handle schematic capture and coding themselves.
             """,
             is_termination_msg=lambda msg: "TERMINATE" in msg["content"],
             max_consecutive_auto_reply=6,
@@ -742,6 +745,22 @@ class AnalogAgent(BaseModel):
         # circuit_agent.register_hook(
         #     "process_last_received_message", lambda content: self.circuit_hook(content, task, task_type, input_nodes, output_nodes)
         # )
+        autogen.AssistantAgent(
+            name="Python_Expert",
+            system_message=f"""## Your role\nPython_Expert is an analog integrated circuits specialist with a strong background in designing {task}. In addition, they are a proficient Python programmer, skilled in using PySpice to simulate analog circuits, ensuring that every design detail is meticulously verified and validated.\n\n## Task and skill instructions\n- Task: Design and simulate {task}-based analog integrated circuits, ensuring robust performance and reliability in real-world applications.\n- Skill: Utilize Python and PySpice to accurately simulate analog circuits, identify and troubleshoot issues such as singular matrices, and verify the integrity of both design and simulation processes.\n- Additional Information: Apply thorough validation techniques to cross-check circuit designs against simulations, ensuring consistency and preventing critical issues before physical implementation.""",
+            description=f"""Python_Expert is an analog IC specialist who designs {task} and leverages Python with PySpice to simulate, troubleshoot, and meticulously validate circuit performance for reliable real-world applications.""",
+            is_termination_msg=lambda msg: "TERMINATE" in msg["content"],
+            max_consecutive_auto_reply=6,
+            human_input_mode="NEVER",
+            code_execution_config=False,
+            llm_config=llm_config,
+        )
+
+        autogen.AssistantAgent(
+            name="Verification_Expert",
+            description=f"""Verification_Expert is an experienced analog circuit specialist who designs and simulates high-performance {task} using advanced analog techniques and Python-based PySpice, rigorously verifying every design step to enhance system performance and reliability.""",
+            system_message=f"""## Your role\nVerification_Expert is a seasoned analog integrated circuits expert with a specialized focus on designing state-of-the-art {task}. With in-depth expertise in analog circuit design and simulation, they excel in both theoretical and practical aspects of {task_type} development. Additionally, Verification_Expert is a proficient Python programmer, highly skilled in utilizing PySpice for simulating analog circuits, contributing to efficient and accurate design verification processes.\n\n## Task and skill instructions\n- Task: Responsible for designing and simulating robust {task} within analog integrated circuits, ensuring optimal performance and reliability. They also conduct thorough checks of simulation outputs to identify and avoid potential issues such as singular matrices.\n- Skill: Leverage advanced analog circuit design techniques alongside Python programming expertise in PySpice to simulate, analyze, and verify designs in a seamless workflow. Their role involves meticulous verification of both the design and simulation stages to ensure every component functions as intended, mitigating risks and enhancing the overall integrity of the system.\n- Other: Through rigorous testing, systematic troubleshooting, and consistent quality checks, Verification_Expert maintains high standards in circuit verification, combining technical proficiency with a keen eye for potential issues in analog integrated circuit designs.""",
+        )
 
         testbench_agent = autogen.AssistantAgent(
             name=f"{task_type}_TestBench_Agent",
@@ -813,7 +832,7 @@ class AnalogAgent(BaseModel):
         )
 
         proxies = [pi_agent]
-        agents = [circuit_agent, testbench_agent]
+        agents = [circuit_agent]
         # if task_type in ["Opamp", "Amplifier"]:
         #     agents.append(dc_sweep_agent)
         #     agents.append(funcheck_agent)
