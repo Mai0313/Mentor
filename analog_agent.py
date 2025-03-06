@@ -501,40 +501,47 @@ class AnalogAgent(BaseModel):
     def testbench_hook(
         self, content: str, task: str, task_type: str, input_nodes: str, output_nodes: str
     ) -> str:
-        prompt = f"""
-            You are required to create checker functions for {task} with input {input_nodes} and output {output_nodes}.
-            You should perform the checks below ONLY IF NEEDED for {task}.
-            The check functions should generate the error messages and suggestion for improvement.
-            You should also raise the errors.
+        prompt = f""" You are required to create checker functions for {task}, assuming the main input nodes are {input_nodes} and the main output nodes are {output_nodes}. These checker functions should help validate both the functionality and correctness of the netlist in an analog design context, using Spice simulations (e.g., PySpice).
 
-            The checks you can choose are:
+        IMPORTANT GUIDELINES:
 
-            1. Floating point check to make sure circuit connection is correct.
-                - Add {pyspice_template} to generate and check operating_nodes.
-            2. DC Sweep Check (follow the steps)
-                - start: get vinn name, vinp name from netlist.
-                - first: {dc_sweep_template}
-                - second: get the best voltage.
-                - third: replace V into best voltage, generate a new netlist.
-                - last: check if the netlist pass.
-            3. Requirement Check
-                - First, you should use {output_netlist_template} to generate netlist before checking.
-                - Input Output nodes are in netlist
-                - Input Voltages Verification
-                - Check if netlist is reasonable
-            4. Simulation and Check
-                - Check all MOSFETs connections and rule: Vgs > Vth, Vds > Vgs-Vth
-                    - Check NMOS
-                    - Check PMOS
-            5. Function Check
-                - Check the function of the designed circuit.
+        Only perform checks that are relevant for the given task. Skip any checks not applicable to the current design objective.
+        Each checker function should:
+        Identify possible errors or design violations.
+        Provide an explicit error message.
+        Suggest relevant improvements or design solutions.
+        Raise an exception if the design fails a crucial check.
+        AVAILABLE CHECKS:
 
-            The output should be python code:
-            ```
-                [Pyspice circuit]
-                [your checker functions]
-                [call your checker functions]
-            ```
+        Floating-point Check (Circuit Connection)
+
+        Insert the PySpice netlist template "{pyspice_template}" to verify the presence and validity of all operating_nodes.
+        Ensure no unintended floating nodes exist and that the circuit connectivity is intact.
+        DC Sweep Check
+
+        Step 1: Identify the netlist names for vinn and vinp (the negative and positive input supply nodes).
+        Step 2: Use the DC sweep template "{dc_sweep_template}" to run a voltage sweep.
+        Step 3: Determine the "best" operating voltage from the DC sweep results.
+        Step 4: Modify the circuit netlist to fix the input supply at the 'best' voltage.
+        Step 5: Validate that the circuit netlist still functions correctly under these conditions.
+        Requirement Check
+
+        First: Use the "{output_netlist_template}" to generate or finalize the netlist for the design.
+        Verify that the correct input and output nodes are present in the netlist.
+        Verify that the input voltages are defined and within reasonable bounds.
+        Check basic netlist integrity (e.g., all references for power rails are valid, no missing components).
+        Simulation and Device Check
+
+        Verify that each MOSFET (NMOS and PMOS) follows fundamental transistor rules:
+        NMOS: Vgs > Vth, Vds > (Vgs - Vth) for proper operation region.
+        PMOS: Similar relevant conditions, ensuring correct source-drain orientation and threshold constraints.
+        For each violation detected, raise an error detailing which device is at fault and suggest potential fixes (e.g., adjusting bias voltages, swapping pins).
+        Functional Check
+
+        (High-level) Confirm the circuit performs the intended function. For instance:
+        Amplifier meets expected gain.
+        Bias generator provides stable reference voltage.
+        Switch or comparator transitions at the correct node voltages.
         """
         return f"{content}\n\n{prompt}"
 
@@ -552,39 +559,37 @@ class AnalogAgent(BaseModel):
     ) -> str:
         if task_type == "Opamp":
             prompt = f"""
-            DCSweep_Checker is a verification engineer to test if the {task} circuit pass DC Sweep Check.
-            You should remain the original code and create a dc_sweep.py add circuit code and check code to perform check.
-            Follow the steps to perform complete DC Sweep Check:
+            DCSweep_Checker is a verification engineer tasked with testing whether the {task} circuit passes the DC Sweep Check. You should keep the original code and create a file in your folder named dc_sweep.py that includes both the circuit code and the check code.
 
-            1. Generate netlist.sp.
-            2. Get Vinn name and Vinp name from netlist.
-            3. If Vinp name exists, then circuit.V(Vinn name) and circuit.V(Vinp name) will be replaced to `circuit.V('dc', 'Vinn', 'Vinp', 0.0)`.
-            4. Replace V[IN_NAME] and execute this template: {dc_sweep_template}. DO NOT MODIFIED ANY TEMPLATE CODE.
-            5. Find the best voltage like {best_voltage_template}.
-            6. Use the original code as a base and replace voltage of Vinn and Vinp in Circuit Code to the best voltage (should be float).
-            7. Run the code with OP test.
-            8. If all success, generate new netlist.sp to replace the old one.
+            Follow these steps to perform the complete DC Sweep Check:
 
-            NO NEED TO GENERATE PLOT.
-            If the dc_sweep.py successfully executed, then the original code passed the dc sweep check.
+                1. Generate netlist.sp from the existing circuit code.
+                2. Extract the names of Vinn and Vinp from netlist.sp.
+                3. If Vinp is found, replace both circuit.V(Vinn_name) and circuit.V(Vinp_name) with: circuit.V('dc', 'Vinn', 'Vinp', 0.0)
+                4. Using {dc_sweep_template} (do not modify any template code), replace V[IN_NAME] and execute the DC sweep.
+                5. Determine the best voltage from {best_voltage_template}.
+                6. Update the original circuit code by setting the voltages of Vinn and Vinp to the best voltage (a floating-point value).
+                7. Run an OP (operating point) test using the updated circuit code.
+                8. If all steps succeed, generate a new netlist.sp to replace the old one.
+
+            No plotting is required. If dc_sweep.py executes successfully, then the original code has passed the DC sweep check.
         """
 
         else:
             prompt = f"""
-            DCSweep_Checker is a verification engineer to test if the {task} circuit pass DC Sweep Check.
-            You should create dc_sweep.py add circuit code and check code to perform check.
-            Follow the steps to perform complete DC Sweep Check:
+            DCSweep_Checker is a verification engineer tasked with testing whether the {task} circuit passes the DC Sweep Check. You should keep the original code and create a file in your folder named dc_sweep.py that includes both the circuit code and the check code.
 
-            1. Generate netlist.sp.
-            2. Get Vinn name and Vinp name from netlist.
-            3. Replace V[IN_NAME] and execute {dc_sweep_template}. DO NOT MODIFIED ANY TEMPLATE CODE.
-            4. Find the best voltage like {best_voltage_template}.
-            5. Use the original code as a base and replace voltage of Vinn and Vinp in Circuit Code to the best voltage (should be float).
-            6. Run the code with OP test.
-            7. If all success, generate new netlist.sp to replace the old one.
+            Follow these steps to perform the complete DC Sweep Check:
 
-            NO NEED TO GENERATE PLOT.
-            If the dc_sweep.py successfully executed, then the original code passed the dc sweep check.
+                1. Generate netlist.sp from the existing circuit code.
+                2. Extract the names of Vinn and Vinp from netlist.sp.
+                3. Using {dc_sweep_template} (do not modify any template code), replace V[IN_NAME] and execute the DC sweep.
+                4. Determine the best voltage from {best_voltage_template}.
+                5. Update the original circuit code by setting the voltages of Vinn and Vinp to the best voltage (a floating-point value).
+                6. Run an OP (operating point) test using the updated circuit code.
+                7. If all steps succeed, generate a new netlist.sp to replace the old one.
+
+            No plotting is required. If dc_sweep.py executes successfully, then the original code has passed the DC sweep check.
         """
         return f"{content}\n\n{prompt}"
 
@@ -596,26 +601,28 @@ class AnalogAgent(BaseModel):
 
         if task_type == "Opamp" or task_type == "Amplifier":
             prompt = f"""
-            Function_Checker is a verification engineer who add function check code to circuit to perform check.
-            You should create function_check.py add circuit code and check code to perform check.
-            Follow the steps to preform complete function check for {task}:
+            Function_Checker is a verification engineer who introduces function-check code into the circuit for verification. You should create a file named function_check.py that contains both the circuit code and the check code needed to perform the function check.
 
-            1. Replace voltage of Vinn and Vinp to "dc V ac 1u", for example:
-                circuit.V("inp", "Vinp", circuit.gnd, X.XX) to circuit.V("inp", "Vinp", circuit.gnd, "dc X.XX ac 1u")
-                circuit.V("inp", "Vinn", circuit.gnd, X.XX) to circuit.V("inn", "Vinp", circuit.gnd, "dc X.XX ac 1u")
-            2. Add this code directly to the circuit Pyspice code and **DO NOT MODIFY THIS CHECK CODE**\n\n{test_code}.
+            Follow these steps to complete the function check for {task}:
 
-            If the function_check.py successfully executed, then the original code passed the function check.
-            If the code execute with error, return the error and your suggestion.
+                1. Modify the voltage sources for Vinn and Vinp to "dc X.XX ac 1u". For example:
+
+                    - circuit.V("inp", "Vinp", circuit.gnd, X.XX) → circuit.V("inp", "Vinp", circuit.gnd, "dc X.XX ac 1u")
+                    - circuit.V("inn", "Vinn", circuit.gnd, X.XX) → circuit.V("inn", "Vinn", circuit.gnd, "dc X.XX ac 1u")
+
+                2. Add the following verification code directly into your PySpice circuit (do not modify this check code): {test_code}
+
+            If function_check.py runs successfully, the original code passes the function check. If it fails, return both the error message and your recommendation(s) for resolving it.
         """
         else:
             prompt = f"""
-            You should create function_check.py add circuit code and check code to perform check for {task}:
+            Function_Checker is a verification engineer who introduces function-check code into the circuit for verification. You should create a file named function_check.py that contains both the circuit code and the check code needed to perform the function check.
 
-            {test_code}
+            Follow these steps to complete the function check for {task}:
 
-            If the function_check.py successfully executed, then the original code passed the function check.
-            If the code execute with error, return the error and your suggestion.
+                1. Add the following verification code directly into your PySpice circuit (do not modify this check code): {test_code}
+
+            If function_check.py runs successfully, the original code passes the function check. If it fails, return both the error message and your recommendation(s) for resolving it.
         """
         return f"{content}\n\n{prompt}\n\nPlease revert to the original code if the check passed."
 
@@ -696,7 +703,7 @@ class AnalogAgent(BaseModel):
             description=f"Analog_Planning_Expert is a seasoned analog integrated circuits specialist who plan how to design {task} circuit and check function.",
             system_message=f"""
             ## Your role  \nAnalog_Planning_Expert is a seasoned analog integrated circuits specialist who plan how to design a circuit and check function.
-            ## Your Job \n You are good at plannig how the {task} circuit will be designed.
+            ## Your Job \n You are good at plannig how the {task} circuit will be designed. And you will dispatch the jobs to Analog_expert and checker agents, such as DCSweep_Checker, Function_Checker, MOSFET_Connection_Checker.
 
             The final code might be modified by the checkers, please revert it to the orginial one if the circuit pass the checks.
             """,
@@ -806,7 +813,7 @@ class AnalogAgent(BaseModel):
         )
 
         proxies = [pi_agent]
-        agents = [circuit_agent, mosfets_agent]
+        agents = [circuit_agent, testbench_agent]
         # if task_type in ["Opamp", "Amplifier"]:
         #     agents.append(dc_sweep_agent)
         #     agents.append(funcheck_agent)
