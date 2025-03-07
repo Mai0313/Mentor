@@ -1,6 +1,6 @@
 ### If the Task Type is `Opamp` or `Amplifier`, please refer the code below to verify your circuit.
 
-```python
+```
 import numpy as np
 analysis = simulator.dc(V[IN_NAME]=slice(0, 5, 0.01))
 with open("[DC_PATH]", "w") as fopen:
@@ -9,10 +9,10 @@ with open("[DC_PATH]", "w") as fopen:
     print("out_voltage: ", out_voltage)
     print("in_voltage: ", in_voltage)
     for item in in_voltage:
-        fopen.write(f"{item:.4f} ")
+        fopen.write(f"{item:.4f}")
     fopen.write("\\n")
     for item in out_voltage:
-        fopen.write(f"{item:.4f} ")
+        fopen.write(f"{item:.4f}")
     fopen.write("\\n")
 ```
 

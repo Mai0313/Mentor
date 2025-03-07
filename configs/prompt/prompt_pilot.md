@@ -67,7 +67,7 @@
     )
 
     # Using a higher level model (e.g., BSIM3)
-    circuit.model("NMOS_BSIM3", "nmos", level=8, version=3.3, ...)
+    circuit.model("NMOS_BSIM3", "nmos", level=8, version=3.3)
     ```
 
 3. **Additional Component Details**

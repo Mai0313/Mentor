@@ -5,11 +5,12 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.10, <3.13"
 dependencies = [
-    "ag2[captainagent,interop-pydantic-ai,rag,retrievechat]>=0.7.5",
+    "ag2[anthropic,captainagent,interop-pydantic-ai,rag,retrievechat]>=0.7.5",
     "aiofiles>=24.1.0",
     "fire>=0.7.0",
     "hydra-core>=1.3.2",
     "logfire>=3.6.2",
+    "marker-pdf[full]>=1.6.0",
     "markitdown>=0.0.1a4",
     "matplotlib>=3.10.0",
     "numpy>=1.26.4",
@@ -18,9 +19,9 @@ dependencies = [
     "pyspice==1.5.0",
     "rich>=13.9.4",
     "scipy>=1.15.2",
-    "torch==2.3.1+cu118",
-    "torchaudio==2.3.1+cu118",
-    "torchvision==0.18.1+cu118",
+    "torch==2.5.1+cu118",
+    "torchaudio==2.5.1+cu118",
+    "torchvision==0.20.1+cu118",
 ]
 
 [[tool.uv.index]]
@@ -124,7 +125,7 @@ fixable = ["ALL"]
 
 # Allow minus-sign (U+2212), greek-small-letter-rho (U+03C1), and the asterisk-operator (U+2217),
 # which could be confused for "-", "p", and "*", respectively.
-allowed-confusables = ["。", "，", "*", "；", "：", "、", "「", "」", "『", "』", "（", "）", "〔", "〕", "【", "】", "《", "》", "〈", "〉", "〖", "〗"]
+allowed-confusables = ["。", "，", "*", "；", "：", "、", "「", "」", "『", "』", "（", "）", "〔", "〕", "【", "】", "《", "》", "〈", "〉", "〖", "〗", "–"]
 
 # Require explicit selection of preview rules.
 explicit-preview-rules = true

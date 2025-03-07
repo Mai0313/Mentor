@@ -1,6 +1,7 @@
 # /// script
 # requires-python = ">=3.10"
 # dependencies = [
+#     "pandas",
 #     "rich",
 # ]
 # ///
@@ -8,6 +9,7 @@ import re
 from pathlib import Path
 from collections import defaultdict
 
+import pandas as pd
 from rich.table import Table
 from rich.console import Console
 
@@ -20,6 +22,8 @@ ERRORS = [
     ("mosfet connection error", "mosfet_error", "Mosfet Connection Error Rate"),
     ("function error", "function_error", "Function Error Rate"),
 ]
+
+console = Console()
 
 
 def process_log_file(file_path: Path) -> dict:
@@ -120,7 +124,6 @@ def parse_logs_in_folder(folder_path: str = "./logs", num_per_task: int = 5) -> 
         2) pass@5: 計算任意 code_id (0-4) 的成功次數
     最後以 Rich table 輸出各個 model 的成功率與錯誤率。
     """
-    console = Console()
 
     # 用 defaultdict 儲存不同 model 的分數資料 (list 每個元素為一個 dict)
     model_scores = defaultdict(list)
@@ -130,6 +133,7 @@ def parse_logs_in_folder(folder_path: str = "./logs", num_per_task: int = 5) -> 
     filename_pattern = re.compile(r"^(?:.*?)(.+?)(\d+)_log(?:_no_skill)?")
 
     # 遍歷資料夾中所有 .txt 檔案
+    counters_list = []
     for file_path in Path(folder_path).rglob("*.txt"):
         match = filename_pattern.match(file_path.name)
         if not match:
@@ -143,6 +147,12 @@ def parse_logs_in_folder(folder_path: str = "./logs", num_per_task: int = 5) -> 
         counters["problem_number"] = problem_number
 
         model_scores[model_name].append(counters)
+        counters_list.append(counters)
+
+    data = pd.DataFrame(counters_list)
+    data = data.rename(columns={"problem_number": "Task ID", "pass1": "pass@1", "pass5": "pass@5"})
+    data = data[["Task ID", "pass@1", "pass@5"]]
+    data = data.groupby("Task ID").sum().reset_index()
 
     # 根據 model 分別顯示結果
     if not model_scores:

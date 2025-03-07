@@ -14,30 +14,27 @@ import hydra
 from openai import AzureOpenAI, AsyncAzureOpenAI
 import autogen
 from autogen import ChatResult, UserProxyAgent, config_list_from_json
-import chromadb
 from pydantic import Field, BaseModel, computed_field, model_validator
 from omegaconf import OmegaConf
-from markitdown import MarkItDown
 from pydantic_ai import Agent
 from rich.console import Console
 from autogen.cache import Cache
 from rich.markdown import Markdown
-from chromadb.config import Settings
 from autogen.code_utils import extract_code
 from pydantic_ai.models.openai import OpenAIModel
 from openai.types.completion_usage import CompletionUsage
 from openai.types.chat.chat_completion import Choice, ChatCompletion
 from openai.types.chat.chat_completion_message import ChatCompletionMessage
 from autogen.agentchat.contrib.captainagent.captainagent import CaptainAgent
-from autogen.agentchat.contrib.retrieve_user_proxy_agent import RetrieveUserProxyAgent
-from chromadb.utils.embedding_functions.openai_embedding_function import OpenAIEmbeddingFunction
+
+from src.rag import retrieve_data
 
 console = Console()
 warnings.filterwarnings("ignore", category=ResourceWarning)
 
 
-def is_termination_msg(msg: dict[str, str]) -> bool:
-    return "TERMINATE" in msg["content"]
+def is_termination_msg(x: dict[str, Any]) -> bool:
+    return "TERMINATE" in x.get("content")
 
 
 dc_sweep_template = """
@@ -111,105 +108,9 @@ def get_config_dict(model: str, temp: float = 0.5) -> dict[str, Any]:
         env_or_file="./configs/llm/OAI_CONFIG_LIST", filter_dict={"model": model}
     )
     llm_config = {"timeout": 60, "cache_seed": os.getenv("SEED", None), "config_list": config_list}
-    if "o1" not in model:
-        llm_config["temperature"] = temp
+    if "o1" in model or "o3" in model:
+        llm_config.pop("temperature", None)
     return llm_config
-
-
-def retrieve_data(query: str) -> str:
-    """This tool is for retrieving knowledge from the docs.
-
-    If you have any question, you can give a query keyword then this function will search the answer in the docs and return the answer.
-
-    Args:
-        query (str): The question you want to ask and search in the docs.
-
-    Returns:
-        str: The answer to the question.
-
-    Examples:
-        >>> query = "What is the Product Version of Bandgap Reference Verification"
-        >>> retrieved_result = retrieve_data(query=query)
-    """
-    docs_path = Path("./docs").glob("**/*.md")
-    subcircuit_lib = Path("./subcircuit_lib").glob("**/*.*")
-    all_docs = [*docs_path, *subcircuit_lib]
-    all_docs = [f.as_posix() for f in all_docs]
-    llm_config = get_config_dict(model="aide-gpt-4o")
-    rag_assistant = autogen.AssistantAgent(
-        name="RetrieveAssistant", llm_config=llm_config, silent=True
-    )
-    rag_proxy_agent = RetrieveUserProxyAgent(
-        name="RetrieveProxyAgent",
-        human_input_mode="NEVER",
-        max_consecutive_auto_reply=3,
-        retrieve_config={
-            "task": "default",
-            "docs_path": all_docs,
-            "must_break_at_empty_line": False,
-            "model": "gpt-4o",
-            "vector_db": None,
-            "client": chromadb.Client(Settings(anonymized_telemetry=False)),
-            "get_or_create": True,
-            "update_context": False,
-            "embedding_function": OpenAIEmbeddingFunction(
-                api_key=llm_config["config_list"][0]["api_key"],
-                api_base="http://mlop-azure-gateway.mediatek.inc",
-                api_type=llm_config["config_list"][0]["api_type"],
-                api_version=llm_config["config_list"][0]["api_version"],
-                model_name="aide-text-embedding-ada-002-v2",
-                default_headers=llm_config["config_list"][0]["default_headers"],
-            ),
-            "embedding_model": None,
-        },
-        code_execution_config=False,  # we don't want to execute code in this case.
-        silent=True,
-    )
-    chat_result = rag_proxy_agent.initiate_chat(
-        recipient=rag_assistant,
-        message=rag_proxy_agent.message_generator,
-        problem=query,
-        # 這個會決定 LLM 能參考多少文件，要讓她拿到正確資訊，就要全部允許他看
-        n_results=len(all_docs),
-        # summary_method="last_msg",
-    )
-    return chat_result.chat_history[-1]["content"]
-
-
-def read_prompt(filepath: str) -> str:
-    path = Path(filepath)
-    content = path.read_text()
-    return content
-
-
-def convert2markdown(path: str) -> list[dict[str, str]]:
-    """Convert the docs to markdown format.
-
-    Args:
-        path (str): The path of the docs you want to convert, it can be either a file or a directory.
-
-    Returns:
-        list[dict[str, str]]: The list of the markdown content.
-    """
-    all_docs_paths = list(Path(path).glob("**/*.*")) if Path(path).is_dir() else [Path(path)]
-    client = AzureOpenAI(
-        api_key="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJBSURFIiwic3ViIjoiQUlERV9HQUlTRiIsImF1ZCI6WyJBSURFIl0sImlhdCI6MTY3ODg0NjkwNiwianRpIjoiZjdiYWVmMDItNzljYy00YTY3LTg5MWItYWIxOWM2MjBkY2MxIn0.0Sfk0QgU5RntmaIM0ALrOuk109dvQQttaigot8TPZZc",
-        azure_endpoint="https://mlop-azure-gateway.mediatek.inc",
-        api_version="2024-08-01-preview",
-        http_client=httpx.Client(verify=False, headers={"X-User-Id": "srv_dvc_tma001"}),
-    )
-    md = MarkItDown(llm_client=client, llm_model="aide-gpt-4o")
-    markdown_docs: list[dict[str, str]] = []
-    for all_docs_path in all_docs_paths:
-        result = md.convert(source=all_docs_path)
-        if result and result.title is None:
-            result.title = all_docs_path.stem
-        markdown_docs.append({
-            "filepath": all_docs_path.absolute().as_posix(),
-            "title": result.title,
-            "content": result.text_content,
-        })
-    return markdown_docs
 
 
 class AutogenUsage(BaseModel):
@@ -434,12 +335,7 @@ class AnalogAgent(BaseModel):
             cache = Cache.disk(cache_seed=cache_seed, cache_path_root="./.cache")
         return cache
 
-    def read_prompt(self, filepath: str) -> str:
-        path = Path(filepath)
-        content = path.read_text()
-        return content
-
-    def convert_init_message(self, messages: list[dict[str, str]]) -> dict[str, str]:
+    def convert_init_message(self, messages: list[dict[str, str]]) -> str:
         """This function will convert `chat_completion` format into AG2 `init_chat` format.
 
         init_chat can accept dict[str, Any], but chat_completion will be list[dict[str, Any]].
@@ -466,18 +362,28 @@ class AnalogAgent(BaseModel):
             # >>> {'system': 'You are a helpful assistant.', 'assistant': 'You should be kind.', 'user': 'Hi there!'}
             ```
         """
-        dict_order = ["system", "assistant", "user"]
-        if not isinstance(messages, list):
-            return {"role": "user", "content": f"{messages}"}
-        parsed_messages = [MessageModel(**message) for message in messages]
-        message_dict: dict[str, str] = {}
-        for parsed_message in parsed_messages:
-            if parsed_message.role in message_dict:
-                message_dict[parsed_message.role] += "\n" + parsed_message.content
-            else:
-                message_dict[parsed_message.role] = parsed_message.content
-        message_dict = {key: message_dict[key] for key in dict_order if key in message_dict}
-        return message_dict
+        # dict_order = ["system", "assistant", "user"]
+        # if not isinstance(messages, list):
+        #     return {"role": "user", "content": f"{messages}"}
+        # parsed_messages = [MessageModel(**message) for message in messages]
+        # message_dict: dict[str, str] = {}
+        # for parsed_message in parsed_messages:
+        #     if parsed_message.role in message_dict:
+        #         message_dict[parsed_message.role] += "\n" + parsed_message.content
+        #     else:
+        #         message_dict[parsed_message.role] = parsed_message.content
+        # message_dict = {key: message_dict[key] for key in dict_order if key in message_dict}
+        message_string = ""
+        for message in messages:
+            message_content = message.get("content")
+            if message_content:
+                message_string += f"\n{message_content}"
+        if "## Answer" in message_string:
+            # 如果最一開始初始化的訊息中帶有 `## Answer`
+            # 需要確保message的最後一行才是Answer
+            message_string = message_string.replace("## Answer", "")
+            message_string += "\n## Answer"
+        return message_string
 
     def use_chat_completion(self, model: str, messages: list[dict[str, str]]) -> ChatCompletion:
         messages[-1]["content"] += (
@@ -490,11 +396,11 @@ class AnalogAgent(BaseModel):
             api_version=llm_config["config_list"][0]["api_version"],
             http_client=httpx.Client(headers=llm_config["config_list"][0]["default_headers"]),
         )
-        if "o1" in model:
+        if "o1" in model or "o3" in model:
             result = client.chat.completions.create(messages=messages, model=model)
         else:
             result = client.chat.completions.create(
-                messages=messages, model=model, temperature=llm_config["temperature"]
+                messages=messages, model=model, temperature=llm_config.get("temperature", 0.5)
             )
         return result
 
@@ -869,6 +775,159 @@ class AnalogAgent(BaseModel):
         result = converter.convert_to_chat_completion()
         return result
 
+    def use_swarm(
+        self, model: str, messages: list[dict[str, str]], work_dir: str
+    ) -> ChatCompletion:
+        llm_config = get_config_dict(model=model)
+        # Create five agents whose system messages reflect a typical IC design workflow in English.
+        pi_agent = autogen.ConversableAgent(
+            name="Analog_Expert",
+            llm_config=llm_config,
+            system_message="""
+            ## Role: Analog_Expert (Design Engineer)
+            You are responsible for the initial analog IC design. You will propose a design plan based on the required specifications and verify feasibility at an early stage.
+
+            - Tasks:
+            1. Clarify functional requirements and specifications.
+            2. Propose a preliminary circuit plan and design, explaining the overall design framework.
+            3. You may call the `retrieve_data` tool (via the executor) to search for the technical references, circuit examples, or spec documents.
+
+            - Instructions:
+            1. Do not write detailed PySpice code directly here. Only propose the design flow, structure, and potential methods.
+            """,
+            max_consecutive_auto_reply=12,
+        )
+
+        circuit_agent = autogen.ConversableAgent(
+            name="Python_Expert",
+            llm_config=llm_config,
+            system_message="""
+            ## Role: Python_Expert (Implementation & Simulation Engineer)
+            You are proficient in Python and PySpice. Your job is to implement the validated design into actual code and perform preliminary simulations.
+
+            - Tasks:
+            1. Convert the verified analog circuit plan into PySpice code.
+            2. Conduct basic simulations to check for issues such as singular matrices.
+            3. Once the code is ready, hand off to the executor for real execution.
+
+            - Instructions:
+            1. You should only write or provide PySpice code in this step.
+            2. After writing the code, hand the conversation to the executor so it can run the code.
+            """,
+            max_consecutive_auto_reply=12,
+        )
+
+        executor = autogen.ConversableAgent(
+            name="executor",
+            llm_config=llm_config,
+            system_message="""
+            ## Role: executor (Simulation Execution Environment)
+            Your only responsibility is to execute the code or commands provided by other agents. You do not modify or generate additional code on your own.
+
+            - Tasks:
+            1. Execute the received code or commands and return the results or error messages.
+            2. Do not write code by yourself.
+
+            - Instructions:
+            1. If execution results in errors, hand off back to Python_Expert for code fixes.
+            2. If execution succeeds, hand the results to Verification_Expert for final verification.
+            """,
+            human_input_mode="NEVER",
+            is_termination_msg=lambda x: "TERMINATE" in x.get("content"),
+            code_execution_config={"use_docker": self.use_docker, "work_dir": work_dir},
+        )
+
+        # Read extra prompt file
+        extra_prompt_path = Path("./configs/prompt/prompt4checks.md")
+        extra_prompt = extra_prompt_path.read_text()
+
+        testbench_agent = autogen.ConversableAgent(
+            name="Verification_Expert",
+            llm_config=llm_config,
+            system_message=f"""
+            ## Role: Verification_Expert (Final Verification Engineer)
+            You are an experienced analog IC engineer focused on final verification and thorough testing.
+
+            - Tasks:
+            1. Review the execution results from Python_Expert and executor, providing final verification and analysis.
+            2. If necessary, request or add additional test scenarios and corner cases.
+            3. If you confirm everything is correct, you may terminate the process; or if you want more tests, create new code and hand it to the executor.
+
+            - Instructions:
+            1. If everything is confirmed correct, you can terminate the workflow.
+            2. If errors or mismatches are found, you may hand off to Python_Expert (or back to Analog_Expert if needed) for further fixes.
+
+            ## Additional Checks:
+            {extra_prompt}
+            """,
+            max_consecutive_auto_reply=12,
+        )
+
+        autogen.register_function(
+            f=retrieve_data,
+            caller=pi_agent,
+            executor=executor,
+            name=retrieve_data.__name__,
+            description=retrieve_data.__doc__,
+        )
+
+        autogen.register_hand_off(
+            agent=pi_agent,  # Analog_Expert_Checker
+            hand_to=[
+                autogen.OnCondition(
+                    target=circuit_agent,  # Python_Expert
+                    condition="If the plan has been made, please hand off to Python_Expert to write and simulate the PySpice code.",
+                ),
+                autogen.AfterWork(agent=pi_agent),
+            ],
+        )
+
+        autogen.register_hand_off(
+            agent=circuit_agent,  # Python_Expert
+            hand_to=[
+                autogen.OnCondition(
+                    target=executor,
+                    condition="Write the code based on the introduction and it the code is ready, hand it to executor for simulation.",
+                ),
+                autogen.AfterWork(agent=testbench_agent),
+            ],
+        )
+
+        autogen.register_hand_off(
+            agent=testbench_agent,  # Verification_Expert
+            hand_to=[
+                autogen.OnCondition(
+                    target=circuit_agent,
+                    condition="If errors are discovered during verification, hand off to Python_Expert for fixes (or Analog_Expert if needed).",
+                ),
+                autogen.AfterWork(autogen.AfterWorkOption.SWARM_MANAGER),
+            ],
+        )
+
+        # Collect all agents and initialize the swarm
+        all_agents = [pi_agent, circuit_agent, executor, testbench_agent]
+
+        chat_result, _updated_context, swarm_agent = autogen.initiate_swarm_chat(
+            initial_agent=pi_agent,
+            agents=all_agents,
+            messages=f"{messages}",
+            max_rounds=10,
+            swarm_manager_args={"llm_config": llm_config},
+            after_work=autogen.AfterWorkOption.SWARM_MANAGER,
+        )
+
+        # Print usage summary (optional)
+        # from autogen.graph_utils import visualize_speaker_transitions_dict
+        # visualize_speaker_transitions_dict(
+        #     speaker_transitions_dict={agent: list(all_agents) for agent in all_agents},
+        #     agents=all_agents,
+        #     export_path="result.png",
+        # )
+        swarm_agent.print_usage_summary(mode="total")
+        converter = ChatResultConverter(chat_result=chat_result)
+        result = converter.convert_to_chat_completion()
+        return result
+
     def use_groupchat(
         self,
         model: str,
@@ -901,15 +960,34 @@ class AnalogAgent(BaseModel):
         if use_rag is True:
             for agent in agents:
                 d_retrieve_content = agent.register_for_llm(
-                    description="retrieve the information you need or if you have any question, you can use this function to get the answer.",
+                    name=retrieve_data.__name__,
+                    description=retrieve_data.__doc__,
                     api_style="tool",
                 )(retrieve_data)
             for proxy in proxies:
                 proxy.register_for_execution()(d_retrieve_content)
-                messages.append({
-                    "role": "user",
-                    "content": "You should use `retrieve_data` function to retrieve the information you need before making the correct decision and plan for your main PySpice Code.",
-                })
+            # for agent in agents:
+            #     autogen.register_function(
+            #         f=retrieve_data,
+            #         caller=agent,
+            #         executor=proxies[-1],
+            #         name=retrieve_data.__name__,
+            #         description=retrieve_data.__doc__,
+            #     )
+            messages.append({
+                "role": "user",
+                "content": "You can use `retrieve_data` tool to retrieve the circuit knowledge you need before making the correct decision and plan; do not ask any PySpice coding question directly, those books are text book from school.",
+            })
+        messages.append({
+            "role": "user",
+            "content": "The final answer must contain a PySpice Code in Python.\nThe code should be fully tested before terminated.",
+        })
+
+        # If you want CoS in the init message
+        messages.append({
+            "role": "user",
+            "content": "Please help me design a circuit. Think and tell me the necessary steps we need to do.",
+        })
         groupchat = autogen.GroupChat(
             agents=[*proxies, *agents],
             messages=[],
@@ -918,12 +996,9 @@ class AnalogAgent(BaseModel):
             allow_repeat_speaker=False,
         )
         manager = autogen.GroupChatManager(groupchat=groupchat, llm_config=llm_config)
-
-        # Start chatting with boss_aid as this is the user proxy agent.
+        message_string = self.convert_init_message(messages=messages)
         chat_result = proxies[0].initiate_chat(
-            recipient=manager,
-            message=f"{messages}, the final answer must contain a PySpice Code in Python. The code should be fully tested before terminated.",
-            summary_method=self._summary_method,
+            recipient=manager, message=message_string, summary_method=self._summary_method
         )
         converter = ChatResultConverter(chat_result=chat_result)
         result = converter.convert_to_chat_completion()
@@ -945,6 +1020,7 @@ class AnalogAgent(BaseModel):
         Returns:
             ChatCompletion: The chat result from the Captain Agent.
         """
+        # messages = [{"role": "user", "content": "Design a Bandgap Reference Circuit, Output: Vout, Submodule: Bandgap"}]
         llm_config = get_config_dict(model=model)
         cache = self._get_cache(llm_config=llm_config)
         nested_config = {
@@ -956,7 +1032,7 @@ class AnalogAgent(BaseModel):
             },
             "autobuild_build_config": {
                 "default_llm_config": {
-                    "temperature": llm_config["temperature"],
+                    "temperature": llm_config.get("temperature"),
                     "top_p": 0.95,
                     "max_tokens": 2048,
                     "cache_seed": llm_config.get("cache_seed"),
@@ -1008,18 +1084,17 @@ class AnalogAgent(BaseModel):
 
         if use_rag is True:
             d_retrieve_content = captain_agent.assistant.register_for_llm(
-                description="retrieve the information you need or if you have any question, you can use this function to get the answer.",
-                api_style="tool",
+                name=retrieve_data.__name__, description=retrieve_data.__doc__, api_style="tool"
             )(retrieve_data)
             captain_agent.executor.register_for_execution()(d_retrieve_content)
             messages.append({
                 "role": "user",
-                "content": "You should use `retrieve_data` function to retrieve the information you need before making the correct decision and plan for your main PySpice Code.",
+                "content": "You can use `retrieve_data` tool to retrieve the circuit knowledge you need before making the correct decision and plan; do not ask any PySpice coding question directly, those books are text book from school.",
             })
-        # message = self.convert_init_message(messages=messages)
+        message_string = self.convert_init_message(messages=messages)
         chat_result = captain_user_proxy.initiate_chat(
             captain_agent,
-            message=f"{messages}",
+            message=message_string,
             max_turns=1,
             summary_method=self._summary_method,
             cache=cache,
@@ -1057,6 +1132,8 @@ def get_chat_completion(
         chat_result = analog_agent.use_captain(
             model=model, messages=messages, work_dir=work_dir, use_rag=use_rag
         )
+    elif "swarm" in mode:
+        chat_result = analog_agent.use_swarm(model=model, messages=messages, work_dir=work_dir)
     elif "groupchat+tba" in mode:
         chat_result = analog_agent.use_groupchat_tba(
             model=model,

@@ -47,7 +47,7 @@ parser.add_argument(
     "--mode",
     type=str,
     default="groupchat",
-    help="it can be 'original', 'captain', 'captain+rag', 'groupchat' or 'groupchat+rag'",
+    help="it can be 'original', 'swarm', 'captain', 'captain+rag', 'groupchat', 'groupchat+tba' or 'groupchat+rag'",
 )
 parser.add_argument("--config", type=str, default="./configs/agents/groupchat.yaml")
 args = parser.parse_args()
@@ -978,7 +978,7 @@ def work(
     task_type: str,
     flog: io.TextIOWrapper,
     money_quota: int = 100,
-) -> int:
+) -> tuple[int, str]:
     global generator
 
     total_tokens = 0
@@ -1601,7 +1601,7 @@ def work(
     # save messages
     with open(f"{log_path}/p{task_id}_{it}_messages.txt", "w") as fwrite:
         fwrite.write(str(messages))
-    return money_quota
+    return money_quota, log_path
 
 
 def get_retrieval(task: str, task_id: int, log_path: str) -> list[int]:
@@ -1705,7 +1705,7 @@ def main():
         for it in range(args.num_of_done, args.num_per_task):
             flog.write(f"task: {circuit_id}, it: {it}\n")
             flog.flush()
-            remaining_money = work(
+            remaining_money, result_log_path = work(
                 task=circuit_name,
                 input=circuit_input.strip(),
                 output=circuit_output.strip(),
@@ -1718,6 +1718,12 @@ def main():
             )
             if remaining_money < 0:
                 break
+            terminal_log_path = Path(f"{MULTI_AGENT_MODE}_{TASK_ID}.log")
+            if terminal_log_path.exists():
+                output_path = Path(result_log_path)
+                output_path.mkdir(parents=True, exist_ok=True)
+                new_terminal_log_path = output_path / f"{MULTI_AGENT_MODE}_p{TASK_ID}.log"
+                terminal_log_path.rename(new_terminal_log_path.as_posix())
 
 
 if __name__ == "__main__":
