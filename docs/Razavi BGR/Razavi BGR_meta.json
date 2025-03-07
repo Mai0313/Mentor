@@ -1,0 +1,729 @@
+{
+  "table_of_contents": [
+    {
+      "title": "The Design of a Low-Voltage Bandgap Reference",
+      "heading_level": null,
+      "page_id": 0,
+      "polygon": [
+        [
+          41.0,
+          174.603515625
+        ],
+        [
+          374.8254699707031,
+          174.603515625
+        ],
+        [
+          374.8254699707031,
+          196.5234375
+        ],
+        [
+          41.0,
+          196.5234375
+        ]
+      ]
+    },
+    {
+      "title": "Basic Operation",
+      "heading_level": null,
+      "page_id": 0,
+      "polygon": [
+        [
+          40.7669677734375,
+          651.55078125
+        ],
+        [
+          106.36198425292969,
+          651.55078125
+        ],
+        [
+          106.36198425292969,
+          662.0054473876953
+        ],
+        [
+          40.7669677734375,
+          662.0054473876953
+        ]
+      ]
+    },
+    {
+      "title": "Design Issues",
+      "heading_level": null,
+      "page_id": 0,
+      "polygon": [
+        [
+          375.13916015625,
+          687.83203125
+        ],
+        [
+          432.0047302246094,
+          687.83203125
+        ],
+        [
+          432.0047302246094,
+          698.0054397583008
+        ],
+        [
+          375.13916015625,
+          698.0054397583008
+        ]
+      ]
+    },
+    {
+      "title": "Core Design",
+      "heading_level": null,
+      "page_id": 1,
+      "polygon": [
+        [
+          207.36474609375,
+          279.2900390625
+        ],
+        [
+          259.4541320800781,
+          279.2900390625
+        ],
+        [
+          259.4541320800781,
+          290.00537109375
+        ],
+        [
+          207.36474609375,
+          290.00537109375
+        ]
+      ]
+    },
+    {
+      "title": "8 SUMMER 2021 IEEE SOLID-STATE CIRCUITS MAGAZINE",
+      "heading_level": null,
+      "page_id": 2,
+      "polygon": [
+        [
+          41.0,
+          744.1435546875
+        ],
+        [
+          249.169921875,
+          744.1435546875
+        ],
+        [
+          249.169921875,
+          753.2138671875
+        ],
+        [
+          41.0,
+          753.2138671875
+        ]
+      ]
+    },
+    {
+      "title": "Op Amp Design",
+      "heading_level": null,
+      "page_id": 3,
+      "polygon": [
+        [
+          207.6416015625,
+          256.236328125
+        ],
+        [
+          276.02490234375,
+          256.236328125
+        ],
+        [
+          276.02490234375,
+          266.0625
+        ],
+        [
+          207.6416015625,
+          266.0625
+        ]
+      ]
+    },
+    {
+      "title": "Complete Bandgap Reference",
+      "heading_level": null,
+      "page_id": 5,
+      "polygon": [
+        [
+          40.559326171875,
+          111.67822265625
+        ],
+        [
+          162.5631866455078,
+          111.67822265625
+        ],
+        [
+          162.5631866455078,
+          122.26025390625
+        ],
+        [
+          40.559326171875,
+          122.26025390625
+        ]
+      ]
+    },
+    {
+      "title": "Output Noise and Offset",
+      "heading_level": null,
+      "page_id": 5,
+      "polygon": [
+        [
+          375.69287109375,
+          123.677490234375
+        ],
+        [
+          479.23681640625,
+          123.677490234375
+        ],
+        [
+          479.23681640625,
+          134.00537109375
+        ],
+        [
+          375.69287109375,
+          134.00537109375
+        ]
+      ]
+    },
+    {
+      "title": "Start-Up and Transient Response",
+      "heading_level": null,
+      "page_id": 6,
+      "polygon": [
+        [
+          374.30859375,
+          100.34033203125
+        ],
+        [
+          509.455322265625,
+          100.34033203125
+        ],
+        [
+          509.455322265625,
+          110.00537109375
+        ],
+        [
+          374.30859375,
+          110.00537109375
+        ]
+      ]
+    },
+    {
+      "title": "12 SUMMER 2021 IEEE SOLID-STATE CIRCUITS MAGAZINE",
+      "heading_level": null,
+      "page_id": 6,
+      "polygon": [
+        [
+          39.451904296875,
+          744.1435546875
+        ],
+        [
+          244.05258178710938,
+          744.1435546875
+        ],
+        [
+          244.05258178710938,
+          752.4895286560059
+        ],
+        [
+          39.451904296875,
+          752.4895286560059
+        ]
+      ]
+    },
+    {
+      "title": "Acknowledgment",
+      "heading_level": null,
+      "page_id": 7,
+      "polygon": [
+        [
+          208.6667022705078,
+          39.4464111328125
+        ],
+        [
+          281.28515625,
+          39.4464111328125
+        ],
+        [
+          281.28515625,
+          50.00537109375
+        ],
+        [
+          208.6667022705078,
+          50.00537109375
+        ]
+      ]
+    },
+    {
+      "title": "References",
+      "heading_level": null,
+      "page_id": 7,
+      "polygon": [
+        [
+          208.1953125,
+          100.245849609375
+        ],
+        [
+          253.969970703125,
+          100.245849609375
+        ],
+        [
+          253.969970703125,
+          110.00537109375
+        ],
+        [
+          208.1953125,
+          110.00537109375
+        ]
+      ]
+    },
+    {
+      "title": "THE ANALOG MIND",
+      "heading_level": null,
+      "page_id": 7,
+      "polygon": [
+        [
+          40.282470703125,
+          344.38128662109375
+        ],
+        [
+          172.16452026367188,
+          344.38128662109375
+        ],
+        [
+          172.16452026367188,
+          357.71044921875
+        ],
+        [
+          40.282470703125,
+          357.71044921875
+        ]
+      ]
+    },
+    {
+      "title": "References",
+      "heading_level": null,
+      "page_id": 7,
+      "polygon": [
+        [
+          208.610595703125,
+          591.837890625
+        ],
+        [
+          253.969970703125,
+          591.837890625
+        ],
+        [
+          253.969970703125,
+          601.4015350341797
+        ],
+        [
+          208.610595703125,
+          601.4015350341797
+        ]
+      ]
+    }
+  ],
+  "page_stats": [
+    {
+      "page_id": 0,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          548
+        ],
+        [
+          "Line",
+          129
+        ],
+        [
+          "Text",
+          9
+        ],
+        [
+          "TextInlineMath",
+          6
+        ],
+        [
+          "Equation",
+          6
+        ],
+        [
+          "ListItem",
+          5
+        ],
+        [
+          "SectionHeader",
+          3
+        ],
+        [
+          "PageFooter",
+          2
+        ],
+        [
+          "Picture",
+          1
+        ],
+        [
+          "Figure",
+          1
+        ],
+        [
+          "Caption",
+          1
+        ],
+        [
+          "FigureGroup",
+          1
+        ],
+        [
+          "ListGroup",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0
+      }
+    },
+    {
+      "page_id": 1,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          545
+        ],
+        [
+          "Line",
+          143
+        ],
+        [
+          "Text",
+          7
+        ],
+        [
+          "Figure",
+          3
+        ],
+        [
+          "Caption",
+          3
+        ],
+        [
+          "TextInlineMath",
+          3
+        ],
+        [
+          "FigureGroup",
+          3
+        ],
+        [
+          "Equation",
+          1
+        ],
+        [
+          "SectionHeader",
+          1
+        ],
+        [
+          "PageFooter",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0
+      }
+    },
+    {
+      "page_id": 2,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          536
+        ],
+        [
+          "Line",
+          133
+        ],
+        [
+          "Text",
+          4
+        ],
+        [
+          "Figure",
+          4
+        ],
+        [
+          "Caption",
+          4
+        ],
+        [
+          "FigureGroup",
+          4
+        ],
+        [
+          "TextInlineMath",
+          2
+        ],
+        [
+          "PageFooter",
+          2
+        ],
+        [
+          "Equation",
+          1
+        ],
+        [
+          "SectionHeader",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0
+      }
+    },
+    {
+      "page_id": 3,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          621
+        ],
+        [
+          "Line",
+          142
+        ],
+        [
+          "Text",
+          8
+        ],
+        [
+          "Equation",
+          4
+        ],
+        [
+          "TextInlineMath",
+          3
+        ],
+        [
+          "Figure",
+          3
+        ],
+        [
+          "Caption",
+          3
+        ],
+        [
+          "FigureGroup",
+          3
+        ],
+        [
+          "SectionHeader",
+          1
+        ],
+        [
+          "PageFooter",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0
+      }
+    },
+    {
+      "page_id": 4,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          427
+        ],
+        [
+          "Line",
+          115
+        ],
+        [
+          "Text",
+          4
+        ],
+        [
+          "Figure",
+          3
+        ],
+        [
+          "Caption",
+          3
+        ],
+        [
+          "FigureGroup",
+          3
+        ],
+        [
+          "PageFooter",
+          2
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0
+      }
+    },
+    {
+      "page_id": 5,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          432
+        ],
+        [
+          "Line",
+          121
+        ],
+        [
+          "Text",
+          8
+        ],
+        [
+          "SectionHeader",
+          2
+        ],
+        [
+          "Figure",
+          2
+        ],
+        [
+          "Caption",
+          2
+        ],
+        [
+          "PageFooter",
+          2
+        ],
+        [
+          "FigureGroup",
+          2
+        ],
+        [
+          "TextInlineMath",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0
+      }
+    },
+    {
+      "page_id": 6,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          423
+        ],
+        [
+          "Line",
+          122
+        ],
+        [
+          "Text",
+          7
+        ],
+        [
+          "Figure",
+          3
+        ],
+        [
+          "Caption",
+          3
+        ],
+        [
+          "FigureGroup",
+          3
+        ],
+        [
+          "TextInlineMath",
+          2
+        ],
+        [
+          "SectionHeader",
+          2
+        ],
+        [
+          "PageFooter",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0
+      }
+    },
+    {
+      "page_id": 7,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          397
+        ],
+        [
+          "Line",
+          129
+        ],
+        [
+          "ListItem",
+          17
+        ],
+        [
+          "Text",
+          6
+        ],
+        [
+          "SectionHeader",
+          4
+        ],
+        [
+          "ListGroup",
+          3
+        ],
+        [
+          "Caption",
+          2
+        ],
+        [
+          "PageFooter",
+          2
+        ],
+        [
+          "Figure",
+          1
+        ],
+        [
+          "FigureGroup",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0
+      }
+    }
+  ],
+  "debug_data_path": "debug_data/Razavi BGR"
+}

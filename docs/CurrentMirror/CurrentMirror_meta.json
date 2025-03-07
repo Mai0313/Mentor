@@ -1,0 +1,731 @@
+{
+  "table_of_contents": [
+    {
+      "title": "ECE 255, Current Sources, Mirrors etc",
+      "heading_level": null,
+      "page_id": 0,
+      "polygon": [
+        [
+          138.2080078125,
+          163.153564453125
+        ],
+        [
+          471.7344055175781,
+          163.153564453125
+        ],
+        [
+          471.7344055175781,
+          180.3690185546875
+        ],
+        [
+          138.2080078125,
+          180.3690185546875
+        ]
+      ]
+    },
+    {
+      "title": "1 The Basic MOSFET Current Source",
+      "heading_level": null,
+      "page_id": 0,
+      "polygon": [
+        [
+          132.15673828125,
+          322.9739074707031
+        ],
+        [
+          416.56640625,
+          322.9739074707031
+        ],
+        [
+          416.56640625,
+          337.3200988769531
+        ],
+        [
+          132.15673828125,
+          337.3200988769531
+        ]
+      ]
+    },
+    {
+      "title": "1.1 Effect of VO on IO",
+      "heading_level": null,
+      "page_id": 2,
+      "polygon": [
+        [
+          132.380859375,
+          165.04156494140625
+        ],
+        [
+          267.451171875,
+          165.04156494140625
+        ],
+        [
+          267.451171875,
+          177.919189453125
+        ],
+        [
+          132.380859375,
+          177.919189453125
+        ]
+      ]
+    },
+    {
+      "title": "2 MOS Current-Steering Circuits",
+      "heading_level": null,
+      "page_id": 3,
+      "polygon": [
+        [
+          132.978515625,
+          217.9779052734375
+        ],
+        [
+          380.4222106933594,
+          217.9779052734375
+        ],
+        [
+          380.4222106933594,
+          232.611328125
+        ],
+        [
+          132.978515625,
+          232.611328125
+        ]
+      ]
+    },
+    {
+      "title": "2.1 BJT Circuits",
+      "heading_level": null,
+      "page_id": 5,
+      "polygon": [
+        [
+          131.70849609375,
+          125.42156982421875
+        ],
+        [
+          242.05078125,
+          125.42156982421875
+        ],
+        [
+          242.05078125,
+          137.37677001953125
+        ],
+        [
+          131.70849609375,
+          137.37677001953125
+        ]
+      ]
+    },
+    {
+      "title": "2.2 A Simple Current Source",
+      "heading_level": null,
+      "page_id": 6,
+      "polygon": [
+        [
+          132.45556640625,
+          498.41961669921875
+        ],
+        [
+          313.5981750488281,
+          498.41961669921875
+        ],
+        [
+          313.5981750488281,
+          510.37481689453125
+        ],
+        [
+          132.45556640625,
+          510.37481689453125
+        ]
+      ]
+    },
+    {
+      "title": "2.3 Current Steering",
+      "heading_level": null,
+      "page_id": 7,
+      "polygon": [
+        [
+          132.6796875,
+          398.27862548828125
+        ],
+        [
+          264.1640625,
+          398.27862548828125
+        ],
+        [
+          264.1640625,
+          410.23382568359375
+        ],
+        [
+          132.6796875,
+          410.23382568359375
+        ]
+      ]
+    },
+    {
+      "title": "2.4 Base-Current Compensation",
+      "heading_level": null,
+      "page_id": 8,
+      "polygon": [
+        [
+          132.60498046875,
+          510.087646484375
+        ],
+        [
+          331.51898193359375,
+          510.087646484375
+        ],
+        [
+          331.51898193359375,
+          522.0428466796875
+        ],
+        [
+          132.60498046875,
+          522.0428466796875
+        ]
+      ]
+    },
+    {
+      "title": "3 Small-Signal Operation of Current Mirrors",
+      "heading_level": null,
+      "page_id": 9,
+      "polygon": [
+        [
+          133.1279296875,
+          401.2829895019531
+        ],
+        [
+          460.79296875,
+          401.2829895019531
+        ],
+        [
+          460.79296875,
+          415.6291809082031
+        ],
+        [
+          133.1279296875,
+          415.6291809082031
+        ]
+      ]
+    }
+  ],
+  "page_stats": [
+    {
+      "page_id": 0,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          60
+        ],
+        [
+          "Line",
+          14
+        ],
+        [
+          "Text",
+          3
+        ],
+        [
+          "SectionHeader",
+          2
+        ],
+        [
+          "Figure",
+          1
+        ],
+        [
+          "TextInlineMath",
+          1
+        ],
+        [
+          "Footnote",
+          1
+        ],
+        [
+          "PageFooter",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0
+      }
+    },
+    {
+      "page_id": 1,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          197
+        ],
+        [
+          "Line",
+          55
+        ],
+        [
+          "Text",
+          6
+        ],
+        [
+          "Equation",
+          4
+        ],
+        [
+          "Figure",
+          1
+        ],
+        [
+          "Caption",
+          1
+        ],
+        [
+          "TextInlineMath",
+          1
+        ],
+        [
+          "PageFooter",
+          1
+        ],
+        [
+          "FigureGroup",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0
+      }
+    },
+    {
+      "page_id": 2,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          206
+        ],
+        [
+          "Line",
+          42
+        ],
+        [
+          "Text",
+          4
+        ],
+        [
+          "Equation",
+          3
+        ],
+        [
+          "SectionHeader",
+          1
+        ],
+        [
+          "Figure",
+          1
+        ],
+        [
+          "Caption",
+          1
+        ],
+        [
+          "TextInlineMath",
+          1
+        ],
+        [
+          "PageFooter",
+          1
+        ],
+        [
+          "FigureGroup",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0
+      }
+    },
+    {
+      "page_id": 3,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          206
+        ],
+        [
+          "Line",
+          33
+        ],
+        [
+          "TextInlineMath",
+          3
+        ],
+        [
+          "Equation",
+          3
+        ],
+        [
+          "Text",
+          3
+        ],
+        [
+          "SectionHeader",
+          1
+        ],
+        [
+          "Figure",
+          1
+        ],
+        [
+          "Caption",
+          1
+        ],
+        [
+          "PageFooter",
+          1
+        ],
+        [
+          "FigureGroup",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0
+      }
+    },
+    {
+      "page_id": 4,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          30
+        ],
+        [
+          "Line",
+          11
+        ],
+        [
+          "Text",
+          2
+        ],
+        [
+          "Figure",
+          2
+        ],
+        [
+          "Caption",
+          2
+        ],
+        [
+          "FigureGroup",
+          2
+        ],
+        [
+          "PageFooter",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0
+      }
+    },
+    {
+      "page_id": 5,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          190
+        ],
+        [
+          "Line",
+          47
+        ],
+        [
+          "Text",
+          4
+        ],
+        [
+          "Equation",
+          4
+        ],
+        [
+          "SectionHeader",
+          1
+        ],
+        [
+          "Figure",
+          1
+        ],
+        [
+          "Caption",
+          1
+        ],
+        [
+          "TextInlineMath",
+          1
+        ],
+        [
+          "Footnote",
+          1
+        ],
+        [
+          "PageFooter",
+          1
+        ],
+        [
+          "FigureGroup",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0
+      }
+    },
+    {
+      "page_id": 6,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          168
+        ],
+        [
+          "Line",
+          34
+        ],
+        [
+          "Equation",
+          4
+        ],
+        [
+          "Text",
+          3
+        ],
+        [
+          "TextInlineMath",
+          2
+        ],
+        [
+          "Figure",
+          1
+        ],
+        [
+          "Caption",
+          1
+        ],
+        [
+          "SectionHeader",
+          1
+        ],
+        [
+          "PageFooter",
+          1
+        ],
+        [
+          "FigureGroup",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0
+      }
+    },
+    {
+      "page_id": 7,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          11
+        ],
+        [
+          "Line",
+          6
+        ],
+        [
+          "Figure",
+          1
+        ],
+        [
+          "Caption",
+          1
+        ],
+        [
+          "SectionHeader",
+          1
+        ],
+        [
+          "Text",
+          1
+        ],
+        [
+          "PageFooter",
+          1
+        ],
+        [
+          "FigureGroup",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0
+      }
+    },
+    {
+      "page_id": 8,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          58
+        ],
+        [
+          "Line",
+          13
+        ],
+        [
+          "Text",
+          2
+        ],
+        [
+          "Figure",
+          1
+        ],
+        [
+          "Caption",
+          1
+        ],
+        [
+          "SectionHeader",
+          1
+        ],
+        [
+          "Equation",
+          1
+        ],
+        [
+          "PageFooter",
+          1
+        ],
+        [
+          "FigureGroup",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0
+      }
+    },
+    {
+      "page_id": 9,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          174
+        ],
+        [
+          "Line",
+          26
+        ],
+        [
+          "TextInlineMath",
+          3
+        ],
+        [
+          "Equation",
+          3
+        ],
+        [
+          "Figure",
+          1
+        ],
+        [
+          "Caption",
+          1
+        ],
+        [
+          "SectionHeader",
+          1
+        ],
+        [
+          "Text",
+          1
+        ],
+        [
+          "PageFooter",
+          1
+        ],
+        [
+          "FigureGroup",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0
+      }
+    },
+    {
+      "page_id": 10,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          14
+        ],
+        [
+          "Line",
+          8
+        ],
+        [
+          "Text",
+          1
+        ],
+        [
+          "Figure",
+          1
+        ],
+        [
+          "Caption",
+          1
+        ],
+        [
+          "PageFooter",
+          1
+        ],
+        [
+          "FigureGroup",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0
+      }
+    }
+  ],
+  "debug_data_path": "debug_data/CurrentMirror"
+}

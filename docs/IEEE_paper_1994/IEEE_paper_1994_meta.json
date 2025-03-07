@@ -1,0 +1,467 @@
+{
+  "table_of_contents": [
+    {
+      "title": "Transactions Briefs",
+      "heading_level": null,
+      "page_id": 0,
+      "polygon": [
+        [
+          76.492431640625,
+          62.0146484375
+        ],
+        [
+          249.2936248779297,
+          62.0146484375
+        ],
+        [
+          249.2936248779297,
+          83.61468505859375
+        ],
+        [
+          76.492431640625,
+          83.61468505859375
+        ]
+      ]
+    },
+    {
+      "title": "CMOS Schmitt Trigger Design",
+      "heading_level": null,
+      "page_id": 0,
+      "polygon": [
+        [
+          128.990234375,
+          111.81219482421875
+        ],
+        [
+          251.41404724121094,
+          111.81219482421875
+        ],
+        [
+          251.41404724121094,
+          121.6121826171875
+        ],
+        [
+          128.990234375,
+          121.6121826171875
+        ]
+      ]
+    },
+    {
+      "title": "I. M. Filanovsky and H. Bakes",
+      "heading_level": null,
+      "page_id": 0,
+      "polygon": [
+        [
+          136.249755859375,
+          130.01171875
+        ],
+        [
+          243.292724609375,
+          130.01171875
+        ],
+        [
+          243.292724609375,
+          138.22198486328125
+        ],
+        [
+          136.249755859375,
+          138.22198486328125
+        ]
+      ]
+    },
+    {
+      "title": "I. INTRODUCTION",
+      "heading_level": null,
+      "page_id": 0,
+      "polygon": [
+        [
+          159.556640625,
+          224.779296875
+        ],
+        [
+          236.353759765625,
+          224.779296875
+        ],
+        [
+          236.353759765625,
+          233.239013671875
+        ],
+        [
+          159.556640625,
+          233.239013671875
+        ]
+      ]
+    },
+    {
+      "title": "11. CURRENT-VOLTAGE SUBCIRCUIT CHARACTERISTICS",
+      "heading_level": null,
+      "page_id": 0,
+      "polygon": [
+        [
+          100.181396484375,
+          519.51953125
+        ],
+        [
+          298.1046142578125,
+          519.51953125
+        ],
+        [
+          298.1046142578125,
+          527.8195190429688
+        ],
+        [
+          100.181396484375,
+          527.8195190429688
+        ]
+      ]
+    },
+    {
+      "title": "111. THRESHOLDS, TRANSITION, AND TRIGGER DESIGN",
+      "heading_level": null,
+      "page_id": 1,
+      "polygon": [
+        [
+          334.20001220703125,
+          60.972900390625
+        ],
+        [
+          517.6719970703125,
+          60.972900390625
+        ],
+        [
+          517.6719970703125,
+          69.16094970703125
+        ],
+        [
+          334.20001220703125,
+          69.16094970703125
+        ]
+      ]
+    },
+    {
+      "title": "IV. EXAMPLE",
+      "heading_level": null,
+      "page_id": 2,
+      "polygon": [
+        [
+          396.91845703125,
+          539.1634216308594
+        ],
+        [
+          451.6499938964844,
+          539.1634216308594
+        ],
+        [
+          451.6499938964844,
+          546.9716796875
+        ],
+        [
+          396.91845703125,
+          546.9716796875
+        ]
+      ]
+    },
+    {
+      "title": "v. CONCLUSIONS AND DISCUSSION",
+      "heading_level": null,
+      "page_id": 3,
+      "polygon": [
+        [
+          133.8000030517578,
+          269.54388427734375
+        ],
+        [
+          260.4120178222656,
+          269.54388427734375
+        ],
+        [
+          260.4120178222656,
+          281.04388427734375
+        ],
+        [
+          133.8000030517578,
+          281.04388427734375
+        ]
+      ]
+    },
+    {
+      "title": "REFERENCES",
+      "heading_level": null,
+      "page_id": 3,
+      "polygon": [
+        [
+          171.60000610351562,
+          379.32196044921875
+        ],
+        [
+          220.96620178222656,
+          379.32196044921875
+        ],
+        [
+          220.96620178222656,
+          387.1219482421875
+        ],
+        [
+          171.60000610351562,
+          387.1219482421875
+        ]
+      ]
+    },
+    {
+      "title": "An Analytical Model for the Transient Response \nof CMOS Class AB Operational Amplifiers",
+      "heading_level": null,
+      "page_id": 3,
+      "polygon": [
+        [
+          327.93701171875,
+          62.6341552734375
+        ],
+        [
+          518.9461669921875,
+          62.6341552734375
+        ],
+        [
+          518.9461669921875,
+          82.65362548828125
+        ],
+        [
+          327.93701171875,
+          82.65362548828125
+        ]
+      ]
+    },
+    {
+      "title": "I. INTRODUCTION",
+      "heading_level": null,
+      "page_id": 3,
+      "polygon": [
+        [
+          394.79998779296875,
+          258.53173828125
+        ],
+        [
+          470.0536193847656,
+          258.53173828125
+        ],
+        [
+          470.0536193847656,
+          267.239013671875
+        ],
+        [
+          394.79998779296875,
+          267.239013671875
+        ]
+      ]
+    },
+    {
+      "title": "0157-7122/94$04.00 0 1994 IEEE",
+      "heading_level": null,
+      "page_id": 3,
+      "polygon": [
+        [
+          256.69964599609375,
+          665.8599853515625
+        ],
+        [
+          361.2086486816406,
+          665.8599853515625
+        ],
+        [
+          361.2086486816406,
+          675.6599884033203
+        ],
+        [
+          256.69964599609375,
+          675.6599884033203
+        ]
+      ]
+    }
+  ],
+  "page_stats": [
+    {
+      "page_id": 0,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          259
+        ],
+        [
+          "Line",
+          78
+        ],
+        [
+          "Text",
+          13
+        ],
+        [
+          "SectionHeader",
+          5
+        ],
+        [
+          "Equation",
+          5
+        ],
+        [
+          "PageHeader",
+          2
+        ],
+        [
+          "Figure",
+          2
+        ],
+        [
+          "Caption",
+          2
+        ],
+        [
+          "FigureGroup",
+          2
+        ],
+        [
+          "TextInlineMath",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0
+      }
+    },
+    {
+      "page_id": 1,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          398
+        ],
+        [
+          "Line",
+          99
+        ],
+        [
+          "Text",
+          17
+        ],
+        [
+          "Equation",
+          14
+        ],
+        [
+          "TextInlineMath",
+          6
+        ],
+        [
+          "PageHeader",
+          2
+        ],
+        [
+          "SectionHeader",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0
+      }
+    },
+    {
+      "page_id": 2,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          333
+        ],
+        [
+          "Line",
+          85
+        ],
+        [
+          "Equation",
+          15
+        ],
+        [
+          "Text",
+          12
+        ],
+        [
+          "TextInlineMath",
+          8
+        ],
+        [
+          "PageHeader",
+          2
+        ],
+        [
+          "Figure",
+          1
+        ],
+        [
+          "Caption",
+          1
+        ],
+        [
+          "SectionHeader",
+          1
+        ],
+        [
+          "FigureGroup",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0
+      }
+    },
+    {
+      "page_id": 3,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          440
+        ],
+        [
+          "Line",
+          127
+        ],
+        [
+          "ListItem",
+          15
+        ],
+        [
+          "Text",
+          6
+        ],
+        [
+          "TextInlineMath",
+          5
+        ],
+        [
+          "SectionHeader",
+          5
+        ],
+        [
+          "PageHeader",
+          2
+        ],
+        [
+          "ListGroup",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0
+      }
+    }
+  ],
+  "debug_data_path": "debug_data/IEEE_paper_1994"
+}

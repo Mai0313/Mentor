@@ -181,4 +181,3 @@ cython_debug/
 prompt_template_complex_with_sub_*.md
 
 gpt4*/
-/docs/**/

@@ -1,0 +1,735 @@
+{
+  "table_of_contents": [
+    {
+      "title": "Schmitt\tTriggers\tCircuits",
+      "heading_level": null,
+      "page_id": 0,
+      "polygon": [
+        [
+          180.017578125,
+          244.91867065429688
+        ],
+        [
+          622.135986328125,
+          244.91867065429688
+        ],
+        [
+          622.135986328125,
+          288.9186706542969
+        ],
+        [
+          180.017578125,
+          288.9186706542969
+        ]
+      ]
+    },
+    {
+      "title": "Effects of Positive Feedback",
+      "heading_level": null,
+      "page_id": 1,
+      "polygon": [
+        [
+          142.505859375,
+          97.79150390625
+        ],
+        [
+          659.09814453125,
+          97.79150390625
+        ],
+        [
+          659.09814453125,
+          144.85693359375
+        ],
+        [
+          142.505859375,
+          144.85693359375
+        ]
+      ]
+    },
+    {
+      "title": "Hysteresis",
+      "heading_level": null,
+      "page_id": 2,
+      "polygon": [
+        [
+          301.833984375,
+          99.18536376953125
+        ],
+        [
+          498.8516845703125,
+          99.18536376953125
+        ],
+        [
+          498.8516845703125,
+          144.85693359375
+        ],
+        [
+          301.833984375,
+          144.85693359375
+        ]
+      ]
+    },
+    {
+      "title": "Other Forms of Schmitt Triggers",
+      "heading_level": null,
+      "page_id": 4,
+      "polygon": [
+        [
+          106.154296875,
+          84.8104248046875
+        ],
+        [
+          695.650390625,
+          84.8104248046875
+        ],
+        [
+          695.650390625,
+          130.06494140625
+        ],
+        [
+          106.154296875,
+          130.06494140625
+        ]
+      ]
+    },
+    {
+      "title": "An Example",
+      "heading_level": null,
+      "page_id": 6,
+      "polygon": [
+        [
+          283.8515625,
+          84.18536376953125
+        ],
+        [
+          517.7726440429688,
+          84.18536376953125
+        ],
+        [
+          517.7726440429688,
+          129.91552734375
+        ],
+        [
+          283.8515625,
+          129.91552734375
+        ]
+      ]
+    },
+    {
+      "title": "Example contintued",
+      "heading_level": null,
+      "page_id": 7,
+      "polygon": [
+        [
+          216.0,
+          86.43603515625
+        ],
+        [
+          573.75,
+          86.43603515625
+        ],
+        [
+          573.75,
+          128.27197265625
+        ],
+        [
+          216.0,
+          128.27197265625
+        ]
+      ]
+    },
+    {
+      "title": "Another Example",
+      "heading_level": null,
+      "page_id": 8,
+      "polygon": [
+        [
+          237.75,
+          88.37841796875
+        ],
+        [
+          557.6484375,
+          88.37841796875
+        ],
+        [
+          557.6484375,
+          129.76611328125
+        ],
+        [
+          237.75,
+          129.76611328125
+        ]
+      ]
+    },
+    {
+      "title": "Astable Multivibrators",
+      "heading_level": null,
+      "page_id": 9,
+      "polygon": [
+        [
+          196.259765625,
+          81.18536376953125
+        ],
+        [
+          606.9945678710938,
+          81.18536376953125
+        ],
+        [
+          606.9945678710938,
+          125.9560546875
+        ],
+        [
+          196.259765625,
+          125.9560546875
+        ]
+      ]
+    },
+    {
+      "title": "Astable Multivibrators",
+      "heading_level": null,
+      "page_id": 10,
+      "polygon": [
+        [
+          195.486328125,
+          84.8104248046875
+        ],
+        [
+          606.9945678710938,
+          84.8104248046875
+        ],
+        [
+          606.9945678710938,
+          128.81039428710938
+        ],
+        [
+          195.486328125,
+          128.81039428710938
+        ]
+      ]
+    },
+    {
+      "title": "Timing Calculation",
+      "heading_level": null,
+      "page_id": 11,
+      "polygon": [
+        [
+          223.91015625,
+          84.8104248046875
+        ],
+        [
+          578.1039428710938,
+          84.8104248046875
+        ],
+        [
+          578.1039428710938,
+          130.88671875
+        ],
+        [
+          223.91015625,
+          130.88671875
+        ]
+      ]
+    },
+    {
+      "title": "Homework",
+      "heading_level": null,
+      "page_id": 12,
+      "polygon": [
+        [
+          293.90625,
+          83.671875
+        ],
+        [
+          506.177490234375,
+          83.671875
+        ],
+        [
+          506.177490234375,
+          129.392578125
+        ],
+        [
+          293.90625,
+          129.392578125
+        ]
+      ]
+    }
+  ],
+  "page_stats": [
+    {
+      "page_id": 0,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          3
+        ],
+        [
+          "Line",
+          2
+        ],
+        [
+          "SectionHeader",
+          1
+        ],
+        [
+          "Text",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0
+      }
+    },
+    {
+      "page_id": 1,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          132
+        ],
+        [
+          "Line",
+          36
+        ],
+        [
+          "ListItem",
+          9
+        ],
+        [
+          "ListGroup",
+          2
+        ],
+        [
+          "SectionHeader",
+          1
+        ],
+        [
+          "Figure",
+          1
+        ],
+        [
+          "PageFooter",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0
+      }
+    },
+    {
+      "page_id": 2,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          367
+        ],
+        [
+          "Line",
+          84
+        ],
+        [
+          "ListItem",
+          4
+        ],
+        [
+          "Text",
+          2
+        ],
+        [
+          "SectionHeader",
+          1
+        ],
+        [
+          "Figure",
+          1
+        ],
+        [
+          "PageFooter",
+          1
+        ],
+        [
+          "ListGroup",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0
+      }
+    },
+    {
+      "page_id": 3,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          305
+        ],
+        [
+          "Line",
+          86
+        ],
+        [
+          "Figure",
+          1
+        ],
+        [
+          "Text",
+          1
+        ],
+        [
+          "PageFooter",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0
+      }
+    },
+    {
+      "page_id": 4,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          80
+        ],
+        [
+          "Line",
+          37
+        ],
+        [
+          "ListItem",
+          2
+        ],
+        [
+          "Figure",
+          2
+        ],
+        [
+          "Text",
+          2
+        ],
+        [
+          "SectionHeader",
+          1
+        ],
+        [
+          "PageFooter",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0
+      }
+    },
+    {
+      "page_id": 5,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          450
+        ],
+        [
+          "Line",
+          86
+        ],
+        [
+          "Text",
+          3
+        ],
+        [
+          "Figure",
+          1
+        ],
+        [
+          "Equation",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0
+      }
+    },
+    {
+      "page_id": 6,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          281
+        ],
+        [
+          "Line",
+          48
+        ],
+        [
+          "ListItem",
+          2
+        ],
+        [
+          "Text",
+          2
+        ],
+        [
+          "SectionHeader",
+          1
+        ],
+        [
+          "Figure",
+          1
+        ],
+        [
+          "PageFooter",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0
+      }
+    },
+    {
+      "page_id": 7,
+      "text_extraction_method": "surya",
+      "block_counts": [
+        [
+          "Line",
+          18
+        ],
+        [
+          "Span",
+          18
+        ],
+        [
+          "SectionHeader",
+          1
+        ],
+        [
+          "Figure",
+          1
+        ],
+        [
+          "PageFooter",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0
+      }
+    },
+    {
+      "page_id": 8,
+      "text_extraction_method": "surya",
+      "block_counts": [
+        [
+          "Line",
+          23
+        ],
+        [
+          "Span",
+          23
+        ],
+        [
+          "ListItem",
+          2
+        ],
+        [
+          "SectionHeader",
+          1
+        ],
+        [
+          "Figure",
+          1
+        ],
+        [
+          "PageFooter",
+          1
+        ],
+        [
+          "ListGroup",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0
+      }
+    },
+    {
+      "page_id": 9,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          223
+        ],
+        [
+          "Line",
+          59
+        ],
+        [
+          "ListItem",
+          2
+        ],
+        [
+          "SectionHeader",
+          1
+        ],
+        [
+          "Figure",
+          1
+        ],
+        [
+          "PageFooter",
+          1
+        ],
+        [
+          "ListGroup",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0
+      }
+    },
+    {
+      "page_id": 10,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          85
+        ],
+        [
+          "Line",
+          34
+        ],
+        [
+          "ListItem",
+          7
+        ],
+        [
+          "Figure",
+          3
+        ],
+        [
+          "SectionHeader",
+          1
+        ],
+        [
+          "PageFooter",
+          1
+        ],
+        [
+          "ListGroup",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0
+      }
+    },
+    {
+      "page_id": 11,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          287
+        ],
+        [
+          "Line",
+          72
+        ],
+        [
+          "Equation",
+          4
+        ],
+        [
+          "SectionHeader",
+          1
+        ],
+        [
+          "Figure",
+          1
+        ],
+        [
+          "Text",
+          1
+        ],
+        [
+          "TextInlineMath",
+          1
+        ],
+        [
+          "PageFooter",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0
+      }
+    },
+    {
+      "page_id": 12,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          21
+        ],
+        [
+          "Line",
+          6
+        ],
+        [
+          "ListItem",
+          3
+        ],
+        [
+          "SectionHeader",
+          1
+        ],
+        [
+          "PageFooter",
+          1
+        ],
+        [
+          "ListGroup",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0
+      }
+    }
+  ],
+  "debug_data_path": "debug_data/Schmitt_Trigger_Lecture_notes"
+}

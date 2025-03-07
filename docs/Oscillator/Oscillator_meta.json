@@ -1,0 +1,475 @@
+{
+  "table_of_contents": [
+    {
+      "title": "Design Goals",
+      "heading_level": null,
+      "page_id": 0,
+      "polygon": [
+        [
+          56.25439453125,
+          186.3017578125
+        ],
+        [
+          123.04248046875,
+          186.3017578125
+        ],
+        [
+          123.04248046875,
+          198.61767578125
+        ],
+        [
+          56.25439453125,
+          198.61767578125
+        ]
+      ]
+    },
+    {
+      "title": "Design Description",
+      "heading_level": null,
+      "page_id": 0,
+      "polygon": [
+        [
+          56.25439453125,
+          264.708984375
+        ],
+        [
+          148.89111328125,
+          264.708984375
+        ],
+        [
+          148.89111328125,
+          276.697265625
+        ],
+        [
+          56.25439453125,
+          276.697265625
+        ]
+      ]
+    },
+    {
+      "title": "Design Notes",
+      "heading_level": null,
+      "page_id": 0,
+      "polygon": [
+        [
+          56.478515625,
+          570.0234375
+        ],
+        [
+          121.623046875,
+          570.0234375
+        ],
+        [
+          121.623046875,
+          581.898681640625
+        ],
+        [
+          56.478515625,
+          581.898681640625
+        ]
+      ]
+    },
+    {
+      "title": "Design Steps",
+      "heading_level": null,
+      "page_id": 0,
+      "polygon": [
+        [
+          55.7314453125,
+          675.59765625
+        ],
+        [
+          122.0712890625,
+          675.59765625
+        ],
+        [
+          122.0712890625,
+          687.97265625
+        ],
+        [
+          55.7314453125,
+          687.97265625
+        ]
+      ]
+    },
+    {
+      "title": "Design Simulations",
+      "heading_level": null,
+      "page_id": 2,
+      "polygon": [
+        [
+          55.283203125,
+          47.880615234375
+        ],
+        [
+          151.3564453125,
+          47.880615234375
+        ],
+        [
+          151.3564453125,
+          60.85986328125
+        ],
+        [
+          55.283203125,
+          60.85986328125
+        ]
+      ]
+    },
+    {
+      "title": "Transient Simulation Results",
+      "heading_level": null,
+      "page_id": 2,
+      "polygon": [
+        [
+          55.283203125,
+          66.66064453125
+        ],
+        [
+          193.95298767089844,
+          66.66064453125
+        ],
+        [
+          193.95298767089844,
+          78.84228515625
+        ],
+        [
+          55.283203125,
+          78.84228515625
+        ]
+      ]
+    },
+    {
+      "title": "Design References",
+      "heading_level": null,
+      "page_id": 2,
+      "polygon": [
+        [
+          56.40380859375,
+          341.47265625
+        ],
+        [
+          146.79931640625,
+          341.47265625
+        ],
+        [
+          146.79931640625,
+          353.4609375
+        ],
+        [
+          56.40380859375,
+          353.4609375
+        ]
+      ]
+    },
+    {
+      "title": "Design Featured Comparator",
+      "heading_level": null,
+      "page_id": 2,
+      "polygon": [
+        [
+          55.992919921875,
+          386.138671875
+        ],
+        [
+          197.0771484375,
+          386.138671875
+        ],
+        [
+          197.0771484375,
+          398.14068603515625
+        ],
+        [
+          55.992919921875,
+          398.14068603515625
+        ]
+      ]
+    },
+    {
+      "title": "Design Alternate Comparator",
+      "heading_level": null,
+      "page_id": 2,
+      "polygon": [
+        [
+          56.25439453125,
+          561.90234375
+        ],
+        [
+          195.732421875,
+          561.90234375
+        ],
+        [
+          195.732421875,
+          573.6406860351562
+        ],
+        [
+          56.25439453125,
+          573.6406860351562
+        ]
+      ]
+    },
+    {
+      "title": "Trademarks",
+      "heading_level": null,
+      "page_id": 3,
+      "polygon": [
+        [
+          54.648193359375,
+          51.38525390625
+        ],
+        [
+          124.06099700927734,
+          51.38525390625
+        ],
+        [
+          124.06099700927734,
+          65.79052734375
+        ],
+        [
+          54.648193359375,
+          65.79052734375
+        ]
+      ]
+    },
+    {
+      "title": "IMPORTANT NOTICE AND DISCLAIMER",
+      "heading_level": null,
+      "page_id": 4,
+      "polygon": [
+        [
+          191.84765625,
+          77.150390625
+        ],
+        [
+          419.255859375,
+          77.150390625
+        ],
+        [
+          419.255859375,
+          90.3955078125
+        ],
+        [
+          191.84765625,
+          90.3955078125
+        ]
+      ]
+    }
+  ],
+  "page_stats": [
+    {
+      "page_id": 0,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          145
+        ],
+        [
+          "Line",
+          43
+        ],
+        [
+          "TableCell",
+          8
+        ],
+        [
+          "ListItem",
+          6
+        ],
+        [
+          "Text",
+          4
+        ],
+        [
+          "SectionHeader",
+          4
+        ],
+        [
+          "PageFooter",
+          3
+        ],
+        [
+          "PageHeader",
+          1
+        ],
+        [
+          "Picture",
+          1
+        ],
+        [
+          "Table",
+          1
+        ],
+        [
+          "Figure",
+          1
+        ],
+        [
+          "ListGroup",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0
+      }
+    },
+    {
+      "page_id": 1,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          187
+        ],
+        [
+          "Line",
+          64
+        ],
+        [
+          "Text",
+          7
+        ],
+        [
+          "ListItem",
+          6
+        ],
+        [
+          "Equation",
+          3
+        ],
+        [
+          "PageFooter",
+          3
+        ],
+        [
+          "TextInlineMath",
+          2
+        ],
+        [
+          "Picture",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0
+      }
+    },
+    {
+      "page_id": 2,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          123
+        ],
+        [
+          "Line",
+          42
+        ],
+        [
+          "TableCell",
+          36
+        ],
+        [
+          "SectionHeader",
+          5
+        ],
+        [
+          "PageFooter",
+          3
+        ],
+        [
+          "Table",
+          2
+        ],
+        [
+          "Picture",
+          1
+        ],
+        [
+          "Figure",
+          1
+        ],
+        [
+          "Text",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0
+      }
+    },
+    {
+      "page_id": 3,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          18
+        ],
+        [
+          "Line",
+          6
+        ],
+        [
+          "PageFooter",
+          3
+        ],
+        [
+          "PageHeader",
+          1
+        ],
+        [
+          "SectionHeader",
+          1
+        ],
+        [
+          "Text",
+          1
+        ],
+        [
+          "Picture",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0
+      }
+    },
+    {
+      "page_id": 4,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          45
+        ],
+        [
+          "Line",
+          20
+        ],
+        [
+          "Text",
+          6
+        ],
+        [
+          "SectionHeader",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0
+      }
+    }
+  ],
+  "debug_data_path": "debug_data/Oscillator"
+}
