@@ -3,7 +3,9 @@
 #   ./run.sh 1 24        # 執行從 1 到 24 的 tasks
 #   ./run.sh 9 10 11 14  # 執行這四個 task
 
-PYTHON_PATH=~/.conda/envs/analog/bin/python
+PYTHON_PATH=$(which python)
+
+echo "Python Path: $PYTHON_PATH"
 
 # 檢查參數數量
 if [ "$#" -lt 1 ]; then
