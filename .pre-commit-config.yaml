@@ -13,7 +13,7 @@ default_stages:
   - post-merge
   - post-rewrite
 
-exclude: metagpt
+exclude: docs
 
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
