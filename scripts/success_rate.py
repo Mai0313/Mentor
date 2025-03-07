@@ -6,6 +6,7 @@
 # ]
 # ///
 import re
+import time
 from pathlib import Path
 from collections import defaultdict
 
@@ -117,7 +118,7 @@ def display_model_scores(
     console.print("\n")
 
 
-def parse_logs_in_folder(folder_path: str = "./logs", num_per_task: int = 5) -> None:
+def parse_logs_in_folder(folder_path: str, num_per_task: int) -> None:
     """讀取指定資料夾下的所有 .txt log 檔，並依據檔名格式 <datetime>_<model_name>_<problem number>_log.txt解析 log 內容
     計算包含：
         1) pass@1: 計算 code_id:0 的成功次數
@@ -163,7 +164,17 @@ def parse_logs_in_folder(folder_path: str = "./logs", num_per_task: int = 5) -> 
         display_model_scores(console, model_name, scores, folder_path, num_per_task)
 
 
+def main(folder_path: str = "./logs", num_per_task: int = 5, live: bool = False) -> None:
+    """主函式，解析指定資料夾中的 log 檔案，並顯示各個 model 的成功率與錯誤率。"""
+    if live:
+        while True:
+            parse_logs_in_folder(folder_path, num_per_task)
+            time.sleep(5)
+            console.clear()
+    parse_logs_in_folder(folder_path, num_per_task)
+
+
 if __name__ == "__main__":
     import fire
 
-    fire.Fire(parse_logs_in_folder)
+    fire.Fire(main)
