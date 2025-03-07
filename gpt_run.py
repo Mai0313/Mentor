@@ -50,6 +50,7 @@ parser.add_argument(
     help="it can be 'original', 'swarm', 'captain', 'captain+rag', 'groupchat', 'groupchat+tba' or 'groupchat+rag'",
 )
 parser.add_argument("--config", type=str, default="./configs/agents/groupchat.yaml")
+parser.add_argument("--prompt", type=str, default="./configs/prompt/prompt_template.md")
 args = parser.parse_args()
 
 MODEL = args.model
@@ -67,6 +68,7 @@ RETRIEVAL = args.retrieval
 API_KEY = args.api_key
 MULTI_AGENT_MODE = args.mode
 GROUPCHAT_CONFIG = args.config
+PROMPT_TEMPLATE_PATH = args.prompt
 
 # if "rag" in MULTI_AGENT_MODE and SKILL is True:
 #     raise ValueError("rag mode does not support skill mode.")
@@ -988,14 +990,9 @@ def work(
     log_path_parent = Path(log_path).parent
 
     if task_type not in complex_task_type or args.skill is False:
-        if "llama" in args.model:
-            prompt_path = "./configs/prompt/prompt_template.md"
-        elif args.ngspice:
+        prompt_path = f"./{PROMPT_TEMPLATE_PATH}"
+        if args.ngspice:
             prompt_path = "./configs/prompt/prompt_template_ngspice.md"
-        elif any(model in args.model for model in opensource_models):
-            prompt_path = "./configs/prompt/prompt_template.md"
-        else:
-            prompt_path = "./configs/prompt/prompt_template.md"
 
         if args.no_prompt:
             prompt_path = "./configs/prompt/prompt_template_wo_prompt.md"
