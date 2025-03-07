@@ -64,7 +64,7 @@ def process_log_file(file_path: Path) -> dict:
 
 def display_model_scores(
     console: Console, model_name: str, scores: list, folder_path: str, num_per_task: int
-) -> None:
+) -> list[str]:
     """依據傳入的 scores 列表 (每個元素為字典，包含 problem_number 與各項計數)
     組成一個 Rich Table 並輸出。
     """
@@ -81,6 +81,7 @@ def display_model_scores(
         table.add_column(col_title, justify="right")
     table.add_column("Error Found", justify="right")
 
+    not_done_tasks: list[str] = []
     # 對各個問題依 problem_number 排序
     for score in sorted(scores, key=lambda x: x["problem_number"]):
         total = score["total"] if score["total"] > 0 else 1  # 避免除 0
@@ -93,6 +94,9 @@ def display_model_scores(
             error_comment = f"Missing {num_per_task - score['pass5']} rounds"
         else:
             error_comment = "Pass"
+
+        if error_comment.startswith("Missing "):
+            not_done_tasks.append(str(score["problem_number"]))
 
         # 設定顏色：
         # 注意：原始邏輯中 pass@1 rate 與 pass@5 rate 用不同的顏色標示
@@ -117,9 +121,10 @@ def display_model_scores(
 
     console.print(table)
     console.print("\n")
+    return not_done_tasks
 
 
-def parse_logs_in_folder(folder_path: str, num_per_task: int) -> None:
+def parse_logs_in_folder(folder_path: str, num_per_task: int) -> list[Path]:
     """讀取指定資料夾下的所有 .txt log 檔，並依據檔名格式 <datetime>_<model_name>_<problem number>_log.txt解析 log 內容
     計算包含：
         1) pass@1: 計算 code_id:0 的成功次數
@@ -136,7 +141,8 @@ def parse_logs_in_folder(folder_path: str, num_per_task: int) -> None:
 
     # 遍歷資料夾中所有 .txt 檔案
     counters_list = []
-    for file_path in Path(folder_path).rglob("*.txt"):
+    all_file_paths = list(Path(folder_path).glob("*.txt"))
+    for file_path in all_file_paths:
         match = filename_pattern.match(file_path.name)
         if not match:
             continue
@@ -159,20 +165,35 @@ def parse_logs_in_folder(folder_path: str, num_per_task: int) -> None:
     # 根據 model 分別顯示結果
     if not model_scores:
         console.print(f"No log files found in {folder_path}")
-        return
+        return None
     console.print("\n")
     for model_name, scores in model_scores.items():
-        display_model_scores(console, model_name, scores, folder_path, num_per_task)
+        not_done_tasks = display_model_scores(
+            console, model_name, scores, folder_path, num_per_task
+        )
+
+    not_done_task_paths: list[Path] = []
+    for all_file_path in all_file_paths:
+        problem_number = str(all_file_path.name.split("_")[2])
+        if problem_number in not_done_tasks:
+            not_done_task_paths.append(all_file_path)
+    return not_done_task_paths
 
 
-def main(folder_path: str = "./logs", num_per_task: int = 5, live: bool = False) -> None:
+def main(
+    folder_path: str = "./logs", num_per_task: int = 5, live: bool = False, clean: bool = False
+) -> None:
     """主函式，解析指定資料夾中的 log 檔案，並顯示各個 model 的成功率與錯誤率。"""
     if live:
         while True:
             parse_logs_in_folder(folder_path, num_per_task)
             time.sleep(5)
             os.system("clear")  # noqa: S605, S607
-    parse_logs_in_folder(folder_path, num_per_task)
+    else:
+        not_done_task_paths = parse_logs_in_folder(folder_path, num_per_task)
+        if clean:
+            not_done = ", ".join([path.as_posix() for path in not_done_task_paths])
+            console.print(f"Those tasks are not done yet: \n{not_done}")
 
 
 if __name__ == "__main__":
