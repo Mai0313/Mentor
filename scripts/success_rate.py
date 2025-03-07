@@ -5,6 +5,7 @@
 #     "rich",
 # ]
 # ///
+import os
 import re
 import time
 from pathlib import Path
@@ -170,7 +171,7 @@ def main(folder_path: str = "./logs", num_per_task: int = 5, live: bool = False)
         while True:
             parse_logs_in_folder(folder_path, num_per_task)
             time.sleep(5)
-            console.clear()
+            os.system("clear")  # noqa: S605, S607
     parse_logs_in_folder(folder_path, num_per_task)
 
 
