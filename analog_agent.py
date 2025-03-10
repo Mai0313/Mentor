@@ -988,6 +988,10 @@ class AnalogAgent(BaseModel):
             "role": "user",
             "content": "Please help me design a circuit. Think and tell me the necessary steps we need to do.",
         })
+        messages.append({
+            "role": "user",
+            "content": "DO NOT USE `def` in the code, just write the code directly.",
+        })
         groupchat = autogen.GroupChat(
             agents=[*proxies, *agents],
             messages=[],

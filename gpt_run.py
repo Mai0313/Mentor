@@ -49,7 +49,7 @@ parser.add_argument(
     default="groupchat",
     help="it can be 'original', 'swarm', 'captain', 'captain+rag', 'groupchat', 'groupchat+tba' or 'groupchat+rag'",
 )
-parser.add_argument("--config", type=str, default="./configs/agents/groupchat.yaml")
+parser.add_argument("--config", type=str, default="./configs/agents/groupchat_wo_cos.yaml")
 parser.add_argument("--prompt", type=str, default="./configs/prompt/prompt_template.md")
 args = parser.parse_args()
 
@@ -1066,21 +1066,22 @@ def work(
 
     problem_check_file = Path(f"problem_check/{task_type}.py")
     if not args.ngspice and problem_check_file.exists():
+        pass
         # shutil.copy(problem_check_file.as_posix(), log_path)
         # file_content = problem_check_file.read_text()
         # file_content = file_content.replace("sys.exit(2)", "pass")
         # file_content = file_content.replace("sys.exit(0)", "pass")
         # file_content = file_content.replace("print(", "raise ValueError(")
-        messages.append(
-            {
-                "role": "user",
-                "content": f"Remember to save the fig under {Path(log_path).absolute().as_posix()}.",
-            }
-            # {
-            #     "role": "user",
-            #     "content": f"Remember to use {file_content} in the end of your PySpice code for checking, once the plot is generated, the code is correct; you can ignore rest of error.",
-            # },
-        )
+        # messages.append(
+        #     {
+        #         "role": "user",
+        #         "content": f"Remember to save the fig under {Path(log_path).absolute().as_posix()}.",
+        #     }
+        #     # {
+        #     #     "role": "user",
+        #     #     "content": f"Remember to use {file_content} in the end of your PySpice code for checking, once the plot is generated, the code is correct; you can ignore rest of error.",
+        #     # },
+        # )
 
     if money_quota < 0:
         flog.write(f"Money quota is used up. Exceed quota: {money_quota}\n")
