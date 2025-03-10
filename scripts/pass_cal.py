@@ -159,7 +159,7 @@ def display_model_scores(
     pass_df.to_excel(f"{model_name}_pass_log.xlsx", index=False)
 
 
-def parse_logs_in_folder(folder_path: str = "./logs_ori_unmod", num_per_task: int = 20) -> None:
+def parse_logs_in_folder(folder_path: str = "./logs", num_per_task: int = 5) -> None:
     """讀取指定資料夾下的所有 .txt log 檔，並依據檔名格式 <datetime>_<model_name>_<problem number>_log.txt解析 log 內容
     計算包含：
         1) pass@1: 計算 code_id:0 的成功次數
