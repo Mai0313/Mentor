@@ -3,103 +3,35 @@ from typing import Any
 from pathlib import Path
 
 import httpx
-from openai import AzureOpenAI, AsyncAzureOpenAI
+from openai import AsyncAzureOpenAI
 import autogen
-from autogen import config_list_from_json
+import logfire
 import chromadb
 from pydantic import Field, BaseModel
 from pydantic_ai import Agent
 from rich.console import Console
 from chromadb.config import Settings
 from pydantic_ai.models.openai import OpenAIModel
-from autogen.agentchat.contrib.img_utils import get_pil_image, pil_to_data_uri
 from autogen.agentchat.contrib.retrieve_user_proxy_agent import RetrieveUserProxyAgent
 from chromadb.utils.embedding_functions.openai_embedding_function import OpenAIEmbeddingFunction
 
 console = Console()
+logfire.configure(send_to_logfire=False)
 
 
 def get_config_dict(model: str, temp: float = 0.5) -> dict[str, Any]:
-    config_list = config_list_from_json(
+    config_list = autogen.config_list_from_json(
         env_or_file="./configs/llm/OAI_CONFIG_LIST", filter_dict={"model": model}
     )
-    llm_config = {"timeout": 60, "cache_seed": os.getenv("SEED", None), "config_list": config_list}
-    if "o1" not in model:
-        llm_config["temperature"] = temp
+    llm_config = {
+        "timeout": 60,
+        "temperature": temp,
+        "cache_seed": os.getenv("SEED", None),
+        "config_list": config_list,
+    }
+    if "o1" in model or "o3" in model:
+        llm_config.pop("temperature", None)
     return llm_config
-
-
-class DescribeImageInput(BaseModel):
-    question: str = Field(..., description="The question you want to ask.")
-    image_url: str = Field(
-        ...,
-        description="The image urls you want to describe, it should be a string of path that pair with the question.",
-    )
-
-
-class DescribeImagesOutput(BaseModel):
-    answer: str = Field(..., description="The answer to the question you asked.")
-    image_url: str = Field(
-        ...,
-        description="The image urls you want to describe, it should be a string of path that pair with the question.",
-    )
-
-
-def describe_images(image_infos: list) -> list[DescribeImagesOutput]:
-    """Given a question and a list of image absolute paths, this tool will describe the image(s) you provided.
-
-    Args:
-        image_infos (list[dict[str, str]]): It should be a list of dict[str, str], which contains a pair of question and image absolute path.
-            For example:
-                ```
-                [
-                    {
-                        "question": "How many opamps are there in the graph",
-                        "image_url": "/home/ds906659/aith/AnalogCoder/docs/Razavi BGR/_page_0_Figure_13.jpeg",
-                    }
-                ]
-                ```
-
-    Returns:
-        list[DescribeImagesOutput]: The description of the image(s) you provided, it is a pydantic model, you should use `.model_dump()` to get the dict.
-    """
-    llm_config = get_config_dict(model="aide-gpt-4o", temp=0.0)
-    client = AzureOpenAI(
-        api_key=llm_config["config_list"][0]["api_key"],
-        azure_endpoint=llm_config["config_list"][0]["base_url"],
-        api_version=llm_config["config_list"][0]["api_version"],
-        http_client=httpx.Client(headers=llm_config["config_list"][0]["default_headers"]),
-    )
-    response_outputs: list[DescribeImagesOutput] = []
-    for image_info in image_infos:
-        image_info = DescribeImageInput(**image_info)
-        content: list[dict[str, Any]] = [
-            {
-                "type": "text",
-                "text": "Please follow the question below to describe the image(s) you received.",
-            },
-            {"type": "text", "text": image_info.question},
-        ]
-        if Path(image_info.image_url).exists():
-            base64_image = get_pil_image(image_file=image_info.image_url)
-            image_uri = pil_to_data_uri(base64_image)
-            content.append({"type": "image_url", "image_url": {"url": image_uri}})
-            response = client.chat.completions.create(
-                model=llm_config["config_list"][0]["model"],
-                messages=[{"role": "user", "content": content}],
-                temperature=0.0,
-            )
-            response_output = DescribeImagesOutput(
-                answer=response.choices[0].message.content, image_url=image_info.image_url
-            )
-            response_outputs.append(response_output)
-        else:
-            response_output = DescribeImagesOutput(
-                answer=f"Cannot find the image of {image_info.image_url}, please check the image path.",
-                image_url=image_info.image_url,
-            )
-            response_outputs.append(response_output)
-    return response_outputs
 
 
 class RetrieveResultOutput(BaseModel):
@@ -176,11 +108,10 @@ def retrieve_data(query: str) -> str:
         >>> retrieved_result = retrieve_data(query=query)
     """
     llm_config = get_config_dict(model="aide-gpt-4o", temp=0.0)
-    markdown_path = Path("./docs").rglob("*.md")
+    markdown_path = Path("./docs").rglob("*_parsed.md")
     text_path = Path("./docs").rglob("*.txt")
     subcircuit_lib = Path("./subcircuit_lib").rglob("*.py")
     all_docs = [*markdown_path, *text_path, *subcircuit_lib]
-    all_docs = [f for f in all_docs if f.stem.endswith("_parsed")]
     all_docs = [doc.resolve().as_posix() for doc in all_docs]
     client = AsyncAzureOpenAI(
         api_key=llm_config["config_list"][0]["api_key"],
@@ -205,20 +136,12 @@ def retrieve_data(query: str) -> str:
         console.print("No relevant docs found.")
         return "No relevant docs found, please try again with another keyword."
     console.print("Relevant docs: ", new_all_docs)
-    # all_docs = ["/home/ds906659/aith/AnalogCoder/docs/Razavi BGR/Razavi BGR.md"]
     rag_assistant = autogen.AssistantAgent(
         name="RetrieveAssistant",
         llm_config=llm_config,
         code_execution_config=False,
         silent=True,  # Set it to `False` if you want to see the conversation log.
     )
-    # executor = autogen.UserProxyAgent(
-    #     name="executor",
-    #     human_input_mode="NEVER",
-    #     is_termination_msg=lambda msg: "TERMINATE" in msg["content"],
-    #     code_execution_config={"use_docker": "False"},
-    #     description="This is a code execution agent, it will simpily execute a function call.",
-    # )
     rag_proxy_agent = RetrieveUserProxyAgent(
         name="RetrieveProxyAgent",
         human_input_mode="NEVER",
@@ -246,14 +169,6 @@ def retrieve_data(query: str) -> str:
         code_execution_config=False,
         silent=True,  # Set it to `False` if you want to see the conversation log.
     )
-    # query += "\nYou can use `describe_images` to see the image if the question asked to do so or the document content contains the image."
-    # autogen.register_function(
-    #     f=describe_images,
-    #     caller=rag_assistant,
-    #     executor=executor,
-    #     name=describe_images.__name__,
-    #     description=describe_images.__doc__,
-    # )
     groupchat = autogen.GroupChat(
         agents=[rag_proxy_agent, rag_assistant],
         messages=[],
@@ -267,9 +182,7 @@ def retrieve_data(query: str) -> str:
         problem=query,
         # 這個會決定 LLM 能參考多少文件，要讓她拿到正確資訊，就要全部允許他看
         n_results=len(new_all_docs),
-        # summary_method=rag_summary_method,
     )
-    # print(manager.last_speaker)
     all_history = []
     for history in chat_result.chat_history:
         content = history["content"]
@@ -285,17 +198,6 @@ def retrieve_data(query: str) -> str:
 
 
 if __name__ == "__main__":
-    # image_infos = [
-    #     {
-    #         "question": "How many opamps are there in the graph",
-    #         "image_url": "./docs/Razavi BGR/_page_4_Figure_4.jpeg",
-    #     },
-    #     {
-    #         "question": "How many opamps are there in the graph",
-    #         "image_url": "./docs/Razavi BGR/_page_1_Figure_15.jpeg",
-    #     },
-    # ]
-    # result = describe_images(image_infos=image_infos)
     query = "How many opamps are there in the FIGURE 14 of `./docs/Razavi BGR/Razavi BGR.md`"
     result = retrieve_data(query=query)
-    print(result)
+    console.print(result)

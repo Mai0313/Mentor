@@ -1,4 +1,3 @@
-import os
 from typing import Any, Literal, Optional
 from pathlib import Path
 import datetime
@@ -13,7 +12,7 @@ import httpx
 import hydra
 from openai import AzureOpenAI, AsyncAzureOpenAI
 import autogen
-from autogen import ChatResult, UserProxyAgent, config_list_from_json
+from autogen import ChatResult, UserProxyAgent
 from pydantic import Field, BaseModel, computed_field, model_validator
 from omegaconf import OmegaConf
 from pydantic_ai import Agent
@@ -27,7 +26,7 @@ from openai.types.chat.chat_completion import Choice, ChatCompletion
 from openai.types.chat.chat_completion_message import ChatCompletionMessage
 from autogen.agentchat.contrib.captainagent.captainagent import CaptainAgent
 
-from src.rag import retrieve_data
+from src.rag import retrieve_data, get_config_dict
 
 console = Console()
 warnings.filterwarnings("ignore", category=ResourceWarning)
@@ -110,16 +109,6 @@ class MessageModel(BaseModel):
         frozen=False,
         deprecated=False,
     )
-
-
-def get_config_dict(model: str, temp: float = 0.5) -> dict[str, Any]:
-    config_list = config_list_from_json(
-        env_or_file="./configs/llm/OAI_CONFIG_LIST", filter_dict={"model": model}
-    )
-    llm_config = {"timeout": 60, "cache_seed": os.getenv("SEED", None), "config_list": config_list}
-    if "o1" in model or "o3" in model:
-        llm_config.pop("temperature", None)
-    return llm_config
 
 
 class AutogenUsage(BaseModel):
@@ -1171,5 +1160,11 @@ if __name__ == "__main__":
         # },
         {"role": "user", "content": "Find me the author of `Bandgap Reference Verification_RAK`."}
     ]
-    chat_result = get_chat_completion(model=model, messages=messages, mode="captain")
+    chat_result = get_chat_completion(
+        model=model,
+        messages=messages,
+        mode="captain",
+        work_dir=".",
+        groupchat_config="./configs/agents/groupchat.yaml",
+    )
     console.print(chat_result)
