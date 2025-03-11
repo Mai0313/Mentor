@@ -344,6 +344,11 @@ class AnalogAgent(AnalogAgentArgs):
     def use_rag(self) -> bool:
         return "rag" in self.mode
 
+    @computed_field
+    @property
+    def use_cos(self) -> bool:
+        return "cos" in self.mode
+
     @model_validator(mode="after")
     def _setup_workdir(self) -> "AnalogAgent":
         self.work_dir = Path(self.work_dir).parent.absolute().as_posix()
