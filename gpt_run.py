@@ -46,7 +46,7 @@ parser.add_argument("--api_key", type=str)
 parser.add_argument(
     "--mode",
     type=str,
-    default="groupchat",
+    default="groupchat+rag",
     help="it can be 'original', 'swarm', 'captain', 'captain+rag', 'groupchat', 'groupchat+tba' or 'groupchat+rag'",
 )
 parser.add_argument("--config", type=str, default="./configs/agents/groupchat_wo_cos.yaml")
