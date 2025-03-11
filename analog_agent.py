@@ -37,6 +37,15 @@ def is_termination_msg(x: dict[str, Any]) -> bool:
     return "TERMINATE" in x.get("content")
 
 
+def cos_hook(content: str) -> str:
+    hooked_content = f"""{content}
+    Please help me design the mentioned circuit.
+    Think and tell me the necessary steps.
+    Let's think step by step.
+    """
+    return hooked_content
+
+
 dc_sweep_template = """
 import numpy as np
 import os
@@ -275,57 +284,36 @@ class AnalogAgent(BaseModel):
             assistant_messages = list(recipient.assistant.chat_messages.values())[-1]
             messages.extend([*executor_messages, *assistant_messages])
 
-        message_with_codes: list[CodeBlock] = []
-        # for messages_list in messages:
-        #     for message in messages_list:
-        #         message_content = message.get("content")
-        #         if message_content is None:
-        #             continue
-        #         code_messages = extract_code(text=message_content)
-        #         all_code_found = []
-        #         for code_type, code_content in code_messages:
-        #             if code_type == "python":
-        #                 all_code_found.append(
-        #                     CodeBlock(code_type=code_type, code_content=code_content)
-        #                 )
-        #         if all_code_found:
-        #             message_with_codes.append(all_code_found[-1])
-        if message_with_codes:
-            message_with_code = message_with_codes[-1]
-            last_message = message_with_code.code_in_markdown
+        messages.append({
+            "role": "user",
+            "content": "Please extract the final result code block from the content. The output should be a python code block only.",
+        })
+
+        last_message = recipient.last_message(sender)["content"]
+
+        llm_config = get_config_dict(model="aide-gpt-4o")
+        client = AsyncAzureOpenAI(
+            api_key=llm_config["config_list"][0]["api_key"],
+            azure_endpoint=llm_config["config_list"][0]["base_url"],
+            api_version=llm_config["config_list"][0]["api_version"],
+            http_client=httpx.AsyncClient(headers=llm_config["config_list"][0]["default_headers"]),
+        )
+        model = OpenAIModel(model_name="aide-gpt-4o", openai_client=client)
+        agent = Agent(model=model, result_type=CodeBlock)
+        response = agent.run_sync(user_prompt=f"{messages}")
+        if response.data:
+            last_message = response.data.code_in_markdown
             console.print(
-                f"Code Block Found from the last message in type {message_with_code.code_type}, replacing the summary using the following code block:",
-                style="bold green",
+                f"Code Block Found by LLM from the last message in type {response.data.code_type}, replacing the summary using the following code block:",
+                style="bold yellow",
             )
-            console.print(Markdown(message_with_code.code_in_markdown))
+            console.print(Markdown(response.data.code_in_markdown))
         else:
-            llm_config = get_config_dict(model="aide-gpt-4o")
-            client = AsyncAzureOpenAI(
-                api_key=llm_config["config_list"][0]["api_key"],
-                azure_endpoint=llm_config["config_list"][0]["base_url"],
-                api_version=llm_config["config_list"][0]["api_version"],
-                http_client=httpx.AsyncClient(
-                    headers=llm_config["config_list"][0]["default_headers"]
-                ),
+            last_message = recipient.last_message(sender)["content"]
+            console.print(
+                "Failed to extract the code block by either LLM or manually, using the last message.",
+                style="bold red",
             )
-            model = OpenAIModel(model_name="aide-gpt-4o", openai_client=client)
-            agent = Agent(model=model, result_type=CodeBlock)
-            response = agent.run_sync(
-                user_prompt=f"{messages}\nPlease extract the final result code block from the content. The output should be a python code block only."
-            )
-            if response.data:
-                last_message = response.data.code_in_markdown
-                console.print(
-                    f"Code Block Found by LLM from the last message in type {response.data.code_type}, replacing the summary using the following code block:",
-                    style="bold yellow",
-                )
-                console.print(Markdown(response.data.code_in_markdown))
-            else:
-                last_message = recipient.last_message(sender)["content"]
-                console.print(
-                    "Failed to extract the code block by either LLM or manually, using the last message.",
-                    style="bold red",
-                )
         return last_message
 
     def _get_cache(self, llm_config: dict[str, Any]) -> Cache:
@@ -362,17 +350,6 @@ class AnalogAgent(BaseModel):
             # >>> {'system': 'You are a helpful assistant.', 'assistant': 'You should be kind.', 'user': 'Hi there!'}
             ```
         """
-        # dict_order = ["system", "assistant", "user"]
-        # if not isinstance(messages, list):
-        #     return {"role": "user", "content": f"{messages}"}
-        # parsed_messages = [MessageModel(**message) for message in messages]
-        # message_dict: dict[str, str] = {}
-        # for parsed_message in parsed_messages:
-        #     if parsed_message.role in message_dict:
-        #         message_dict[parsed_message.role] += "\n" + parsed_message.content
-        #     else:
-        #         message_dict[parsed_message.role] = parsed_message.content
-        # message_dict = {key: message_dict[key] for key in dict_order if key in message_dict}
         message_string = ""
         for message in messages:
             message_content = message.get("content")
@@ -399,15 +376,19 @@ class AnalogAgent(BaseModel):
         if "o1" in model or "o3" in model:
             result = client.chat.completions.create(messages=messages, model=model)
         else:
+            temperature = llm_config.get("temperature")
+            if not temperature:
+                console.print("No temperature found, using default 0.5")
+                temperature = 0.5
             result = client.chat.completions.create(
-                messages=messages, model=model, temperature=llm_config.get("temperature", 0.5)
+                messages=messages, model=model, temperature=temperature
             )
         return result
 
     def testbench_hook(
         self, content: str, task: str, task_type: str, input_nodes: str, output_nodes: str
     ) -> str:
-        prompt = f""" You are required to create checker functions for {task}, assuming the main input nodes are {input_nodes} and the main output nodes are {output_nodes}. These checker functions should help validate both the functionality and correctness of the netlist in an analog design context, using Spice simulations (e.g., PySpice).
+        prompt = f"""You are required to create checker functions for {task}, assuming the main input nodes are {input_nodes} and the main output nodes are {output_nodes}. These checker functions should help validate both the functionality and correctness of the netlist in an analog design context, using Spice simulations (e.g., PySpice).
 
         IMPORTANT GUIDELINES:
 
@@ -451,14 +432,22 @@ class AnalogAgent(BaseModel):
         """
         return f"{content}\n\n{prompt}"
 
-    # def circuit_hook(
-    #     self, content: str, task: str, task_type: str, input_nodes: str, output_nodes: str
-    # ) -> str:
-    #     prompt = f"""
-    #         ## Your role \nAnalog_{task}_Expert is a seasoned analog integrated circuits specialist with a focus on designing {task_type} with input {input_nodes} and output {output_nodes}. In addition to expertise in analog circuit design, they possess strong Python programming skills and are proficient in using PySpice for accurate and robust simulation of analog circuits.
-    #         \n\n## Task and skill instructions \n- Task description: The expert is responsible for designing high-performance {task_type} and employing simulation tools to verify the design integrity. This includes running comprehensive simulations to detect issues such as singular matrices, ensuring that the circuit designs work as intended under various operating conditions. \n- Skill description: The expert has in-depth knowledge of analog integrated circuit design, particularly in developing {task_type}. In parallel, they are skilled in Python programming and have extensive experience using PySpice for circuit simulation. This dual expertise ensures that designs are not only theoretically sound but are also rigorously tested and validated through simulation, addressing potential pitfalls before fabrication. \n- Additional information: Their work meticulously bridges the gap between circuit design and simulation verification, ensuring that every component of the design process is thoroughly checked for errors or issues, culminating in reliable, high-quality analog systems.
-    #     """
-    #     return f"{content}\n\n{prompt}"
+    def circuit_hook(
+        self, content: str, task: str, task_type: str, input_nodes: str, output_nodes: str
+    ) -> str:
+        prompt = f"""
+        ## Your role
+        Analog_{task}_Expert is a seasoned analog integrated circuits specialist with a focus on designing {task_type} with input {input_nodes} and output {output_nodes}.
+        In addition to expertise in analog circuit design, they possess strong Python programming skills and are proficient in using PySpice for accurate and robust simulation of analog circuits.
+
+        ## Task and skill instructions
+        - Task description: The expert is responsible for designing high-performance {task_type} and employing simulation tools to verify the design integrity.
+            - This includes running comprehensive simulations to detect issues such as singular matrices, ensuring that the circuit designs work as intended under various operating conditions.
+        - Skill description: The expert has in-depth knowledge of analog integrated circuit design, particularly in developing {task_type}. In parallel, they are skilled in Python programming and have extensive experience using PySpice for circuit simulation.
+            - This dual expertise ensures that designs are not only theoretically sound but are also rigorously tested and validated through simulation, addressing potential pitfalls before fabrication.
+        - Additional information: Their work meticulously bridges the gap between circuit design and simulation verification, ensuring that every component of the design process is thoroughly checked for errors or issues, culminating in reliable, high-quality analog systems.
+        """
+        return f"{content}\n\n{prompt}"
 
     def dc_sweep_hook(
         self, content: str, task: str, task_type: str, input_nodes: str, output_nodes: str
@@ -479,7 +468,7 @@ class AnalogAgent(BaseModel):
                 8. If all steps succeed, generate a new netlist.sp to replace the old one.
 
             No plotting is required. If dc_sweep.py executes successfully, then the original code has passed the DC sweep check.
-        """
+            """
 
         else:
             prompt = f"""
@@ -496,7 +485,7 @@ class AnalogAgent(BaseModel):
                 7. If all steps succeed, generate a new netlist.sp to replace the old one.
 
             No plotting is required. If dc_sweep.py executes successfully, then the original code has passed the DC sweep check.
-        """
+            """
         return f"{content}\n\n{prompt}"
 
     def func_hook(
@@ -508,86 +497,78 @@ class AnalogAgent(BaseModel):
         if task_type == "Opamp" or task_type == "Amplifier":
             prompt = f"""
             Function_Checker is a verification engineer who introduces function-check code into the circuit for verification. You should create a file named function_check.py that contains both the circuit code and the check code needed to perform the function check.
-
             Follow these steps to complete the function check for {task}:
-
                 1. Modify the voltage sources for Vinn and Vinp to "dc X.XX ac 1u". For example:
-
                     - circuit.V("inp", "Vinp", circuit.gnd, X.XX) → circuit.V("inp", "Vinp", circuit.gnd, "dc X.XX ac 1u")
                     - circuit.V("inn", "Vinn", circuit.gnd, X.XX) → circuit.V("inn", "Vinn", circuit.gnd, "dc X.XX ac 1u")
-
                 2. Add the following verification code directly into your PySpice circuit (do not modify this check code): {test_code}
-
             If function_check.py runs successfully, the original code passes the function check. If it fails, return both the error message and your recommendation(s) for resolving it.
-        """
+            """
         else:
             prompt = f"""
             Function_Checker is a verification engineer who introduces function-check code into the circuit for verification. You should create a file named function_check.py that contains both the circuit code and the check code needed to perform the function check.
-
             Follow these steps to complete the function check for {task}:
-
                 1. Add the following verification code directly into your PySpice circuit (do not modify this check code): {test_code}
-
             If function_check.py runs successfully, the original code passes the function check. If it fails, return both the error message and your recommendation(s) for resolving it.
-        """
+            """
         return f"{content}\n\n{prompt}\n\nPlease revert to the original code if the check passed."
 
     def mosfets_hook(
         self, content: str, task: str, task_type: str, input_nodes: str, output_nodes: str
     ) -> str:
         prompt = """
-            GENERAL PURPOSE
-            • Always ensure the MOSFET terminals (Drain, Source, Gate) have appropriate voltage levels for the device type.
-            • Check that VGS (Gate-Source Voltage) is set correctly for the intended operation region (cut-off vs. conduction).
-            • For an active (ON) NMOS, typically VDS ≥ 0 and VGS > VTH.
-            • For an active (ON) PMOS, typically VSD ≥ 0 (meaning the source is at a higher potential than the drain) and VSG > |VTH| (or equivalently, VGS < -|VTH|).
+        GENERAL PURPOSE
+        • Always ensure the MOSFET terminals (Drain, Source, Gate) have appropriate voltage levels for the device type.
+        • Check that VGS (Gate-Source Voltage) is set correctly for the intended operation region (cut-off vs. conduction).
+        • For an active (ON) NMOS, typically VDS ≥ 0 and VGS > VTH.
+        • For an active (ON) PMOS, typically VSD ≥ 0 (meaning the source is at a higher potential than the drain) and VSG > |VTH| (or equivalently, VGS < -|VTH|).
 
-            NMOS RULES AND CONCEPTS
-            Drain-to-Source Voltage (VDS)
-            • Do not connect the NMOS drain directly to ground if you expect high-side or switching behavior.
-            • Ensure the drain node is at a higher potential than the source node. A drain voltage lower than the source indicates incorrect connection or reversed orientation for standard low-side configuration.
-            • Typical requirement for conduction: VDS ≥ 0 (Drain ≥ Source).
+        NMOS RULES AND CONCEPTS
+        Drain-to-Source Voltage (VDS)
+        • Do not connect the NMOS drain directly to ground if you expect high-side or switching behavior.
+        • Ensure the drain node is at a higher potential than the source node. A drain voltage lower than the source indicates incorrect connection or reversed orientation for standard low-side configuration.
+        • Typical requirement for conduction: VDS ≥ 0 (Drain ≥ Source).
 
-            Gate-to-Source Voltage (VGS)
-            • For an NMOS to turn on (enhancement mode), VGS must exceed the threshold voltage (VTH).
-            • Avoid having the gate at the same or a lower voltage than the source if you want the transistor to conduct:
-            - If gate = source ⇒ transistor is certainly off.
-            - If gate < source ⇒ transistor is off or reversed.
-            - If gate ≤ source + VTH ⇒ you are below or near threshold, so the MOSFET may be only weakly on or off.
-            • Suggestion: Increase the gate voltage (relative to source) above VTH to operate in the ON region.
+        Gate-to-Source Voltage (VGS)
+        • For an NMOS to turn on (enhancement mode), VGS must exceed the threshold voltage (VTH).
+        • Avoid having the gate at the same or a lower voltage than the source if you want the transistor to conduct:
+        - If gate = source ⇒ transistor is certainly off.
+        - If gate < source ⇒ transistor is off or reversed.
+        - If gate ≤ source + VTH ⇒ you are below or near threshold, so the MOSFET may be only weakly on or off.
+        • Suggestion: Increase the gate voltage (relative to source) above VTH to operate in the ON region.
 
-            Activation Tip
-            • Ensure VGS > VTH and that the drain is at a higher potential than the source (VDS ≥ 0) if the NMOS is intended to conduct.
+        Activation Tip
+        • Ensure VGS > VTH and that the drain is at a higher potential than the source (VDS ≥ 0) if the NMOS is intended to conduct.
 
-            PMOS RULES AND CONCEPTS
+        PMOS RULES AND CONCEPTS
 
-            Drain-to-Source Voltage (VDS)
-            • Do not connect the PMOS drain directly to the supply rail (VDD) if you plan on switching or controlling a load.
-            • Typically, for a PMOS in a high-side configuration, the source is at VDD, and the drain is at a lower potential (toward the load).
-            • If the drain > source, this is reversed bias for a PMOS in normal operation.
-            • In many practical circuits, VDS < 0 (Drain < Source) is the expected condition for conduction.
+        Drain-to-Source Voltage (VDS)
+        • Do not connect the PMOS drain directly to the supply rail (VDD) if you plan on switching or controlling a load.
+        • Typically, for a PMOS in a high-side configuration, the source is at VDD, and the drain is at a lower potential (toward the load).
+        • If the drain > source, this is reversed bias for a PMOS in normal operation.
+        • In many practical circuits, VDS < 0 (Drain < Source) is the expected condition for conduction.
 
-            Gate-to-Source Voltage (VGS)
-            • For a PMOS to turn on (enhancement mode), the gate voltage must be sufficiently below the source voltage.
-            • Avoid having the gate at the same or a higher voltage than the source if you want conduction:
-            - If gate = source ⇒ transistor is off.
-            - If gate > source ⇒ transistor is off or reversed.
-            - If gate ≥ source - |VTH| ⇒ not significantly negative enough to switch on the PMOS.
-            • Suggestion: Decrease the gate voltage (below the source) so that |VGS| > |VTH| to properly bias the PMOS.
+        Gate-to-Source Voltage (VGS)
+        • For a PMOS to turn on (enhancement mode), the gate voltage must be sufficiently below the source voltage.
+        • Avoid having the gate at the same or a higher voltage than the source if you want conduction:
+        - If gate = source ⇒ transistor is off.
+        - If gate > source ⇒ transistor is off or reversed.
+        - If gate ≥ source - |VTH| ⇒ not significantly negative enough to switch on the PMOS.
+        • Suggestion: Decrease the gate voltage (below the source) so that |VGS| > |VTH| to properly bias the PMOS.
 
-            Activation Tip
-            • Ensure VGS < -VTH (numerically negative beyond the threshold) and that the drain is at a sufficiently lower voltage than the source to turn the PMOS on.
+        Activation Tip
+        • Ensure VGS < -VTH (numerically negative beyond the threshold) and that the drain is at a sufficiently lower voltage than the source to turn the PMOS on.
 
-            SUMMARY OF CHECKS
-            • NMOS (enhancement mode):
-            - VDS ≥ 0 for proper conduction.
-            - VGS > VTH for “on” state.
-            • PMOS (enhancement mode):
-            - VSD ≥ 0 (Source ≥ Drain) in normal high-side usage.
-            - VGS < -VTH for “on” state.
-            • Avoid tying drain to a rail (ground for NMOS, VDD for PMOS) unless you fully understand the intended switching configuration (e.g., low-side vs. high-side switch).
-            • Ensure the gate is not inadvertently tied to the source; that kills your driving signal unless it's an intentional pass-device configuration.
-            • If the MOSFET is meant to be “on,” confirm that it can handle the required voltage and current, and that the gate voltage can swing as needed to turn it fully on.
+        SUMMARY OF CHECKS
+        • NMOS (enhancement mode):
+        - VDS ≥ 0 for proper conduction.
+        - VGS > VTH for “on” state.
+        • PMOS (enhancement mode):
+        - VSD ≥ 0 (Source ≥ Drain) in normal high-side usage.
+        - VGS < -VTH for “on” state.
+        • Avoid tying drain to a rail (ground for NMOS, VDD for PMOS) unless you fully understand the intended switching configuration (e.g., low-side vs. high-side switch).
+        • Ensure the gate is not inadvertently tied to the source; that kills your driving signal unless it's an intentional pass-device configuration.
+        • If the MOSFET is meant to be “on,” confirm that it can handle the required voltage and current, and that the gate voltage can swing as needed to turn it fully on.
         """
         return f"{content}\n\n{prompt}"
 
@@ -608,13 +589,13 @@ class AnalogAgent(BaseModel):
             name="Analog_Planning_Expert",
             description=f"Analog_Planning_Expert is a seasoned analog integrated circuits specialist who's primary task is to plan and outline the design of a {task} circuit. IT WILL NOT OUTPUT ANY CODE.",
             system_message=f"""
-                1. Propose high-level architectural strategies and topologies for the {task} circuit.
-                2. Identify important performance parameters (e.g., gain, noise, linearity, power consumption, etc.).
-                3. Outline essential pre-layout considerations, such as biasing strategies and transistor sizing guidelines, without delving into specific SPICE netlists or code.
-                4. Perform conceptual or theoretical checks to ensure the feasibility and functionality of the circuit plan.
-                5. Recommend future simulation scenarios (e.g., DC, AC, transient) for verification but do not produce actual simulation or code.
-                6. Provide insights on potential challenges and design trade-offs (e.g., noise vs. power, speed vs. accuracy).
-                7. Generate improvement suggestions at a planning stage, enabling the design team to handle schematic capture and coding themselves.
+            1. Propose high-level architectural strategies and topologies for the {task} circuit.
+            2. Identify important performance parameters (e.g., gain, noise, linearity, power consumption, etc.).
+            3. Outline essential pre-layout considerations, such as biasing strategies and transistor sizing guidelines, without delving into specific SPICE netlists or code.
+            4. Perform conceptual or theoretical checks to ensure the feasibility and functionality of the circuit plan.
+            5. Recommend future simulation scenarios (e.g., DC, AC, transient) for verification but do not produce actual simulation or code.
+            6. Provide insights on potential challenges and design trade-offs (e.g., noise vs. power, speed vs. accuracy).
+            7. Generate improvement suggestions at a planning stage, enabling the design team to handle schematic capture and coding themselves.
             """,
             is_termination_msg=lambda msg: "TERMINATE" in msg["content"],
             max_consecutive_auto_reply=6,
@@ -637,10 +618,15 @@ class AnalogAgent(BaseModel):
             name=f"Analog_{task_type}_expert",
             description=f"Analog_{task_type}_expert is a seasoned analog integrated circuits specialist with a focus on designing and modify {task} who use Python and PySpice for rigorous simulation and verification to ensure reliable, error-free designs.",
             system_message=f"""
-                ## Your role \nAnalog_{task}_Expert is a seasoned analog integrated circuits specialist with a focus on designing and modify {task_type} with input {input_nodes} and output {output_nodes}. In addition to expertise in analog circuit design, they possess strong Python programming skills and are proficient in using PySpice for accurate and robust simulation of analog circuits.
-                \n\n## Task description: The expert is responsible for designing {task_type}. To make sure the circuit is executable add this code template to check: {pyspice_template}
+            ## Your role
+            Analog_{task}_Expert is a seasoned analog integrated circuits specialist with a focus on designing and modify {task_type} with input {input_nodes} and output {output_nodes}.
+            In addition to expertise in analog circuit design, they possess strong Python programming skills and are proficient in using PySpice for accurate and robust simulation of analog circuits.
 
-                DO NOT MODIFTY THE CODE THAT ARE NOT FROM THIS EXPERT.
+            ## Task description:
+            The expert is responsible for designing {task_type}.
+            To make sure the circuit is executable add this code template to check: {pyspice_template}
+
+            DO NOT MODIFTY THE CODE THAT ARE NOT FROM THIS EXPERT.
             """,
             is_termination_msg=lambda msg: "TERMINATE" in msg["content"],
             max_consecutive_auto_reply=6,
@@ -653,8 +639,20 @@ class AnalogAgent(BaseModel):
         # )
         autogen.AssistantAgent(
             name="Python_Expert",
-            system_message=f"""## Your role\nPython_Expert is an analog integrated circuits specialist with a strong background in designing {task}. In addition, they are a proficient Python programmer, skilled in using PySpice to simulate analog circuits, ensuring that every design detail is meticulously verified and validated.\n\n## Task and skill instructions\n- Task: Design and simulate {task}-based analog integrated circuits, ensuring robust performance and reliability in real-world applications.\n- Skill: Utilize Python and PySpice to accurately simulate analog circuits, identify and troubleshoot issues such as singular matrices, and verify the integrity of both design and simulation processes.\n- Additional Information: Apply thorough validation techniques to cross-check circuit designs against simulations, ensuring consistency and preventing critical issues before physical implementation.""",
-            description=f"""Python_Expert is an analog IC specialist who designs {task} and leverages Python with PySpice to simulate, troubleshoot, and meticulously validate circuit performance for reliable real-world applications.""",
+            system_message=f"""
+            ## Your role
+            Python_Expert is an analog integrated circuits specialist with a strong background in designing {task}.
+            In addition, they are a proficient Python programmer, skilled in using PySpice to simulate analog circuits, ensuring that every design detail is meticulously verified and validated.
+
+            ## Task and skill instructions
+            - Task:
+                Design and simulate {task}-based analog integrated circuits, ensuring robust performance and reliability in real-world applications.
+            - Skill:
+                Utilize Python and PySpice to accurately simulate analog circuits, identify and troubleshoot issues such as singular matrices, and verify the integrity of both design and simulation processes.
+            - Additional Information:
+                Apply thorough validation techniques to cross-check circuit designs against simulations, ensuring consistency and preventing critical issues before physical implementation.
+            """,
+            description=f"Python_Expert is an analog IC specialist who designs {task} and leverages Python with PySpice to simulate, troubleshoot, and meticulously validate circuit performance for reliable real-world applications.",
             is_termination_msg=lambda msg: "TERMINATE" in msg["content"],
             max_consecutive_auto_reply=6,
             human_input_mode="NEVER",
@@ -665,7 +663,19 @@ class AnalogAgent(BaseModel):
         autogen.AssistantAgent(
             name="Verification_Expert",
             description=f"""Verification_Expert is an experienced analog circuit specialist who designs and simulates high-performance {task} using advanced analog techniques and Python-based PySpice, rigorously verifying every design step to enhance system performance and reliability.""",
-            system_message=f"""## Your role\nVerification_Expert is a seasoned analog integrated circuits expert with a specialized focus on designing state-of-the-art {task}. With in-depth expertise in analog circuit design and simulation, they excel in both theoretical and practical aspects of {task_type} development. Additionally, Verification_Expert is a proficient Python programmer, highly skilled in utilizing PySpice for simulating analog circuits, contributing to efficient and accurate design verification processes.\n\n## Task and skill instructions\n- Task: Responsible for designing and simulating robust {task} within analog integrated circuits, ensuring optimal performance and reliability. They also conduct thorough checks of simulation outputs to identify and avoid potential issues such as singular matrices.\n- Skill: Leverage advanced analog circuit design techniques alongside Python programming expertise in PySpice to simulate, analyze, and verify designs in a seamless workflow. Their role involves meticulous verification of both the design and simulation stages to ensure every component functions as intended, mitigating risks and enhancing the overall integrity of the system.\n- Other: Through rigorous testing, systematic troubleshooting, and consistent quality checks, Verification_Expert maintains high standards in circuit verification, combining technical proficiency with a keen eye for potential issues in analog integrated circuit designs.""",
+            system_message=f"""
+            ## Your role
+            Verification_Expert is a seasoned analog integrated circuits expert with a specialized focus on designing state-of-the-art {task}. With in-depth expertise in analog circuit design and simulation, they excel in both theoretical and practical aspects of {task_type} development. Additionally, Verification_Expert is a proficient Python programmer, highly skilled in utilizing PySpice for simulating analog circuits, contributing to efficient and accurate design verification processes.
+
+            ## Task and skill instructions
+            - Task:
+                Responsible for designing and simulating robust {task} within analog integrated circuits, ensuring optimal performance and reliability. They also conduct thorough checks of simulation outputs to identify and avoid potential issues such as singular matrices.
+            - Skill:
+                Leverage advanced analog circuit design techniques alongside Python programming expertise in PySpice to simulate, analyze, and verify designs in a seamless workflow.
+                Their role involves meticulous verification of both the design and simulation stages to ensure every component functions as intended, mitigating risks and enhancing the overall integrity of the system.
+            - Other:
+                Through rigorous testing, systematic troubleshooting, and consistent quality checks, Verification_Expert maintains high standards in circuit verification, combining technical proficiency with a keen eye for potential issues in analog integrated circuit designs.
+            """,
         )
 
         testbench_agent = autogen.AssistantAgent(
@@ -951,10 +961,7 @@ class AnalogAgent(BaseModel):
         for assistant_config in config.assistants:
             agent: autogen.AssistantAgent = hydra.utils.instantiate(assistant_config)
             if agent.name == "Analog_Expert":
-                agent.register_hook(
-                    "process_last_received_message",
-                    lambda content: f"{content}\n\nPlease help me design the mentioned circuit. Think and tell me the necessary steps.\nLet's think step by step.",
-                )
+                agent.register_hook(hookable_method="process_last_received_message", hook=cos_hook)
             agents.append(agent)
 
         if use_rag is True:
@@ -966,14 +973,6 @@ class AnalogAgent(BaseModel):
                 )(retrieve_data)
             for proxy in proxies:
                 proxy.register_for_execution()(d_retrieve_content)
-            # for agent in agents:
-            #     autogen.register_function(
-            #         f=retrieve_data,
-            #         caller=agent,
-            #         executor=proxies[-1],
-            #         name=retrieve_data.__name__,
-            #         description=retrieve_data.__doc__,
-            #     )
             messages.append({
                 "role": "user",
                 "content": "You can use `retrieve_data` tool to retrieve the circuit knowledge you need before making the correct decision and plan; do not ask any PySpice coding question directly, those books are text book from school.",
@@ -997,7 +996,7 @@ class AnalogAgent(BaseModel):
             messages=[],
             max_round=12,
             speaker_selection_method="auto",
-            allow_repeat_speaker=False,
+            allow_repeat_speaker=True,
         )
         manager = autogen.GroupChatManager(groupchat=groupchat, llm_config=llm_config)
         message_string = self.convert_init_message(messages=messages)
@@ -1024,7 +1023,6 @@ class AnalogAgent(BaseModel):
         Returns:
             ChatCompletion: The chat result from the Captain Agent.
         """
-        # messages = [{"role": "user", "content": "Design a Bandgap Reference Circuit, Output: Vout, Submodule: Bandgap"}]
         llm_config = get_config_dict(model=model)
         cache = self._get_cache(llm_config=llm_config)
         nested_config = {
