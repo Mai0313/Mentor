@@ -107,7 +107,7 @@ class DocsConverter(BaseModel):
         return client
 
     async def to_markdown(self) -> None:
-        all_docs_paths = [f for f in self.all_docs_paths if f.suffix == ".pdf"]
+        all_docs_paths = [f for f in self.all_docs_paths if f.suffix == ".pdf" or f.suffix == ".txt"]
 
         if not all_docs_paths:
             logfire.warn("No pdf files found in the path.")
@@ -125,14 +125,26 @@ class DocsConverter(BaseModel):
         )
         for docs_path in all_docs_paths:
             output_dir = docs_path.with_suffix("")
+            output_dir = output_dir.with_name(output_dir.name.replace(" ", "_"))
             if output_dir.is_dir() and output_dir.exists():
                 logfire.info("Skip existing dir", source=docs_path, output=output_dir.as_posix())
                 continue
             output_dir.mkdir(parents=True, exist_ok=True)
-            rendered = converter(filepath=docs_path.as_posix())
-            save_output(
-                rendered=rendered, output_dir=output_dir.as_posix(), fname_base=docs_path.stem
-            )
+            if docs_path.suffix == ".pdf":
+                logfire.info(f"Converting PDF...", source=docs_path)
+                rendered = converter(filepath=docs_path.as_posix())
+                parsed_name = docs_path.stem.replace(" ", "_")
+                save_output(
+                    rendered=rendered, output_dir=output_dir.as_posix(), fname_base=parsed_name
+                )
+            elif docs_path.suffix == ".txt":
+                logfire.info(f"Converting TXT...", source=docs_path)
+                with open(docs_path, "r", encoding="utf-8") as f:
+                    content = f.read()
+                # 直接將內容寫入 markdown 檔案
+                parsed_name = docs_path.stem.replace(" ", "_")
+                output_file = output_dir / f"{parsed_name}.md"
+                output_file.write_text(content, encoding="utf-8")
             logfire.info(f"Converted Successfully", source=docs_path, output=output_dir.as_posix())
 
     async def _process_image(self, image_path_or_url: str) -> DescribeImagesOutput:
