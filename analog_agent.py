@@ -94,23 +94,6 @@ with open("dc_sweep.txt") as fopen:
 """
 
 
-class MessageModel(BaseModel):
-    role: str = Field(
-        default="",
-        title="Role of the Message",
-        description="Role of the Message, if model is o1, it should not be `system`.",
-        frozen=False,
-        deprecated=False,
-    )
-    content: str = Field(
-        default="",
-        title="Content of the Message",
-        description="Content of the Message",
-        frozen=False,
-        deprecated=False,
-    )
-
-
 class AutogenUsage(BaseModel):
     cost: Optional[float] = Field(default=0.0, title="Cost of the API call")
     prompt_tokens: Optional[int] = Field(default=0, title="Number of tokens in the prompt")
