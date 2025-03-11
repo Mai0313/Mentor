@@ -4,7 +4,6 @@
 #     "httpx",
 #     "logfire",
 #     "marker-pdf[full]>=1.6.0",
-#     "markitdown",
 #     "openai",
 #     "rich",
 # ]
@@ -16,10 +15,10 @@ from pathlib import Path
 import warnings
 
 import httpx
-from openai import AzureOpenAI, AsyncAzureOpenAI
+from openai import AsyncAzureOpenAI
 from autogen import config_list_from_json
 import logfire
-from pydantic import Field, BaseModel, computed_field
+from pydantic import ConfigDict, Field, BaseModel, computed_field
 from rich.console import Console
 from marker.models import create_model_dict
 
@@ -91,41 +90,6 @@ class DocsConverter(BaseModel):
             raise ValueError(f"Invalid path: {self.path}")
         return all_docs_paths
 
-    def to_md(self) -> None:
-        """Convert the docs to markdown format.
-
-        Args:
-            path (str): The path of the docs you want to convert, it can be either a file or a directory. Defaults to "./docs".
-
-        Returns:
-            None
-
-        Raises:
-            ValueError: If the path is neither a file nor a directory.
-
-        Note:
-            1. If the path is a directory, it will convert all the files in the directory to markdown format.
-            2. If the path is a file, it will convert the file to markdown format.
-            3. The converted files will be saved in the same directory as the original files, with the same name but with a .md extension.
-        """
-        console.print("Converting...", style="bold green")
-
-        client = AzureOpenAI(
-            api_key="hihi@srv_it_eas1_tester",
-            azure_endpoint="https://tma.mediatek.inc/tma/sdk/api/v1",
-            api_version="2024-08-01-preview",
-            http_client=httpx.Client(verify=False, headers={"X-User-Id": "srv_it_eas1_tester"}),
-        )
-        md = MarkItDown(llm_client=client, llm_model="aide-gpt-4o")
-
-        for docs_path in self.all_docs_paths:
-            result = md.convert(source=docs_path)
-            if result and result.title is None:
-                result.title = Path(docs_path).stem
-            output_filename = docs_path.with_suffix(".md")
-            with open(output_filename, "w", encoding="utf-8") as f:
-                f.write(result.text_content)
-            console.print(f"Converted {docs_path} to {output_filename}", style="bold green")
 
     def to_markdown(self) -> None:
         all_docs_paths = [f for f in self.all_docs_paths if f.suffix == ".pdf"]
@@ -161,7 +125,7 @@ class DocsConverter(BaseModel):
             console.print(f"Converted {docs_path} to {output_dir.as_posix()}", style="bold green")
 
     async def describe_images(
-        self, image_infos: list, image_nums: int = 10
+        self, image_infos: list[dict[str, str]], image_nums: int = 10
     ) -> list[DescribeImagesOutput]:
         client = AsyncAzureOpenAI(
             api_key=llm_config["config_list"][0]["api_key"],
@@ -173,7 +137,7 @@ class DocsConverter(BaseModel):
         # 使用 semaphore 限制同時只處理 image_nums 張圖片
         semaphore = asyncio.Semaphore(image_nums)
 
-        async def process_image(image_info_dict: dict) -> DescribeImagesOutput:
+        async def process_image(image_info_dict: dict[str, str]) -> DescribeImagesOutput:
             # 使用 semaphore 控制並發數量
             async with semaphore:
                 # 將 dict 轉換成描述圖片請求物件

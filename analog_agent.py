@@ -46,6 +46,12 @@ def cos_hook(content: str) -> str:
     return hooked_content
 
 
+def remove_think_field(content: str) -> str:
+    index = content.find("</think>")
+    result_string = content[index + len("</think>") :] if index != -1 else content
+    return result_string
+
+
 dc_sweep_template = """
 import numpy as np
 import os
@@ -1027,6 +1033,9 @@ class AnalogAgent(AnalogAgentArgs):
             if isinstance(proxy._code_execution_config, dict):  # noqa: SLF001
                 proxy._code_execution_config.update({"work_dir": self.work_dir})  # noqa: SLF001
                 proxy._code_execution_config.pop("_convert_")  # noqa: SLF001
+            proxy.register_hook(
+                hookable_method="process_last_received_message", hook=remove_think_field
+            )
             proxies.append(proxy)
 
         agents: list[autogen.AssistantAgent] = []
@@ -1034,6 +1043,9 @@ class AnalogAgent(AnalogAgentArgs):
             agent: autogen.AssistantAgent = hydra.utils.instantiate(assistant_config)
             if agent.name == "Analog_Expert":
                 agent.register_hook(hookable_method="process_last_received_message", hook=cos_hook)
+            agent.register_hook(
+                hookable_method="process_last_received_message", hook=remove_think_field
+            )
             agents.append(agent)
 
         if self.use_rag is True:
@@ -1220,16 +1232,16 @@ def get_chat_completion(**kargs: dict[str, str]) -> ChatCompletion:
 if __name__ == "__main__":
     model = "aide-gpt-4o"
     messages = [
-        {
-            "role": "user",
-            "content": "Give me a python code that can print a random dataframe; the output should be a python code.",
-        },
-        {"role": "user", "content": "Find me the author of `Bandgap Reference Verification_RAK`."},
+        # {
+        #     "role": "user",
+        #     "content": "Give me a python code that can print a random dataframe; the output should be a python code.",
+        # },
+        {"role": "user", "content": "Find me the author of `Bandgap Reference Verification_RAK`."}
     ]
     chat_result = get_chat_completion(
         model=model,
         messages=messages,
-        mode="captain",
+        mode="groupchat+rag",
         work_dir=".",
         groupchat_config="./configs/agents/groupchat.yaml",
     )

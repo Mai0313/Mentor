@@ -11,7 +11,6 @@ dependencies = [
     "hydra-core>=1.3.2",
     "logfire>=3.6.2",
     "marker-pdf[full]>=1.6.0",
-    "markitdown>=0.0.1a4",
     "matplotlib>=3.10.0",
     "numpy>=1.26.4",
     "openai>=1.64.0",
@@ -48,6 +47,19 @@ torchaudio = [
 [tool.uv.pip]
 index-url = "https://pypi.org/simple"
 extra-index-url = ["https://download.pytorch.org/whl/cu118"]
+
+[tool.poe.tasks]
+result = "python scripts/success_rate.py"
+check = "python scripts/pass_cal.py"
+convert_markdown = "python convert_docs.py to_markdown --path='./docs'"
+convert_images = "python scripts/convert_docs.py parse_docs_with_images --path='./docs'"
+convert = ["convert_markdown", "convert_images"]
+
+# need `--task_id=`
+gc = "python gpt_run.py --num_per_task=5 --num_of_retry=5 --mode=groupchat --skill"
+ca = "python gpt_run.py --num_per_task=5 --num_of_retry=5 --mode=captain --skill"
+gcrag = "python gpt_run.py --num_per_task=5 --num_of_retry=5 --mode=groupchat+rag --skill"
+carag = "python gpt_run.py --num_per_task=5 --num_of_retry=5 --mode=captain+rag --skill"
 
 # ================== #
 #        RUFF        #
