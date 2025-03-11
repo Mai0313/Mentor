@@ -180,7 +180,7 @@ def parse_logs_in_folder(folder_path: str, num_per_task: int) -> list[Path]:
     return not_done_task_paths
 
 
-def main(
+def get_success_rate(
     folder_path: str = "./logs", num_per_task: int = 5, live: bool = False, clean: bool = False
 ) -> None:
     """主函式，解析指定資料夾中的 log 檔案，並顯示各個 model 的成功率與錯誤率。"""
@@ -199,4 +199,4 @@ def main(
 if __name__ == "__main__":
     import fire
 
-    fire.Fire(main)
+    fire.Fire(get_success_rate)
