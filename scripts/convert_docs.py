@@ -106,7 +106,7 @@ class DocsConverter(BaseModel):
         )
         return client
 
-    def to_markdown(self) -> None:
+    async def to_markdown(self) -> None:
         all_docs_paths = [f for f in self.all_docs_paths if f.suffix == ".pdf"]
 
         if not all_docs_paths:
@@ -167,7 +167,7 @@ class DocsConverter(BaseModel):
                 answer=result
             )
 
-    async def describe_images(
+    async def _describe_images(
         self, image_path_or_urls: list[str] | str
     ) -> list[DescribeImagesOutput]:
         if isinstance(image_path_or_urls, str):
@@ -203,7 +203,7 @@ class DocsConverter(BaseModel):
                 continue
             # For debugging
             # image_path_or_urls = image_path_or_urls[:1]
-            parsed_images = await self.describe_images(image_path_or_urls=image_path_or_urls)
+            parsed_images = await self._describe_images(image_path_or_urls=image_path_or_urls)
             for parsed_image in parsed_images:
                 image_url = parsed_image.image_url
                 line_idx = image_mapping.get(image_url)
@@ -219,6 +219,10 @@ class DocsConverter(BaseModel):
                 source=docs_path,
                 output=new_docs_path.as_posix(),
             )
+
+    async def __call__(self) -> None:
+        await self.to_markdown()
+        await self.parse_docs_with_images()
 
 
 if __name__ == "__main__":
