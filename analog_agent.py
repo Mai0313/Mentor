@@ -1,5 +1,4 @@
-from enum import Enum
-from typing import Any, Optional
+from typing import Any
 from pathlib import Path
 import datetime
 
@@ -14,11 +13,10 @@ import hydra
 from openai import AzureOpenAI, AsyncAzureOpenAI
 import autogen
 from autogen import ChatResult, UserProxyAgent
-from pydantic import Field, BaseModel, ConfigDict, computed_field, model_validator
-from omegaconf import OmegaConf
+from pydantic import Field, BaseModel, computed_field, model_validator
+from omegaconf import OmegaConf, DictConfig
 from pydantic_ai import Agent
 from rich.console import Console
-from autogen.cache import Cache
 from rich.markdown import Markdown
 from autogen.code_utils import extract_code
 from pydantic_ai.models.openai import OpenAIModel
@@ -28,6 +26,9 @@ from openai.types.chat.chat_completion_message import ChatCompletionMessage
 from autogen.agentchat.contrib.captainagent.captainagent import CaptainAgent
 
 from src.rag import retrieve_data, get_config_dict
+from src.typings.code import CodeBlock
+from src.typings.usage import AutogenUsage
+from src.typings.analog import AnalogAgentArgs
 
 console = Console()
 warnings.filterwarnings("ignore", category=ResourceWarning)
@@ -99,15 +100,6 @@ with open("dc_sweep.txt") as fopen:
             best_voltage = vin[i]
     return "success to find best voltage", best_voltage
 """
-
-
-class AutogenUsage(BaseModel):
-    cost: Optional[float] = Field(default=0.0, title="Cost of the API call")
-    prompt_tokens: Optional[int] = Field(default=0, title="Number of tokens in the prompt")
-    completion_tokens: Optional[int] = Field(default=0, title="Number of tokens in the completion")
-    total_tokens: Optional[int] = Field(
-        default=0, title="Total number of tokens in the prompt and completion"
-    )
 
 
 class ChatResultConverter(BaseModel):
@@ -219,147 +211,7 @@ class ChatResultConverter(BaseModel):
         return chat_completion_result
 
 
-class CodeBlock(BaseModel):
-    code_type: str = Field(
-        ...,
-        title="Code Type of the Code Block",
-        description="This field will contain the code type of the block, e.g. python, json, etc.",
-        frozen=True,
-        deprecated=False,
-    )
-    code_content: str = Field(
-        ...,
-        title="Code Content of the Code Block",
-        description="This field will contain the pure code content of the block without any ``` or code type.",
-        frozen=True,
-        deprecated=False,
-    )
-
-    @computed_field
-    @property
-    def code_in_markdown(self) -> str:
-        return f"```{self.code_type}\n{self.code_content}\n```"
-
-
-class AnalogAgentMode(str, Enum):
-    # Using ChatCompletion
-    original: str = "original"
-    # Using GroupChat Based
-    groupchat: str = "groupchat"
-    # Using Captain Agent
-    captain: str = "captain"
-    # Using Swarm Agent
-    swarm: str = "swarm"
-    # TestBench Mode
-    groupchat_tba: str = "groupchat+tba"
-    # RAG Mode
-    groupchat_rag: str = "groupchat+rag"
-    captain_rag: str = "captain+rag"
-
-
-class AnalogAgentArgs(BaseModel):
-    model_config = ConfigDict(use_enum_values=True)
-    model: str = Field(
-        ...,
-        title="The Model Name",
-        description="The model name you want to use, such as aide-gpt-4o.",
-        examples=["aide-gpt-4o", "aide-o3-mini"],
-        frozen=True,
-        deprecated=False,
-    )
-    messages: list[dict[str, str]] = Field(
-        ...,
-        title="The Original Input Messages",
-        description="The original input messages to the agent; it should follow the format of openai ChatCompletion.",
-        frozen=True,
-        deprecated=False,
-    )
-    mode: AnalogAgentMode = Field(
-        ...,
-        title="The Mode of the Agent",
-        description="The mode of the agent, such as original, captain, groupchat, etc.",
-        examples=[
-            "original",
-            "groupchat",
-            "captain",
-            "swarm",
-            "groupchat+tba",
-            "captain+rag",
-            "groupchat+rag",
-        ],
-        frozen=True,
-        deprecated=False,
-    )
-
-    # Required only if `groupchat` or `captain` mode
-    work_dir: str = Field(
-        default=".",
-        title="The Working Directory",
-        description="The working directory groupchat can use; it is not required if you are using `original` mode.",
-        examples=[".", "./path/to/folder"],
-        frozen=False,
-        deprecated=False,
-    )
-    groupchat_config: str = Field(
-        default="./configs/agents/groupchat_wo_cos.yaml",
-        title="The GroupChat Config File",
-        description="The groupchat config file you want to use; it is not required if you are using `original` mode.",
-        examples=["./configs/agents/groupchat.yaml", "./configs/agents/groupchat_wo_cos.yaml"],
-        frozen=False,
-        deprecated=False,
-    )
-
-    # Required only if `groupchat+tba` mode
-    task: str = Field(
-        default="",
-        title="The Task Name",
-        description="This is the Circuit name from problem set.",
-        examples=["a single-stage common-source amplifier with resistive load R"],
-        frozen=False,
-        deprecated=False,
-    )
-    task_type: str = Field(
-        default="",
-        title="The Task Type",
-        description="This is the Circuit type from problem set, it is required only if you are using `groupchat+tba` mode.",
-        examples=["Amplifier", "Opamp", "CurrentMirror", "Inverter"],
-        frozen=False,
-        deprecated=False,
-    )
-    input_nodes: str = Field(
-        default="",
-        title="The Input Nodes",
-        description="This is the input nodes of the circuit, it is required only if you are using `groupchat+tba` mode.",
-        examples=["Vin", "Vbias"],
-        frozen=False,
-        deprecated=False,
-    )
-    output_nodes: str = Field(
-        default="",
-        title="The Output Nodes",
-        description="This is the output nodes of the circuit, it is required only if you are using `groupchat+tba` mode.",
-        examples=["Vout", "Vbias"],
-        frozen=False,
-        deprecated=False,
-    )
-
-
 class AnalogAgent(AnalogAgentArgs):
-    @computed_field
-    @property
-    def use_rag(self) -> bool:
-        return "rag" in self.mode
-
-    @computed_field
-    @property
-    def use_cos(self) -> bool:
-        return "cos" in self.mode
-
-    @model_validator(mode="after")
-    def _setup_workdir(self) -> "AnalogAgent":
-        self.work_dir = Path(self.work_dir).parent.absolute().as_posix()
-        return self
-
     @staticmethod
     def _summary_method(
         sender: autogen.ConversableAgent,
@@ -405,13 +257,6 @@ class AnalogAgent(AnalogAgentArgs):
                 style="bold red",
             )
         return last_message
-
-    def _get_cache(self, llm_config: dict[str, Any]) -> Cache:
-        cache = None
-        cache_seed = llm_config.get("cache_seed")
-        if cache_seed:
-            cache = Cache.disk(cache_seed=cache_seed, cache_path_root="./.cache")
-        return cache
 
     def convert_init_message(self, messages: list[dict[str, str]]) -> str:
         """This function will convert `chat_completion` format into AG2 `init_chat` format.
@@ -1030,14 +875,14 @@ class AnalogAgent(AnalogAgentArgs):
     def use_groupchat(self) -> ChatCompletion:
         messages = self.messages.copy()
         llm_config = get_config_dict(model=self.model)
+        o3_mini_config = get_config_dict(model="aide-o3-mini")
         self._get_cache(llm_config=llm_config)
         config = OmegaConf.load(self.groupchat_config)
         proxies: list[autogen.UserProxyAgent] = []
         for proxy_config in config.proxies:
-            proxy: autogen.UserProxyAgent = hydra.utils.instantiate(proxy_config)
-            if isinstance(proxy._code_execution_config, dict):  # noqa: SLF001
-                proxy._code_execution_config.update({"work_dir": self.work_dir})  # noqa: SLF001
-                proxy._code_execution_config.pop("_convert_")  # noqa: SLF001
+            if isinstance(proxy_config.code_execution_config, DictConfig):
+                proxy_config.code_execution_config.work_dir = self.work_dir
+            proxy: autogen.UserProxyAgent = hydra.utils.instantiate(proxy_config, _convert_="all")
             proxy.register_hook(
                 hookable_method="process_last_received_message", hook=remove_think_field
             )
@@ -1045,8 +890,10 @@ class AnalogAgent(AnalogAgentArgs):
 
         agents: list[autogen.AssistantAgent] = []
         for assistant_config in config.assistants:
-            agent: autogen.AssistantAgent = hydra.utils.instantiate(assistant_config)
-            if agent.name == "Analog_Expert":
+            agent: autogen.AssistantAgent = hydra.utils.instantiate(
+                assistant_config, _convert_="all"
+            )
+            if agent.name == "Analog_Expert" and self.use_cos is True:
                 agent.register_hook(hookable_method="process_last_received_message", hook=cos_hook)
             agent.register_hook(
                 hookable_method="process_last_received_message", hook=remove_think_field
@@ -1072,10 +919,11 @@ class AnalogAgent(AnalogAgentArgs):
         })
 
         # If you want CoS in the init message
-        messages.append({
-            "role": "user",
-            "content": "Please help me design a circuit. Think and tell me the necessary steps we need to do.",
-        })
+        if self.use_cos is True:
+            messages.append({
+                "role": "user",
+                "content": "Please help me design a circuit. Think and tell me the necessary steps we need to do.",
+            })
         messages.append({
             "role": "user",
             "content": "DO NOT USE `def` in the code, just write the code directly.",
@@ -1084,13 +932,24 @@ class AnalogAgent(AnalogAgentArgs):
             agents=[*proxies, *agents],
             messages=[],
             max_round=12,
+            admin_name="Admin",
             speaker_selection_method="auto",
             allow_repeat_speaker=True,
+            select_speaker_auto_llm_config=o3_mini_config,
         )
-        manager = autogen.GroupChatManager(groupchat=groupchat, llm_config=llm_config)
+        manager = autogen.GroupChatManager(
+            groupchat=groupchat,
+            name="RetrieveChatManager",
+            max_consecutive_auto_reply=12,
+            llm_config=llm_config,
+            silent=False,
+        )
         message_string = self.convert_init_message(messages=messages)
         chat_result = proxies[0].initiate_chat(
-            recipient=manager, message=message_string, summary_method=self._summary_method
+            recipient=manager,
+            message=message_string,
+            summary_method=self._summary_method,
+            silent=False,
         )
         converter = ChatResultConverter(chat_result=chat_result)
         result = converter.convert_to_chat_completion()
@@ -1140,7 +999,11 @@ class AnalogAgent(AnalogAgentArgs):
             #     "tool_root": "tools",
             #     "retriever": "all-mpnet-base-v2"
             # },
-            "group_chat_config": {"max_round": 30},
+            "group_chat_config": {
+                "max_round": 30,
+                "speaker_selection_method": "auto",
+                "allow_repeat_speaker": True,
+            },
             "group_chat_llm_config": None,
             "max_turns": 10,
         }
@@ -1180,6 +1043,12 @@ class AnalogAgent(AnalogAgentArgs):
             messages.append({
                 "role": "user",
                 "content": "You can use `retrieve_data` tool to retrieve the circuit knowledge you need before making the correct decision and plan; do not ask any PySpice coding question directly, those books are text book from school.",
+            })
+        # If you want CoS in the init message
+        if self.use_cos is True:
+            messages.append({
+                "role": "user",
+                "content": "Please help me design a circuit. Think and tell me the necessary steps we need to do.",
             })
         message_string = self.convert_init_message(messages=messages)
         chat_result = captain_user_proxy.initiate_chat(
@@ -1237,17 +1106,17 @@ def get_chat_completion(**kargs: dict[str, str]) -> ChatCompletion:
 if __name__ == "__main__":
     model = "aide-gpt-4o"
     messages = [
-        # {
-        #     "role": "user",
-        #     "content": "Give me a python code that can print a random dataframe; the output should be a python code.",
-        # },
-        {"role": "user", "content": "Find me the author of `Bandgap Reference Verification_RAK`."}
+        {"role": "system", "content": "You are an analog integrated circuits expert."},
+        {
+            "role": "user",
+            "content": 'You aim to design a topology for a given circuit described in the text.\nPlease ensure your designed circuit topology works properly and achieves the design requirements.\n\nHere is an example:\n\n## Question\n\nDesign a 2-stage amplifier (first stage: a common-source stage with current-source load, second stage: a common-source stage with resistor load).\n\nInput node name: Vin, Vbias.\n\nOutput node name: Vout.\n\n## Answer\n\n### Task 1\n\n#### Components Needed\n\n- **NMOS Transistors**: M1 and M3\n- **PMOS Transistors**: M2 (used as the current source in the first stage)\n- **Resistors**: R1 for the second stage load\n- **Power Supply**: Vdd for DC supply\n- **Input Signal Source**: Vin, Vbias for biasing and signal input\n- **Capacitors**: Not specified but can be included for coupling and bypass applications if required\n\n#### Stage 1: Common-Source Amplifier with Current Source Load\n\n1. **Transistor Setup**:\n\n    - **M1** (NMOS) as the main amplifying transistor.\n    - Gate of **M1** is connected to the input node **Vin**.\n    - Source of **M1** connected to the ground.\n    - Drain of **M1** connected to the drain of **M2**.\n\n2. **Biasing**:\n\n    - **Vin** provides the input signal.\n    - **Vbias** is used to bias **M2** (PMOS), ensuring it operates as a current source.\n\n3. **Current Source Load (M2)**:\n\n    - **M2**, a PMOS transistor, is configured as a current source.\n    - The source of **M2** is connected to **Vdd**, and its gate is connected to **Vbias**.\n    - Drain of **M2** is connected to the drain of **M1**, providing a high-impedance load.\n\n#### Stage 2: Common-Source Amplifier with Resistor Load\n\n1. **Transistor Setup**:\n\n    - **M3** (NMOS) as the main amplifying transistor for the second stage.\n    - Gate of **M3** connected to the drain of **M1**.\n    - Source of **M3** connected to the ground.\n    - Drain of **M3** connected to **Vout** through resistor **R1**.\n\n2. **Load and Coupling**:\n\n    - **R1** connects the drain of **M3** to **Vdd**. This resistor converts the current through **M3** into an output voltage.\n\n### Task 2\n\n```python\nfrom PySpice.Spice.Netlist import Circuit\nfrom PySpice.Unit import *\n\ncircuit = Circuit("Two-Stage Amplifier")\n# Define the MOSFET models\ncircuit.model("nmos_model", "nmos", level=1, kp=100e-6, vto=0.5)\ncircuit.model("pmos_model", "pmos", level=1, kp=50e-6, vto=-0.5)\n\n# Power Supplies for the power and input signal\n\ncircuit.V("dd", "Vdd", circuit.gnd, 5.0)  # 5V power supply\ncircuit.V(\n    "in", "Vin", circuit.gnd, 1.0\n)  # 1V input for bias voltage (= V_th + 0.5 = 0.5 + 0.5 = 1.0)\ncircuit.V(\n    "bias", "Vbias", circuit.gnd, 4.0\n)  # 4V input for bias voltage (= Vdd - |V_th| - 0.5 = 5.0 - 0.5 - 0.5 = 4.0)\n\n# First Stage: Common-Source with Active Load\n# parameters: name, drain, gate, source, bulk, model, w, l\ncircuit.MOSFET("1", "Drain1", "Vin", circuit.gnd, circuit.gnd, model="nmos_model", w=50e-6, l=1e-6)\ncircuit.MOSFET("2", "Drain1", "Vbias", "Vdd", "Vdd", model="pmos_model", w=100e-6, l=1e-6)\n\n# Second Stage: Common-Source with Resistor Load\ncircuit.MOSFET(\n    "3", "Vout", "Drain1", circuit.gnd, circuit.gnd, model="nmos_model", w=100e-6, l=1e-6\n)\ncircuit.R("1", "Vout", "Vdd", 1 @ u_k\u03a9)\n\n# Analysis Part\nsimulator = circuit.simulator()\n```\n\nAs you have seen, the output of your designed topology should consist of two tasks:\n\n1. Give a detailed design plan about all devices and their interconnectivity nodes and properties.\n2. Write a complete Python code, describing the topology of integrated analog circuits according to the design plan.\n\nPlease make sure your Python code is compatible with PySpice.\nPlease give the runnable code without any placeholders.\n\nDo not write other redundant codes after `simulator = circuit.simulator()`.\n\nThere are some tips you should remember all the time:\n\n1. For the MOSFET definition circuit.MOSFET(name, drain, gate, source, bulk, model, w=w1,l=l1), be careful about the parameter sequence.\n2. You should connect the bulk of a MOSFET to its source.\n3. Please use the MOSFET threshold voltage, when setting the bias voltage.\n4. Avoid giving any AC voltage in the sources, just consider the operating points.\n5. Make sure the input and output node names appear in the circuit.\n6. Avoid using subcircuits.\n7. Use nominal transistor sizing.\n8. Assume the Vdd = 5.0 V.\n\n## Question\n\nDesign A single-stage telescopic cascode opamp with two outputs (4 nmos as cascode input pair, 4 pmos as cascode loads, and 1 tail current).\n\nInput node name: Vinp, Vinn, Vbias1, Vbias2, Vbias3, Vbias4.\n\nOutput node name: Voutp, Vout.\n\n## Answer\n',
+        },
     ]
     chat_result = get_chat_completion(
         model=model,
         messages=messages,
-        mode="groupchat+rag",
+        mode="groupchat",
         work_dir=".",
         groupchat_config="./configs/agents/groupchat.yaml",
     )
-    console.print(chat_result)
+    console.print(chat_result.choices[-1].message.content)

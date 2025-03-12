@@ -20,6 +20,8 @@ from autogen.code_utils import extract_code as extract_code_ag2
 from autogen.oai.openai_utils import OAI_PRICE1K
 from openai.types.chat.chat_completion import ChatCompletion
 
+from src.typings.analog import AnalogAgentMode
+
 
 class TimeoutException(Exception):
     pass
@@ -27,6 +29,10 @@ class TimeoutException(Exception):
 
 def signal_handler(signum, frame):
     raise TimeoutException("timeout")
+
+
+modes = [member.value for member in AnalogAgentMode]
+modes_string = " | ".join(modes)
 
 
 parser = argparse.ArgumentParser()
@@ -43,12 +49,7 @@ parser.add_argument("--no_context", action="store_true", default=False)
 parser.add_argument("--no_chain", action="store_true", default=False)
 parser.add_argument("--retrieval", action="store_true", default=True)
 parser.add_argument("--api_key", type=str)
-parser.add_argument(
-    "--mode",
-    type=str,
-    default="groupchat+rag",
-    help="it can be 'original', 'swarm', 'captain', 'captain+rag', 'groupchat', 'groupchat+tba' or 'groupchat+rag'",
-)
+parser.add_argument("--mode", type=str, default="groupchat+rag", help=f"it can be {modes_string}")
 parser.add_argument("--config", type=str, default="./configs/agents/groupchat_wo_cos.yaml")
 parser.add_argument("--prompt", type=str, default="./configs/prompt/prompt_template.md")
 args = parser.parse_args()
