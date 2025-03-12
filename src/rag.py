@@ -34,28 +34,6 @@ def get_config_dict(model: str, temp: float = 0.5) -> dict[str, Any]:
     return llm_config
 
 
-class RetrieveResultOutput(BaseModel):
-    original_question: str = Field(
-        ...,
-        title="Original Question of the user",
-        description="The original question of the user.",
-        frozen=True,
-        deprecated=False,
-    )
-    final_answer: str = Field(
-        ...,
-        title="Final Answer",
-        description="""The final answer from the chat history
-        - `<< Real Answer >>` if the answer is found and relevant to the question.
-        - `Answer NOT Found` if there is no answer found.
-        - `Answer NOT Relevant` if the answer is not relevant.
-        """,
-        examples=["<< Real Answer >>", "Answer not found", "Answer not relevant"],
-        frozen=True,
-        deprecated=False,
-    )
-
-
 class CheckRelevantDocuments(BaseModel):
     relevant_docs: list[str] = Field(
         ...,
@@ -68,30 +46,6 @@ class CheckRelevantDocuments(BaseModel):
         frozen=True,
         deprecated=False,
     )
-
-
-def rag_summary_method(
-    sender: RetrieveUserProxyAgent,
-    recipient: autogen.GroupChatManager,
-    summary_args: dict[str, Any],
-) -> str:
-    sender_messages = list(sender.chat_messages.values())[-1]
-    sender_messages = sender_messages[:1]
-    recipient_messages = list(recipient.chat_messages.values())[-1]
-    recipient_messages = recipient_messages[-2:]
-    messages = [*sender_messages, *recipient_messages]
-    llm_config = get_config_dict(model="aide-gpt-4o")
-    client = AsyncAzureOpenAI(
-        api_key=llm_config["config_list"][0]["api_key"],
-        azure_endpoint=llm_config["config_list"][0]["base_url"],
-        api_version=llm_config["config_list"][0]["api_version"],
-        http_client=httpx.AsyncClient(headers=llm_config["config_list"][0]["default_headers"]),
-    )
-    model = OpenAIModel(model_name="aide-gpt-4o", openai_client=client)
-    agent = Agent(model=model, result_type=RetrieveResultOutput)
-    response = agent.run_sync(user_prompt=f"{messages}")
-    console.print(response.data)
-    return f"{response.data.model_dump()}"
 
 
 def retrieve_data(query: str) -> str:
