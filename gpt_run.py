@@ -1146,9 +1146,13 @@ def work(
         money_quota, total_tokens, total_prompt_tokens, total_completion_tokens, completion
     )
 
-    if "o3-mini" in args.model or "aide" in args.model:
-        answer = completion.choices[0].message.content
-    elif "gpt" in args.model or "deepseek" in args.model or "o1" in args.model:
+    if (
+        "o3-mini" in args.model
+        or "aide" in args.model
+        or "gpt" in args.model
+        or "deepseek" in args.model
+        or "o1" in args.model
+    ):
         answer = completion.choices[0].message.content
     else:
         answer = completion["message"]["content"]
@@ -1566,7 +1570,12 @@ def work(
             fwrite_input.write(new_prompt)
             fwrite_input.flush()
 
-            if "aide" in args.model or "deepseek" in args.model or "o3" in args.model or "o1" in args.model:
+            if (
+                "aide" in args.model
+                or "deepseek" in args.model
+                or "o3" in args.model
+                or "o1" in args.model
+            ):
                 answer = completion.choices[0].message.content
             else:
                 answer = completion["message"]["content"]

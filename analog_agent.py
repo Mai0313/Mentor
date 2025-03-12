@@ -464,12 +464,14 @@ class AnalogAgent(AnalogAgentArgs):
             azure_endpoint=llm_config["config_list"][0]["base_url"],
             api_version=llm_config["config_list"][0]["api_version"],
             http_client=httpx.Client(headers=llm_config["config_list"][0]["default_headers"]),
-            timeout=1500
+            timeout=1500,
         )
         if "o1" in self.model or "o3" in self.model:
             result = client.chat.completions.create(messages=messages, model=self.model)
         elif "deepseek" in self.model:
-            result = client.chat.completions.create(messages=messages, model=model, max_tokens=16384)
+            result = client.chat.completions.create(
+                messages=messages, model=model, max_tokens=16384
+            )
         else:
             temperature = llm_config.get("temperature")
             if not temperature:
