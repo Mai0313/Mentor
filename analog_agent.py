@@ -26,9 +26,9 @@ from openai.types.chat.chat_completion_message import ChatCompletionMessage
 from autogen.agentchat.contrib.captainagent.captainagent import CaptainAgent
 
 from src.rag import retrieve_data, get_config_dict
-from src.types.code import CodeBlock
-from src.types.usage import AutogenUsage
-from src.types.analog import AnalogAgentArgs
+from src.typings.code import CodeBlock
+from src.typings.usage import AutogenUsage
+from src.typings.analog import AnalogAgentArgs
 
 console = Console()
 warnings.filterwarnings("ignore", category=ResourceWarning)
