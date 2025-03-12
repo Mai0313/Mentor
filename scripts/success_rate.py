@@ -192,8 +192,9 @@ def get_success_rate(
     else:
         not_done_task_paths = parse_logs_in_folder(folder_path, num_per_task)
         if clean:
-            not_done = ", ".join([path.as_posix() for path in not_done_task_paths])
-            console.print(f"Those tasks are not done yet: \n{not_done}")
+            for not_done_task_path in not_done_task_paths:
+                console.print(f"Removing {not_done_task_path}")
+                not_done_task_path.unlink()
 
 
 if __name__ == "__main__":
