@@ -17,6 +17,7 @@ from analog_agent import get_chat_completion
 from rich.console import Console
 from rich.markdown import Markdown
 from autogen.code_utils import extract_code as extract_code_ag2
+from scripts.success_rate import EvaluationChecker
 from autogen.oai.openai_utils import OAI_PRICE1K
 from openai.types.chat.chat_completion import ChatCompletion
 
@@ -52,6 +53,12 @@ parser.add_argument("--api_key", type=str)
 parser.add_argument("--mode", type=str, default="groupchat+rag", help=f"it can be {modes_string}")
 parser.add_argument("--config", type=str, default="./configs/agents/groupchat_wo_cos.yaml")
 parser.add_argument("--prompt", type=str, default="./configs/prompt/prompt_template.md")
+parser.add_argument(
+    "--auto",
+    action="store_true",
+    default=False,
+    help="if the success count is too low (<3), it will automatically re-run the task.",
+)
 args = parser.parse_args()
 
 MODEL = args.model
@@ -70,6 +77,7 @@ API_KEY = args.api_key
 MULTI_AGENT_MODE = args.mode
 GROUPCHAT_CONFIG = args.config
 PROMPT_TEMPLATE_PATH = args.prompt
+AUTO = args.auto
 
 # if "rag" in MULTI_AGENT_MODE and SKILL is True:
 #     raise ValueError("rag mode does not support skill mode.")
@@ -1668,9 +1676,8 @@ def get_retrieval(task: str, task_id: int, log_path: str) -> list[int]:
     return subcircuits
 
 
-def main():
+def run_analog_coder() -> tuple[str, int]:
     data = pd.read_csv("problem_set.tsv", delimiter="\t")
-    # print(df)
     # set money cost to $2
     remaining_money = 500
     os.makedirs("./logs", exist_ok=True)
@@ -1714,6 +1721,7 @@ def main():
     with open(log_path, "w") as flog:
         for it in range(args.num_of_done, args.num_per_task):
             flog.write(f"task: {circuit_id}, it: {it}\n")
+            # flog.write(f"task:{circuit_id}	it:{it}	code_id:0	success.\n")
             flog.flush()
             remaining_money, result_log_path = work(
                 task=circuit_name,
@@ -1734,6 +1742,34 @@ def main():
                 output_path.mkdir(parents=True, exist_ok=True)
                 new_terminal_log_path = output_path / f"{MULTI_AGENT_MODE}_p{TASK_ID}.log"
                 terminal_log_path.rename(new_terminal_log_path.as_posix())
+        return log_path, circuit_id
+
+
+def main() -> None:
+    if AUTO is True:
+        console.print("[bold red]Auto rerun is enabled.[/bold red]")
+        while True:
+            log_path, circuit_id = run_analog_coder()
+            result_check = EvaluationChecker(path="./logs", num_per_task=args.num_per_task)
+            result = result_check.process_log_file(
+                file_path=Path(log_path), model_name=MODEL, problem_number=circuit_id
+            )
+            console.print(result.model_dump())
+            if result.pass1 >= 3 or result.pass5 >= 3:
+                pass1_rate = result.pass1 / args.num_per_task * 100
+                pass5_rate = result.pass5 / args.num_per_task * 100
+                console.print("[bold green]The task has been passed.[/bold green]")
+                console.print(f"[bold green]Pass1 rate: {pass1_rate:.2f}%[/bold green]")
+                console.print(f"[bold green]Pass5 rate: {pass5_rate:.2f}%[/bold green]")
+                break
+    else:
+        console.print("[bold yellow]Auto rerun is disabled.[/bold yellow]")
+        log_path, circuit_id = run_analog_coder()
+        result_check = EvaluationChecker(path="./logs", num_per_task=args.num_per_task)
+        result = result_check.process_log_file(
+            file_path=Path(log_path), model_name=MODEL, problem_number=circuit_id
+        )
+        console.print(result.model_dump())
 
 
 if __name__ == "__main__":

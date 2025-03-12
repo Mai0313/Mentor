@@ -5,6 +5,8 @@
 
 PYTHON_PATH=$(which python)
 
+echo
+echo "========================="
 echo "Python Path: $PYTHON_PATH"
 
 # 檢查參數數量
@@ -26,7 +28,9 @@ fi
 num_tasks=$(echo "$tasks" | wc -l)
 MODE="groupchat+rag"
 TASK_COMMAND="$PYTHON_PATH gpt_run.py --num_per_task=5 --num_of_retry=5 --mode=$MODE --skill"
-echo "$TASK_COMMAND --task_id=?"
+echo "Command: $TASK_COMMAND --task_id=?"
+echo "========================="
+echo
 
 # 執行 tasks，xargs 會以換行符作分隔符，並以 -n 1 每次丟一個參數進去
 echo "$tasks" | xargs -n 1 -P "$num_tasks" -I {} sh -c "$TASK_COMMAND --task_id={} > ${MODE}_{}.log"
