@@ -20,7 +20,7 @@ from autogen.code_utils import extract_code as extract_code_ag2
 from autogen.oai.openai_utils import OAI_PRICE1K
 from openai.types.chat.chat_completion import ChatCompletion
 
-from src.types.enums import AnalogAgentMode
+from src.types.analog import AnalogAgentMode
 
 
 class TimeoutException(Exception):
