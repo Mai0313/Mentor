@@ -137,7 +137,7 @@ def parse_logs_in_folder(folder_path: str, num_per_task: int) -> list[Path]:
     # 檔名規則: <datetime>_<model_name>_<problem number>_log.txt
     # filename_pattern = re.compile(r"^.*(.+?)(\d+)_log(?:_no_skill)?")
     # 檔名規則: <datetime>_<model_name>_<problem number>_log.txt 或 _no_skill
-    filename_pattern = re.compile(r"^(?:.*?)(.+?)(\d+)_log(?:_no_skill)?")
+    filename_pattern = re.compile(r"^(?:.*?)_(.+?)(\d+)_log(?:_no_skill)?")
 
     # 遍歷資料夾中所有 .txt 檔案
     counters_list = []
