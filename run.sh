@@ -29,7 +29,7 @@ TASK_COMMAND="$PYTHON_PATH gpt_run.py --num_per_task=5 --num_of_retry=5 --mode=$
 echo "$TASK_COMMAND --task_id=?"
 
 # 執行 tasks，xargs 會以換行符作分隔符，並以 -n 1 每次丟一個參數進去
-# echo "$tasks" | xargs -n 1 -P "$num_tasks" -I {} sh -c "$TASK_COMMAND --task_id={} > ${MODE}_{}.log"
+echo "$tasks" | xargs -n 1 -P "$num_tasks" -I {} sh -c "$TASK_COMMAND --task_id={} > ${MODE}_{}.log"
 # echo "$tasks" | xargs -n 1 -P "$num_tasks" -I {} $PYTHON_PATH gpt_run.py --num_per_task=20 --num_of_retry=5 --mode=groupchat+tba --task_id={}
 
 # Version-1:
