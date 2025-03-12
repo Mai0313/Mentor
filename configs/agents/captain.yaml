@@ -35,7 +35,6 @@ assistants:
   - _target_: autogen.agentchat.contrib.captainagent.captainagent.CaptainAgent
     name: "captain_agent"
     code_execution_config:
-      _convert_: object
       timeout: 300
       last_n_messages: 1
       use_docker: false

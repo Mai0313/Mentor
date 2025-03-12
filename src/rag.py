@@ -142,7 +142,7 @@ def retrieve_data(query: str) -> str:
         name="RetrieveChatManager",
         max_consecutive_auto_reply=12,
         llm_config=llm_config,
-        silent=True
+        silent=True,
     )
     chat_result = rag_proxy_agent.initiate_chat(
         recipient=manager,
@@ -150,7 +150,7 @@ def retrieve_data(query: str) -> str:
         problem=query,
         # 這個會決定 LLM 能參考多少文件，要讓她拿到正確資訊，就要全部允許他看
         n_results=len(new_all_docs),
-        silent=True
+        silent=True,
     )
     all_history = []
     for history in chat_result.chat_history:

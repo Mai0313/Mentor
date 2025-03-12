@@ -11,7 +11,6 @@ proxies:
     name: "executor"
     human_input_mode: "NEVER"
     code_execution_config:
-      _convert_: object
       use_docker: false
       work_dir: ./NOTASSIGNED
     is_termination_msg:
