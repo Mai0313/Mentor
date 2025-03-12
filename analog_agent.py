@@ -14,7 +14,7 @@ from openai import AzureOpenAI, AsyncAzureOpenAI
 import autogen
 from autogen import ChatResult, UserProxyAgent
 from pydantic import Field, BaseModel, computed_field, model_validator
-from omegaconf import OmegaConf
+from omegaconf import OmegaConf, DictConfig
 from pydantic_ai import Agent
 from rich.console import Console
 from rich.markdown import Markdown
@@ -875,14 +875,14 @@ class AnalogAgent(AnalogAgentArgs):
     def use_groupchat(self) -> ChatCompletion:
         messages = self.messages.copy()
         llm_config = get_config_dict(model=self.model)
+        o3_mini_config = get_config_dict(model="aide-o3-mini")
         self._get_cache(llm_config=llm_config)
         config = OmegaConf.load(self.groupchat_config)
         proxies: list[autogen.UserProxyAgent] = []
         for proxy_config in config.proxies:
-            proxy: autogen.UserProxyAgent = hydra.utils.instantiate(proxy_config)
-            if isinstance(proxy._code_execution_config, dict):  # noqa: SLF001
-                proxy._code_execution_config.update({"work_dir": self.work_dir})  # noqa: SLF001
-                proxy._code_execution_config.pop("_convert_")  # noqa: SLF001
+            if isinstance(proxy_config.code_execution_config, DictConfig):
+                proxy_config.code_execution_config.work_dir = self.work_dir
+            proxy: autogen.UserProxyAgent = hydra.utils.instantiate(proxy_config, _convert_="all")
             proxy.register_hook(
                 hookable_method="process_last_received_message", hook=remove_think_field
             )
@@ -890,7 +890,9 @@ class AnalogAgent(AnalogAgentArgs):
 
         agents: list[autogen.AssistantAgent] = []
         for assistant_config in config.assistants:
-            agent: autogen.AssistantAgent = hydra.utils.instantiate(assistant_config)
+            agent: autogen.AssistantAgent = hydra.utils.instantiate(
+                assistant_config, _convert_="all"
+            )
             if agent.name == "Analog_Expert" and self.use_cos is True:
                 agent.register_hook(hookable_method="process_last_received_message", hook=cos_hook)
             agent.register_hook(
@@ -930,13 +932,24 @@ class AnalogAgent(AnalogAgentArgs):
             agents=[*proxies, *agents],
             messages=[],
             max_round=12,
+            admin_name="Admin",
             speaker_selection_method="auto",
             allow_repeat_speaker=True,
+            select_speaker_auto_llm_config=o3_mini_config,
         )
-        manager = autogen.GroupChatManager(groupchat=groupchat, llm_config=llm_config)
+        manager = autogen.GroupChatManager(
+            groupchat=groupchat,
+            name="RetrieveChatManager",
+            max_consecutive_auto_reply=12,
+            llm_config=llm_config,
+            silent=False,
+        )
         message_string = self.convert_init_message(messages=messages)
         chat_result = proxies[0].initiate_chat(
-            recipient=manager, message=message_string, summary_method=self._summary_method
+            recipient=manager,
+            message=message_string,
+            summary_method=self._summary_method,
+            silent=False,
         )
         converter = ChatResultConverter(chat_result=chat_result)
         result = converter.convert_to_chat_completion()
@@ -986,7 +999,11 @@ class AnalogAgent(AnalogAgentArgs):
             #     "tool_root": "tools",
             #     "retriever": "all-mpnet-base-v2"
             # },
-            "group_chat_config": {"max_round": 30},
+            "group_chat_config": {
+                "max_round": 30,
+                "speaker_selection_method": "auto",
+                "allow_repeat_speaker": True,
+            },
             "group_chat_llm_config": None,
             "max_turns": 10,
         }
@@ -1098,7 +1115,7 @@ if __name__ == "__main__":
     chat_result = get_chat_completion(
         model=model,
         messages=messages,
-        mode="original",
+        mode="groupchat",
         work_dir=".",
         groupchat_config="./configs/agents/groupchat.yaml",
     )
