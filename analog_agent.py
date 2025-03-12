@@ -300,8 +300,6 @@ class AnalogAgentArgs(BaseModel):
         deprecated=False,
     )
 
-
-class AnalogAgent(AnalogAgentArgs):
     @computed_field
     @property
     def use_rag(self) -> bool:
@@ -313,10 +311,19 @@ class AnalogAgent(AnalogAgentArgs):
         return "cos" in self.mode
 
     @model_validator(mode="after")
-    def _setup_workdir(self) -> "AnalogAgent":
+    def _setup_workdir(self) -> "AnalogAgentArgs":
         self.work_dir = Path(self.work_dir).parent.absolute().as_posix()
         return self
 
+    def _get_cache(self, llm_config: dict[str, Any]) -> Cache:
+        cache = None
+        cache_seed = llm_config.get("cache_seed")
+        if cache_seed:
+            cache = Cache.disk(cache_seed=cache_seed, cache_path_root="./.cache")
+        return cache
+
+
+class AnalogAgent(AnalogAgentArgs):
     @staticmethod
     def _summary_method(
         sender: autogen.ConversableAgent,
@@ -362,13 +369,6 @@ class AnalogAgent(AnalogAgentArgs):
                 style="bold red",
             )
         return last_message
-
-    def _get_cache(self, llm_config: dict[str, Any]) -> Cache:
-        cache = None
-        cache_seed = llm_config.get("cache_seed")
-        if cache_seed:
-            cache = Cache.disk(cache_seed=cache_seed, cache_path_root="./.cache")
-        return cache
 
     def convert_init_message(self, messages: list[dict[str, str]]) -> str:
         """This function will convert `chat_completion` format into AG2 `init_chat` format.
@@ -1210,8 +1210,8 @@ if __name__ == "__main__":
     chat_result = get_chat_completion(
         model=model,
         messages=messages,
-        mode="groupchat+rag+cos",
+        mode="original",
         work_dir=".",
         groupchat_config="./configs/agents/groupchat.yaml",
     )
-    console.print(chat_result)
+    console.print(chat_result.choices[-1].message.content)
