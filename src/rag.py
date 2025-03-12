@@ -92,20 +92,21 @@ def retrieve_data(query: str) -> str:
     if not new_all_docs:
         console.print("No relevant docs found.")
         return "No relevant docs found, please try again with another keyword."
-    console.print("Relevant docs: ", new_all_docs)
+    console.print(f"Relevant docs:\n{new_all_docs}")
     rag_assistant = autogen.AssistantAgent(
         name="RetrieveAssistant",
         llm_config=llm_config,
         code_execution_config=False,
+        system_message="You are a helpful assistant.",
         silent=True,  # Set it to `False` if you want to see the conversation log.
     )
     rag_proxy_agent = RetrieveUserProxyAgent(
         name="RetrieveProxyAgent",
         human_input_mode="NEVER",
         description="This is a proxy agent, it will retrieve the information you need.",
-        max_consecutive_auto_reply=3,
+        max_consecutive_auto_reply=12,
         retrieve_config={
-            "task": "default",
+            "task": "qa",
             "docs_path": new_all_docs,
             "must_break_at_empty_line": False,
             "model": "gpt-4o",
@@ -118,7 +119,8 @@ def retrieve_data(query: str) -> str:
                 api_base="http://mlop-azure-gateway.mediatek.inc",
                 api_type="azure",
                 api_version="2024-08-01-preview",
-                model_name="aide-text-embedding-ada-002-v2",
+                # model_name="aide-text-embedding-ada-002-v2",
+                model_name="aide-text-embedding-3-large",
                 default_headers={"X-User-Id": "mtk26247"},
             ),
             "embedding_model": None,
@@ -130,15 +132,25 @@ def retrieve_data(query: str) -> str:
         agents=[rag_proxy_agent, rag_assistant],
         messages=[],
         max_round=12,
-        speaker_selection_method="round_robin",
+        admin_name="RetrieveAdmin",
+        speaker_selection_method="auto",
+        allow_repeat_speaker=False,
+        select_speaker_auto_llm_config=llm_config,
     )
-    manager = autogen.GroupChatManager(groupchat=groupchat, llm_config=llm_config)
+    manager = autogen.GroupChatManager(
+        groupchat=groupchat,
+        name="RetrieveChatManager",
+        max_consecutive_auto_reply=12,
+        llm_config=llm_config,
+        silent=True
+    )
     chat_result = rag_proxy_agent.initiate_chat(
         recipient=manager,
         message=rag_proxy_agent.message_generator,
         problem=query,
         # 這個會決定 LLM 能參考多少文件，要讓她拿到正確資訊，就要全部允許他看
         n_results=len(new_all_docs),
+        silent=True
     )
     all_history = []
     for history in chat_result.chat_history:
@@ -155,6 +167,5 @@ def retrieve_data(query: str) -> str:
 
 
 if __name__ == "__main__":
-    query = "How many opamps are there in the FIGURE 14 of `./docs/Razavi BGR/Razavi BGR.md`"
+    query = "How many opamps are there in the FIGURE 14 of `./docs/Razavi_BGR/Razavi_BGR.md`"
     result = retrieve_data(query=query)
-    console.print(result)
