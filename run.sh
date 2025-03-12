@@ -26,7 +26,7 @@ fi
 
 # 計算要並行跑的 task 數量（依據 task id 個數）
 num_tasks=$(echo "$tasks" | wc -l)
-MODE="groupchat+rag"
+MODE="groupchat+rag+cos"
 TASK_COMMAND="$PYTHON_PATH gpt_run.py --num_per_task=5 --num_of_retry=5 --mode=$MODE --skill --auto"
 echo "Command: $TASK_COMMAND --task_id=?"
 echo "========================="
