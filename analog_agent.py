@@ -1,4 +1,3 @@
-from enum import Enum
 from typing import Any, Optional
 from pathlib import Path
 import datetime
@@ -28,6 +27,7 @@ from openai.types.chat.chat_completion_message import ChatCompletionMessage
 from autogen.agentchat.contrib.captainagent.captainagent import CaptainAgent
 
 from src.rag import retrieve_data, get_config_dict
+from src.enums import AnalogAgentMode
 
 console = Console()
 warnings.filterwarnings("ignore", category=ResourceWarning)
@@ -241,22 +241,6 @@ class CodeBlock(BaseModel):
         return f"```{self.code_type}\n{self.code_content}\n```"
 
 
-class AnalogAgentMode(str, Enum):
-    # Using ChatCompletion
-    original: str = "original"
-    # Using GroupChat Based
-    groupchat: str = "groupchat"
-    # Using Captain Agent
-    captain: str = "captain"
-    # Using Swarm Agent
-    swarm: str = "swarm"
-    # TestBench Mode
-    groupchat_tba: str = "groupchat+tba"
-    # RAG Mode
-    groupchat_rag: str = "groupchat+rag"
-    captain_rag: str = "captain+rag"
-
-
 class AnalogAgentArgs(BaseModel):
     model_config = ConfigDict(use_enum_values=True)
     model: str = Field(
@@ -286,6 +270,8 @@ class AnalogAgentArgs(BaseModel):
             "groupchat+tba",
             "captain+rag",
             "groupchat+rag",
+            "captain+rag+cos",
+            "groupchat+rag+cos",
         ],
         frozen=True,
         deprecated=False,
@@ -1046,7 +1032,7 @@ class AnalogAgent(AnalogAgentArgs):
         agents: list[autogen.AssistantAgent] = []
         for assistant_config in config.assistants:
             agent: autogen.AssistantAgent = hydra.utils.instantiate(assistant_config)
-            if agent.name == "Analog_Expert":
+            if agent.name == "Analog_Expert" and self.use_cos is True:
                 agent.register_hook(hookable_method="process_last_received_message", hook=cos_hook)
             agent.register_hook(
                 hookable_method="process_last_received_message", hook=remove_think_field
@@ -1072,10 +1058,11 @@ class AnalogAgent(AnalogAgentArgs):
         })
 
         # If you want CoS in the init message
-        messages.append({
-            "role": "user",
-            "content": "Please help me design a circuit. Think and tell me the necessary steps we need to do.",
-        })
+        if self.use_cos is True:
+            messages.append({
+                "role": "user",
+                "content": "Please help me design a circuit. Think and tell me the necessary steps we need to do.",
+            })
         messages.append({
             "role": "user",
             "content": "DO NOT USE `def` in the code, just write the code directly.",
@@ -1181,6 +1168,12 @@ class AnalogAgent(AnalogAgentArgs):
                 "role": "user",
                 "content": "You can use `retrieve_data` tool to retrieve the circuit knowledge you need before making the correct decision and plan; do not ask any PySpice coding question directly, those books are text book from school.",
             })
+        # If you want CoS in the init message
+        if self.use_cos is True:
+            messages.append({
+                "role": "user",
+                "content": "Please help me design a circuit. Think and tell me the necessary steps we need to do.",
+            })
         message_string = self.convert_init_message(messages=messages)
         chat_result = captain_user_proxy.initiate_chat(
             captain_agent,
@@ -1246,7 +1239,7 @@ if __name__ == "__main__":
     chat_result = get_chat_completion(
         model=model,
         messages=messages,
-        mode="groupchat+rag",
+        mode="groupchat+rag+cos",
         work_dir=".",
         groupchat_config="./configs/agents/groupchat.yaml",
     )
