@@ -1,12 +1,12 @@
 Here is the image describtion:
 ```
-The image is a logo for Texas Instruments, a well-known technology company. The logo consists of two main elements: a graphic symbol and the company name.
+The image is the logo of Texas Instruments, a well-known technology company. The logo consists of two main elements: a graphic symbol and the company name.
 
-1. **Graphic Symbol**: On the left side of the logo, there is a stylized representation of the state of Texas. Within this outline, there are the letters "T" and "I" arranged in a way that they overlap and integrate with the shape of Texas. The design is simple and modern, using clean lines and a monochromatic color scheme.
+1. **Graphic Symbol**: On the left side of the logo, there is a stylized representation of the state of Texas. Within this outline, there is a combination of the letters "T" and "I" which stand for Texas Instruments. The "T" is positioned above the "I" and both letters are integrated into the shape of Texas.
 
-2. **Company Name**: To the right of the graphic symbol, the words "TEXAS INSTRUMENTS" are written in a bold, serif font. The text is in uppercase letters, which gives it a strong and professional appearance. The color of the text matches the graphic symbol, maintaining a cohesive look.
+2. **Company Name**: To the right of the graphic symbol, the words "TEXAS INSTRUMENTS" are written in a bold, uppercase serif font. The text is black and the font is clean and professional, reflecting the company's established and reputable image.
 
-Overall, the logo is clean, professional, and easily recognizable, reflecting the company's long-standing reputation in the technology and electronics industry.
+The overall design is simple yet distinctive, effectively combining the geographic reference to Texas with the company's initials.
 ```
 
 *Jaskaran Atwal*
@@ -26,37 +26,34 @@ The oscillator circuit generates a square wave at a selected frequency. This is 
 
 Here is the image describtion:
 ```
-The image depicts an electronic circuit diagram featuring an operational amplifier (op-amp) configuration. Here is a detailed description of the components and their connections:
+The image depicts an electronic circuit diagram featuring a TLV3201 operational amplifier (op-amp) configured as a comparator. Here is a detailed description of the components and their connections:
 
 1. **Power Supply:**
-   - A DC voltage source labeled as Vcc 5V is shown, providing the positive supply voltage (V+) to the circuit.
+   - The circuit is powered by a 5V DC supply (Vcc = 5V).
+   - The positive terminal of the power supply (V+) is connected to the op-amp's positive power supply pin (+V).
 
 2. **Resistors:**
-   - There are four resistors in the circuit:
-     - R1 with a resistance of 6.8kΩ.
-     - R2 with a resistance of 20kΩ.
-     - R3 with a resistance of 20kΩ.
-     - R4 with a resistance of 20kΩ.
+   - **R2 (20kΩ)** and **R3 (20kΩ)** are connected in series between the positive power supply (V+) and ground. The junction of R2 and R3 provides a reference voltage.
+   - **R4 (20kΩ)** is connected between the junction of R2 and R3 and the non-inverting input (+) of the op-amp.
+   - **R1 (6.8kΩ)** is connected between the inverting input (-) of the op-amp and the output (Vo).
 
 3. **Capacitor:**
-   - A capacitor labeled C1 with a capacitance of 100pF is connected in the circuit.
+   - **C1 (100pF)** is connected between the inverting input (-) of the op-amp and ground. This capacitor is likely used for noise filtering or stability.
 
-4. **Operational Amplifier:**
-   - The op-amp used in the circuit is a TLV3201.
-   - The non-inverting input (+) of the op-amp is connected to the junction of resistors R2 and R3.
-   - The inverting input (-) of the op-amp is connected to the junction of resistor R1 and capacitor C1.
-   - The output (Vo) of the op-amp is connected to one end of resistor R4.
+4. **Op-Amp (TLV3201):**
+   - The non-inverting input (+) of the op-amp is connected to the junction of R2, R3, and R4.
+   - The inverting input (-) of the op-amp is connected to the junction of R1 and C1.
+   - The output (Vo) of the op-amp is connected to the other end of R1 and serves as the output of the comparator circuit.
 
-5. **Connections:**
-   - The positive supply voltage (V+) is connected to the top of resistors R2 and R4, and also to the positive power supply pin of the op-amp.
-   - The other end of resistor R2 is connected to the non-inverting input (+) of the op-amp.
-   - The other end of resistor R3 is connected to the ground.
-   - The other end of resistor R4 is connected to the output (Vo) of the op-amp.
-   - The other end of resistor R1 is connected to the inverting input (-) of the op-amp.
-   - The other end of capacitor C1 is connected to the ground.
-   - The node labeled Vc is connected to the junction of resistor R1 and capacitor C1.
+5. **Voltage Reference:**
+   - The junction of R2 and R3 provides a reference voltage (Vref) to the non-inverting input of the op-amp. Given the equal values of R2 and R3, Vref will be half of the supply voltage (Vcc/2).
 
-This circuit appears to be a comparator or a similar configuration using the TLV3201 op-amp, with feedback and biasing resistors to set the operating point and behavior of the circuit.
+6. **Comparator Function:**
+   - The op-amp is configured as a comparator. It compares the voltage at the inverting input (-) with the reference voltage at the non-inverting input (+).
+   - When the voltage at the inverting input (-) is less than the reference voltage, the output (Vo) will be high.
+   - When the voltage at the inverting input (-) is greater than the reference voltage, the output (Vo) will be low.
+
+In summary, this circuit is a comparator using a TLV3201 op-amp, with a reference voltage set by a voltage divider (R2 and R3) and feedback provided by R1. The capacitor C1 is used for stability or noise filtering.
 ```
 
 #### **Design Notes**
@@ -75,13 +72,13 @@ Here is the image describtion:
 ```
 The image is a logo for Texas Instruments, a well-known technology company. The logo consists of several elements:
 
-1. **Icon**: On the left side, there is a red graphic that combines the letters "t" and "i" in a stylized manner. The letters are integrated into the shape of the state of Texas, which is also in red.
+1. **Icon**: On the left side, there is a red icon that combines the letters "t" and "i" in a stylized manner. The "t" is positioned above the "i," and both letters are integrated into the shape of the state of Texas, which is also red.
 
-2. **Text**: To the right of the icon, the words "Texas Instruments" are written in a bold, black font. "Texas" is positioned above "Instruments," and both words are aligned to the left.
+2. **Text**: To the right of the icon, the words "TEXAS INSTRUMENTS" are written in black, uppercase letters. The font is bold and clear, making the company name easily readable.
 
-3. **Website**: Below the company name, the website URL "www.ti.com" is displayed in a smaller, black font.
+3. **Website**: Below the company name, the website URL "www.ti.com" is written in black, lowercase letters. The font is smaller than the company name but still clear and legible.
 
-The overall design is clean and professional, with a clear emphasis on the company's name and its association with the state of Texas.
+The overall design is clean and professional, effectively representing the brand identity of Texas Instruments.
 ```
 
 2. When the output is high, the upper trip point is set at two-thirds of the supply to bring the output back low.
@@ -110,7 +107,15 @@ R1C1 = 724ns
 
 Here is the image describtion:
 ```
-The image is a logo for Texas Instruments, a well-known technology company. The logo consists of a red graphic element on the left side, which is a stylized representation of the state of Texas with the letters "ti" integrated into it. To the right of the graphic, the words "TEXAS INSTRUMENTS" are written in a bold, black font. Below the company name, the website URL "www.ti.com" is displayed in a smaller, black font. The overall design is clean and professional, reflecting the company's branding.
+The image is a logo for Texas Instruments, a well-known technology company. The logo consists of several elements:
+
+1. **Icon**: On the left side, there is a red icon that combines the letters "t" and "i" in a stylized manner. The "t" and "i" are integrated into the shape of the state of Texas, which is also outlined in red.
+
+2. **Text**: To the right of the icon, the words "TEXAS INSTRUMENTS" are written in a bold, black font. "TEXAS" is positioned above "INSTRUMENTS," and both words are aligned to the left.
+
+3. **Website**: Below the company name, the website URL "www.ti.com" is written in a smaller, black font.
+
+The overall design is clean and professional, with a focus on the company's name and its association with the state of Texas. The use of red and black colors gives the logo a strong and recognizable appearance.
 ```
 
 # **Design Simulations**
@@ -119,15 +124,17 @@ The image is a logo for Texas Instruments, a well-known technology company. The 
 
 Here is the image describtion:
 ```
-The image is a graph that displays two waveforms over a period of 5 seconds. The x-axis represents time in seconds, ranging from 0.00 to 5.00 seconds, while the y-axis represents the output, ranging from 0.00 to 5.00 units.
+The image is a graph that plots two different waveforms over time. The x-axis represents time in seconds, ranging from 0.00 to 5.00 seconds. The y-axis represents the output, ranging from 0.00 to 5.00 units.
 
 There are two distinct waveforms shown on the graph:
 
-1. A green waveform that appears to be a square wave. This waveform alternates between a high value of 5.00 units and a low value of 0.00 units. The transitions between high and low values are very sharp, indicating a typical square wave pattern. The square wave has a period of approximately 1 second, meaning it completes one full cycle (high to low and back to high) every second.
+1. **Green Waveform**: This waveform is a square wave. It alternates between a high value of 5.00 units and a low value of 0.00 units. The transitions between high and low values are very sharp, indicating an almost instantaneous change. The period of the square wave appears to be approximately 1 second, as it completes one full cycle (high to low and back to high) within this time frame.
 
-2. A red waveform that appears to be a triangular wave. This waveform gradually increases from 0.00 units to a peak value of around 3.00 units and then decreases back to 0.00 units. The triangular wave has a period of approximately 1 second, similar to the square wave, but it has a more gradual rise and fall compared to the sharp transitions of the square wave.
+2. **Red Waveform**: This waveform is a triangular wave. It starts at 0.00 units, rises linearly to a peak value of approximately 3.50 units, and then decreases linearly back to 0.00 units. This pattern repeats periodically. The period of the triangular wave is also approximately 1 second, matching the period of the square wave.
 
-The graph shows these two waveforms superimposed over each other, with the square wave maintaining a consistent high and low pattern, while the triangular wave smoothly oscillates between its peak and trough values.
+The two waveforms are synchronized in such a way that the peak of the triangular wave coincides with the midpoint of the high phase of the square wave. The triangular wave reaches its minimum value at the transitions of the square wave from high to low and from low to high.
+
+The graph is likely used to illustrate the relationship between these two types of waveforms, possibly in the context of signal processing or electronic circuits.
 ```
 
 #### **Design References**
@@ -168,7 +175,7 @@ All trademarks are the property of their respective owners.
 
 Here is the image describtion:
 ```
-The image features the logo and branding of Texas Instruments, a well-known technology company. On the right side of the image, there is a red logo that combines the letters "TI" with the shape of the state of Texas. To the right of the logo, the text "TEXAS INSTRUMENTS" is written in bold, black, uppercase letters. Below this text, the company's website "www.ti.com" is displayed in smaller, black text. On the left side of the image, the word "Trademarks" is written in italicized, black text. The background of the image is white, providing a clean and professional look.
+The image is a header from a document or webpage associated with Texas Instruments, a well-known technology company. On the right side of the header, there is the Texas Instruments logo, which consists of a stylized "TI" integrated into the shape of the state of Texas, colored in red. Next to the logo, the company name "TEXAS INSTRUMENTS" is written in black, uppercase letters. Below the company name, the website URL "www.ti.com" is displayed in smaller black text. On the left side of the header, the word "Trademarks" is written in italicized black text. The background of the header is white, providing a clean and professional appearance.
 ```
 
 # **IMPORTANT NOTICE AND DISCLAIMER**

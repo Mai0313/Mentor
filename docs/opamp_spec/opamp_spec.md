@@ -1,0 +1,4 @@
+opamp spec:
+output voltage = 0.5 V
+supply rejection > 40 dB
+supply voltage = 1V +- 5%

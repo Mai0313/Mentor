@@ -6,17 +6,17 @@ Here is the image describtion:
 ```
 The image depicts a block diagram of a discrete-time system, specifically a feedback system. Here is a detailed description of the components and their connections:
 
-1. **Input Signal (X(z))**: The input to the system is denoted as \( X(z) \). It is represented by an arrow pointing towards the system from the left side.
+1. **Input Signal (X(z))**: The system receives an input signal denoted as \( X(z) \).
 
-2. **Summation Block (Σ)**: The input signal \( X(z) \) enters a summation block, represented by a circle with the summation symbol (Σ) inside it. This block has two inputs and one output. The input from the left is \( X(z) \), and there is another input coming from the feedback loop.
+2. **Summation Block (Σ)**: The input signal \( X(z) \) enters a summation block, represented by a circle with a summation symbol (Σ) inside it. This block adds the input signal to another signal that is fed back into it.
 
-3. **Feedback Loop**: The output of the summation block is connected to the input of a delay element, represented by a block labeled \( Z^{-1} \). This block indicates a unit delay in the z-domain.
+3. **Feedback Path**: There is a feedback loop in the system. The output of the summation block is connected to the input of a delay element (denoted as \( Z^{-1} \)).
 
-4. **Delay Element (Z^{-1})**: The delay element takes the output of the summation block, delays it by one time unit, and then feeds it back into the summation block. The output of the delay element is connected to the second input of the summation block.
+4. **Delay Element (Z^{-1})**: The delay element introduces a one-sample delay to the signal. The output of the delay element is fed back into the summation block.
 
-5. **Output Signal (Y(z))**: The output of the summation block is also the output of the entire system, denoted as \( Y(z) \). This is represented by an arrow pointing outwards to the right from the summation block.
+5. **Output Signal (Y(z))**: The output of the summation block is also the output of the system, denoted as \( Y(z) \).
 
-In summary, the diagram shows a discrete-time feedback system where the input signal \( X(z) \) is summed with the delayed output of the system to produce the output signal \( Y(z) \). The feedback loop includes a unit delay element \( Z^{-1} \).
+In summary, the system takes an input \( X(z) \), adds it to the delayed version of the output \( Y(z) \), and produces the output \( Y(z) \). The feedback loop with the delay element \( Z^{-1} \) plays a crucial role in determining the behavior of the system.
 ```
 
 **Figure 1.**
@@ -27,30 +27,46 @@ There is not much in standard DSP texts about the marginally stable causal circu
 
 Here is the image describtion:
 ```
-The image consists of three sub-images labeled (a), (b), and (c), which are related to the function \( H(z) = \frac{1}{1 - z^{-1}} \).
+The image consists of three subfigures labeled (a), (b), and (c), and an equation labeled (A) at the top. Here is a detailed description of each part:
 
-(a) The first sub-image is a plot of the complex plane with the imaginary axis labeled "Im z" and the real axis labeled "Re z". There is a unit circle centered at the origin (0,0) with a radius of 1. A point is marked on the real axis at \( z = 1 \), which is indicated by a cross (×) symbol. This point is likely a pole of the function \( H(z) \).
+1. **Equation (A)**:
+   - The equation at the top of the image is \( H(z) = \frac{1}{1 - z^{-1}} \). This represents a transfer function in the z-domain.
 
-(b) The second sub-image is a plot of the function \( (2 |\sin[\omega/2]|)^{-1} \) against \( \omega/\pi \). The x-axis is labeled \( \omega/\pi \) and ranges from -2 to 2. The y-axis is not explicitly labeled but shows values ranging from 0 to 17.5. The plot shows two vertical asymptotes at \( \omega/\pi = -2 \) and \( \omega/\pi = 2 \), with the function value approaching infinity at these points. The function has a minimum value at \( \omega/\pi = 0 \).
+2. **Subfigure (a)**:
+   - This subfigure shows a plot in the complex plane with the imaginary part (Im z) on the vertical axis and the real part (Re z) on the horizontal axis.
+   - There is a unit circle centered at the origin with a radius of 1.
+   - A pole is marked with an "X" at the point \( z = 1 \) on the real axis.
+   - The plot indicates the location of the pole of the transfer function \( H(z) \).
 
-(c) The third sub-image is a plot of the function \( \text{ArcTan}[2 \sin^2[\omega/2], -\sin[\omega]] / \pi \) against \( \omega/\pi \). The x-axis is labeled \( \omega/\pi \) and ranges from -6 to 6. The y-axis is not explicitly labeled but shows values ranging from -2 to 2. The plot shows a linear relationship between \( \omega/\pi \) and the function value, with the function passing through the origin (0,0) and having a positive slope.
+3. **Subfigure (b)**:
+   - This subfigure shows a plot of the magnitude response of the transfer function.
+   - The vertical axis represents the magnitude, labeled as \( (2 |\sin[\omega/2]|)^{-1} \).
+   - The horizontal axis represents the normalized frequency \( \omega/\pi \).
+   - The plot shows two vertical asymptotes at \( \omega/\pi = -2 \) and \( \omega/\pi = 2 \), indicating that the magnitude response goes to infinity at these points.
+   - The magnitude response is symmetric around the origin and has a minimum value at \( \omega/\pi = 0 \).
 
-Overall, the image provides visual representations of the function \( H(z) \) in the complex plane and its related functions in the frequency domain.
+4. **Subfigure (c)**:
+   - This subfigure shows a plot of the phase response of the transfer function.
+   - The vertical axis represents the phase, labeled as \( \text{ArcTan}[2 \sin^2[\omega/2], -\sin[\omega]] / \pi \).
+   - The horizontal axis represents the normalized frequency \( \omega/\pi \).
+   - The plot shows a linear relationship between the phase and the frequency, with the phase increasing linearly as the frequency increases.
+
+Overall, the image provides a comprehensive view of the transfer function \( H(z) = \frac{1}{1 - z^{-1}} \) in terms of its pole-zero plot, magnitude response, and phase response.
 ```
 
 (a)
 
 Here is the image describtion:
 ```
-The image described in the text is Figure 2, which consists of three subfigures related to the digital integrator. 
+The image is a caption for Figure 2, which appears to be part of a technical or academic document. The caption is divided into three parts, each describing a different aspect of the figure:
 
-(a) The first subfigure is a pole/zero constellation. This is a graphical representation used in signal processing to show the locations of poles and zeros of a transfer function in the complex plane.
+(a) Pole/zero constellation: This likely refers to a graphical representation of the poles and zeros of a system in the complex plane, which is commonly used in control theory and signal processing to analyze the behavior of systems.
 
-(b) The second subfigure is the magnitude response. This graph shows how the magnitude of the output signal varies with frequency, indicating how different frequencies are amplified or attenuated by the digital integrator.
+(b) Magnitude response: This part of the figure probably shows a plot of the magnitude response of a system, which indicates how the amplitude of the output signal varies with frequency.
 
-(c) The third subfigure is the phase response. This graph shows how the phase of the output signal varies with frequency, indicating the phase shift introduced by the digital integrator at different frequencies.
+(c) Phase response of the digital integrator: This section likely includes a plot of the phase response, showing how the phase of the output signal changes with frequency for a digital integrator.
 
-Each subfigure provides a different perspective on the behavior and characteristics of the digital integrator.
+The figure as a whole seems to be focused on the analysis of a digital integrator, providing insights into its pole/zero constellation, magnitude response, and phase response.
 ```
 
 # **1 Theoretical**
@@ -119,16 +135,28 @@ The converse of this principle is that any input signal of bounded energy but ha
 
 Here is the image describtion:
 ```
-The image is a complex plane diagram with the real axis (Re z) and imaginary axis (Im z) intersecting at the origin (0,0). The diagram features a unit circle centered at the origin with a radius of 1. 
+The image is a complex plane diagram, which is a graphical representation of complex numbers. Here are the detailed features of the image:
 
-Key details include:
-- The unit circle is marked with points at the intersections with the real and imaginary axes, specifically at (1,0), (-1,0), (0,1), and (0,-1).
-- Each of these points on the circle is highlighted with a larger circle around them.
-- The origin (0,0) is marked with a special symbol, which appears to be an asterisk (*) with an "X" over it, indicating a significant point.
-- The real axis is labeled "Re z" and the imaginary axis is labeled "Im z".
-- The circle is divided into four quadrants by the real and imaginary axes, with each quadrant containing one of the highlighted points.
+1. **Axes**: The diagram has two perpendicular axes:
+   - The horizontal axis is labeled "Re z," which stands for the real part of the complex number \( z \).
+   - The vertical axis is labeled "Im z," which stands for the imaginary part of the complex number \( z \).
 
-The diagram is likely used to represent complex numbers on the unit circle, with the highlighted points corresponding to the complex numbers 1, -1, i, and -i.
+2. **Unit Circle**: There is a circle centered at the origin (0,0) with a radius of 1. This is known as the unit circle in the complex plane.
+
+3. **Points on the Circle**: There are five points marked on the circumference of the unit circle:
+   - One point at \( (1, 0) \) on the positive real axis.
+   - One point at \( (-1, 0) \) on the negative real axis.
+   - One point at \( (0, 1) \) on the positive imaginary axis.
+   - One point at \( (0, -1) \) on the negative imaginary axis.
+   - One point at the origin (0,0), which is marked with a double asterisk (**).
+
+4. **Markers**: The points on the circle are marked with open circles (◯), and the point at the origin is marked with a double asterisk (**).
+
+5. **Labels**: The axes are labeled with numerical values at intervals of 0.5, ranging from -1 to 1 on both the real and imaginary axes.
+
+6. **Grid**: The diagram includes a grid with lines at intervals of 0.5, which helps in identifying the positions of the points more accurately.
+
+This diagram is typically used in complex analysis or control theory to represent the locations of poles and zeros of a function or system in the complex plane. The unit circle is often used in the context of stability analysis for discrete-time systems.
 ```
 
 **FigureA.** Pole/zero constellation of input.
@@ -139,15 +167,18 @@ To belabor this point, consider the input *x*[*n*]={1,–1,1,–1,1} having the 
 
 Here is the image describtion:
 ```
-The image is a complex plane diagram with the real axis (Re z) and the imaginary axis (Im z) intersecting at the origin (0,0). The diagram features a unit circle centered at the origin with a radius of 1. 
+The image is a complex plane diagram with the real axis (Re z) and the imaginary axis (Im z) intersecting at the origin (0,0). The diagram features a unit circle centered at the origin, with a radius of 1. 
 
-On the unit circle, there are four points marked with open circles (◯) located at:
-1. (0, 1) on the positive imaginary axis.
-2. (1, 0) on the positive real axis.
-3. (0, -1) on the negative imaginary axis.
-4. (-1, 0) on the negative real axis.
+Key elements of the diagram include:
+1. The unit circle is clearly marked, passing through the points (1,0), (-1,0), (0,1), and (0,-1) on the complex plane.
+2. There are four zeros (marked with a circle) located on the unit circle at the points:
+   - (0,1) on the positive imaginary axis
+   - (1,0) on the positive real axis
+   - (0,-1) on the negative imaginary axis
+   - (-1,0) on the negative real axis
+3. There are three poles (marked with an 'X') located at the origin (0,0).
 
-Additionally, there are two points marked with an asterisk (*) at the origin (0,0). The unit circle is labeled with values along the axes, with increments of 0.5, indicating the scale of the real and imaginary parts. The diagram is likely used to represent complex numbers and their positions on the complex plane.
+The diagram is likely representing the poles and zeros of a complex function, with the unit circle indicating the boundary of the region of interest in the complex plane. The poles and zeros are symmetrically distributed around the origin, with the zeros lying on the unit circle and the poles concentrated at the origin.
 ```
 
 **FigureB.** Pole/zero constellation of input.
@@ -248,33 +279,34 @@ When one of these conditions is met, then the high gains near dc are equalized, 
 
 Here is the image describtion:
 ```
-The image depicts a block diagram of a digital signal processing system, likely representing a feedback loop with quantization and error correction. Here is a detailed description of the components and their connections:
+The image is a block diagram representing a digital signal processing system, likely a form of a delta-sigma modulator or a similar feedback system. Here is a detailed description of the components and their connections:
 
 1. **Summation Blocks (Σ)**:
-   - There are two summation blocks in the diagram, each represented by a circle with the symbol Σ inside.
-   - The first summation block (top left) has three inputs: one from the output of a delay block (Z^-1), one from a quantizer (X), and one from an external input labeled I_q. The output of this summation block is labeled y_q[n+1].
-   - The second summation block (bottom right) has three inputs: one from the output of a delay block (Z^-1), one from a quantizer (X), and one from an external input labeled I. The output of this summation block is labeled y[n+1].
+   - There are two summation blocks in the diagram, each represented by a circle with the summation symbol (Σ) inside.
+   - The first summation block (top left) has three inputs: one from the output of a delay block (Z^-1), one from a feedback path (I_q), and one from an external input (e[n]).
+   - The second summation block (bottom right) has two inputs: one from the output of another delay block (Z^-1) and one from the feedback path (I).
 
 2. **Delay Blocks (Z^-1)**:
-   - There are two delay blocks in the diagram, each represented by a rectangle with Z^-1 inside.
-   - The first delay block (top center) takes the output y_q[n+1] from the first summation block and outputs y_q[n].
-   - The second delay block (bottom center) takes the output y[n+1] from the second summation block and outputs y[n].
+   - There are two delay blocks in the diagram, each represented by a square with Z^-1 inside.
+   - The first delay block (top center) takes the output of the first summation block (y_q[n+1]) and provides a delayed output (y_q[n]).
+   - The second delay block (bottom center) takes the output of the second summation block (y[n+1]) and provides a delayed output (y[n]).
 
-3. **Quantizers (X)**:
-   - There are two quantizers in the diagram, each represented by a circle with the symbol X inside.
-   - The first quantizer (top center) takes the output of the first summation block and produces an output labeled ε.
-   - The second quantizer (bottom center) takes the output of the second summation block and produces an output labeled ε.
+3. **Multipliers (X)**:
+   - There are two multipliers in the diagram, each represented by a circle with an X inside.
+   - The first multiplier (left side) takes the input signal (e[n]) and multiplies it by a factor (ε).
+   - The second multiplier (right side) takes the output of the first summation block (e_q[n]) and multiplies it by a factor (ε).
 
-4. **Error Calculation**:
-   - The error signal e[n] is calculated by subtracting the output of the second quantizer from the input signal. This is represented by a summation block with a minus sign (-) inside, located in the middle of the diagram.
-   - The error signal eq[n] is calculated by subtracting the output of the first quantizer from the input signal. This is represented by a summation block with a minus sign (-) inside, located in the middle of the diagram.
+4. **Feedback Paths**:
+   - The output of the first summation block (y_q[n+1]) is fed back through the delay block (Z^-1) to provide y_q[n], which is then fed back to the input of the first summation block.
+   - The output of the second summation block (y[n+1]) is fed back through the delay block (Z^-1) to provide y[n], which is then fed back to the input of the second summation block.
 
 5. **Connections**:
-   - The output of the first delay block (y_q[n]) is fed back to the input of the first summation block.
-   - The output of the second delay block (y[n]) is fed back to the input of the second summation block.
-   - The error signals e[n] and eq[n] are fed into the respective summation blocks to correct the outputs.
+   - The input signal (e[n]) is fed into the first multiplier (X), which then outputs a signal that is fed into the first summation block (Σ).
+   - The output of the first summation block (y_q[n+1]) is delayed by the first delay block (Z^-1) to provide y_q[n], which is fed back to the input of the first summation block.
+   - The output of the first summation block (y_q[n+1]) is also fed into the second multiplier (X), which then outputs a signal (e_q[n]) that is fed into the second summation block (Σ).
+   - The output of the second summation block (y[n+1]) is delayed by the second delay block (Z^-1) to provide y[n], which is fed back to the input of the second summation block.
 
-Overall, the diagram represents a system with feedback loops, quantization, and error correction mechanisms, likely used in digital signal processing applications such as delta-sigma modulation or similar systems.
+Overall, the diagram represents a feedback system with two summation blocks, two delay blocks, and two multipliers, with feedback paths and external inputs. The system likely processes an input signal (e[n]) through these components to produce an output signal (y[n+1]).
 ```
 
 **Figure3.** Second Modified Coupled Form Sinusoidal Oscillator showing noise sources.
@@ -285,37 +317,41 @@ In Figure3 we show the Gordon/Smith oscillator. [EffectDesign,Part3,Sec.7] Both 
 
 Here is the image describtion:
 ```
-The image depicts a block diagram of a digital filter system. Here is a detailed description of the components and their connections:
+The image depicts a block diagram of a digital filter, likely a biquad filter, which is a type of second-order recursive linear filter. The diagram is labeled with various components and signals, and it shows the flow of the input signal \( X(z) \) through the filter to produce the output signal \( Y(z) \).
 
-1. **Input Signal (X(z))**: The input signal is denoted as X(z) and enters the system from the left.
+Here is a detailed description of the components and their connections:
 
-2. **First Summation Block (Σ)**: The input signal X(z) is fed into a summation block (Σ). This block has three inputs: the main input signal X(z), a feedback signal from the output of the system, and another feedback signal from a later stage in the system.
+1. **Input Signal \( X(z) \)**: The input signal enters the system from the left.
 
-3. **Multiplication by hp**: The output of the first summation block is then multiplied by a coefficient labeled hp.
+2. **Summation Node**: The input signal \( X(z) \) first encounters a summation node (Σ) where it is combined with feedback signals. The summation node has three inputs: the input signal \( X(z) \), a feedback signal from the second delay element, and another feedback signal from the first delay element.
 
-4. **Multiplication by Fc**: The result is then multiplied by another coefficient labeled Fc.
+3. **High-Pass Filter (hp)**: The output of the summation node is then multiplied by a coefficient labeled \( hp \).
 
-5. **Second Summation Block (Σ)**: The output of the multiplication is fed into another summation block. This block also receives an input from a feedback loop.
+4. **Multiplication by \( F_c \)**: The result is then multiplied by another coefficient \( F_c \).
 
-6. **Delay Block (Z^-1)**: The output of the second summation block is passed through a delay block, denoted as Z^-1.
+5. **Second Summation Node**: The output of the multiplication is fed into another summation node (Σ), which also receives a feedback signal from the first delay element.
 
-7. **Multiplication by bp**: The delayed signal is then multiplied by a coefficient labeled bp.
+6. **First Delay Element \( Z^{-1} \)**: The output of the second summation node is passed through a delay element, which introduces a unit delay (denoted by \( Z^{-1} \)).
 
-8. **Multiplication by Fc**: The result is again multiplied by the coefficient Fc.
+7. **Multiplication by \( bp \)**: The delayed signal is then multiplied by a coefficient \( bp \).
 
-9. **Third Summation Block (Σ)**: The output of this multiplication is fed into another summation block. This block also receives an input from another feedback loop.
+8. **Multiplication by \( F_c \)**: The result is again multiplied by the coefficient \( F_c \).
 
-10. **Output Signal (Y(z))**: The output of the third summation block is the final output signal, denoted as Y(z).
+9. **Third Summation Node**: The output of this multiplication is fed into another summation node (Σ), which also receives a feedback signal from the second delay element.
 
-11. **Feedback Loops**:
-    - The first feedback loop involves the output of the delay block (Z^-1) being multiplied by a coefficient labeled Qc and then fed back into the second summation block.
-    - The second feedback loop involves the output of the third summation block being delayed by another delay block (Z^-1) and then fed back into the third summation block.
+10. **Second Delay Element \( Z^{-1} \)**: The output of the third summation node is passed through another delay element, introducing another unit delay.
 
-12. **Labels**:
-    - The labels "1" and "2" are used to denote specific points in the system, likely for reference or explanation purposes.
-    - The terms "bpq" and "lp" are also used, possibly indicating specific filter parameters or coefficients.
+11. **Output Signal \( Y(z) \)**: The output of the third summation node is the final output signal \( Y(z) \).
 
-Overall, the diagram represents a complex digital filter with multiple feedback loops, delay elements, and coefficient multiplications, designed to process the input signal X(z) and produce the output signal Y(z).
+12. **Feedback Paths**: There are feedback paths from the outputs of the delay elements back to the summation nodes. Specifically:
+    - The output of the first delay element is fed back to the first and second summation nodes.
+    - The output of the second delay element is fed back to the first summation node.
+
+13. **Additional Coefficients**: The feedback signals are multiplied by coefficients \( Q_c \) and \( bpq \) before being fed back into the summation nodes.
+
+14. **Labels**: The diagram includes labels such as \( hp \), \( F_c \), \( Q_c \), \( bp \), \( bpq \), and \( lp \), which likely represent filter coefficients or parameters.
+
+Overall, the diagram represents a complex digital filter with multiple feedback loops and delay elements, which are typical in biquad filter designs. The specific coefficients and feedback paths suggest that the filter can be configured to achieve various frequency responses, such as low-pass, high-pass, band-pass, or band-stop filtering.
 ```
 
 **Figure4.** Chamberlin Filter Topology.

@@ -95,30 +95,45 @@ Unix> virtuoso &
 
 Here is the image describtion:
 ```
-The image depicts a schematic diagram of an electronic circuit, likely designed using a circuit design software. The diagram is displayed on a black grid background, which is typical for such software to help with component placement and alignment.
+The image shows a schematic diagram of an electronic circuit, likely designed using a circuit design software. The diagram is displayed on a grid background, which is typical for such software to help with component placement and alignment.
 
-The circuit is divided into two main sections:
+### Components and Connections:
+1. **Voltage Sources:**
+   - There are two voltage sources labeled `V7` and `V3`.
+   - `V7` is set to `vdc=avdd` with an AC magnitude of 1 (`ac=1`).
+   - `V3` is set to `vdc=avss`.
 
-1. **Left Section:**
-   - This section contains two voltage sources labeled V7 and V3.
-   - V7 is set to a voltage of "vdd" with an AC magnitude of 1.
-   - V3 is set to a voltage of "vee".
-   - Both voltage sources are connected to a common ground.
-   - The nodes are labeled PPA and PPA (likely a typo, as they should be different) and are connected to the right section of the circuit.
+2. **Current Sources:**
+   - There are two current sources within the green box labeled `BGR Circuit`.
+   - These current sources are connected to resistors.
 
-2. **Right Section:**
-   - This section is enclosed in a green rectangular box labeled "BGR Circuit," which stands for Bandgap Reference Circuit.
-   - Inside the BGR Circuit, there are two current sources and several resistors arranged in a specific configuration.
-   - The top of the BGR Circuit has a node labeled PPA, which connects to the left section.
-   - The right side of the BGR Circuit has a node labeled V_BGR, which connects to a capacitor labeled C8 that is grounded.
-   - The bottom of the BGR Circuit has a node labeled V3, which also connects to the left section.
+3. **Resistors:**
+   - There are several resistors in the circuit, both inside and outside the `BGR Circuit` box.
+   - The resistors inside the `BGR Circuit` are connected in a specific configuration, likely forming a voltage divider or a biasing network.
 
-The circuit appears to be a part of a larger design, possibly for generating a stable reference voltage using a bandgap reference circuit. The labels and connections suggest that the circuit is designed to provide a stable output voltage (V_BGR) that is less sensitive to temperature variations and supply voltage changes.
+4. **Nodes and Labels:**
+   - The nodes are labeled with identifiers such as `PPA`, `PPA`, `V_BGR`, and `V_BGR`.
+   - The node `PPA` is connected to the positive terminal of `V7` and the top of the `BGR Circuit`.
+   - The node `V_BGR` is connected to the right side of the `BGR Circuit` and extends to a capacitor labeled `C8`.
+
+5. **Capacitor:**
+   - There is a capacitor labeled `C8` connected to the `V_BGR` node and ground.
+
+6. **Ground Connections:**
+   - The circuit has multiple ground connections, indicated by the ground symbols.
+   - The ground connections are used to complete the circuit and provide a common reference point.
+
+7. **BGR Circuit:**
+   - The green box labeled `BGR Circuit` likely stands for Bandgap Reference Circuit, which is commonly used to provide a stable reference voltage that is independent of temperature and supply voltage variations.
+   - The circuit inside the `BGR Circuit` box includes transistors and resistors arranged in a specific configuration to achieve the desired reference voltage.
+
+### Summary:
+The schematic diagram represents a circuit with voltage sources, current sources, resistors, and a capacitor. The central part of the circuit is the `BGR Circuit`, which is likely a Bandgap Reference Circuit designed to provide a stable reference voltage. The connections and components are arranged to achieve the desired electrical characteristics, with labeled nodes and ground connections to complete the circuit.
 ```
 
 Here is the image describtion:
 ```
-The image is a caption that reads "Figure 1: Bandgap testbench schematic." It is written in black text on a white background. The text is bold and appears to be a title or label for a figure in a document, likely indicating that the accompanying figure is a schematic diagram related to a bandgap testbench. There is no actual schematic or diagram visible in the image provided, only the caption.
+The image is a caption for a figure in a document or presentation. The caption reads "Figure 1: Bandgap testbench schematic." The text is in a bold font, indicating that it is a title or heading for the figure it describes. The figure itself is not visible in the image, so no details about the schematic can be provided. The caption suggests that the figure is a schematic diagram related to a bandgap testbench, which is likely a circuit or setup used to test or demonstrate the properties of a bandgap reference in electronics.
 ```
 
 - Action 4: From the schematic, select **Launch > ADE Explorer**.
@@ -165,42 +180,44 @@ Action 7: In the **ADE Explorer** window**,** select **Setup > Model Libraries**
 
 Here is the image describtion:
 ```
-The image is a screenshot of the Cadence Virtuoso ADE Explorer software interface. The title bar at the top indicates that the current project is "TB_BGR tb_bgr maestro_Dc." The interface is divided into several sections:
+The image shows a screenshot of the Cadence Virtuoso ADE Explorer software interface, specifically in the context of editing a project named "TB_BGR tb_bgr maestro_Dc." The interface is divided into several sections and menus.
 
-1. **Menu Bar**: At the top, there is a menu bar with various options such as Launch, Session, Setup, Analyses, Variables, Outputs, Simulation, Results, Tools, EAD, Parasitics/LDE, Window, and Help.
+1. **Top Menu Bar**: 
+   - The topmost part of the interface contains a menu bar with options such as Launch, Session, Setup, Analyses, Variables, Outputs, Simulation, Results, Tools, EAD, Parasitics/LDE, Window, and Help.
+   - The "Setup" menu is currently expanded, displaying a dropdown list of options.
 
-2. **Setup Menu**: The "Setup" menu is expanded, showing a dropdown list of options including:
-   - Job Setup
-   - Design
-   - Simulator
-   - Save Options
-   - High-Performance Simulation
-   - Model Libraries (highlighted in yellow)
-   - Temperature
-   - Stimuli
-   - Simulation Files
-   - EM/IR Analysis
-   - MATLAB/Simulink
-   - Environment
+2. **Setup Menu**:
+   - The expanded "Setup" menu includes the following options:
+     - Job Setup...
+     - Design...
+     - Simulator...
+     - Save Options...
+     - High-Performance Simulation...
+     - Model Libraries... (highlighted in yellow)
+     - Temperature...
+     - Stimuli...
+     - Simulation Files...
+     - EM/IR Analysis...
+     - MATLAB/Simulink
+     - Environment...
 
-3. **Toolbar**: Below the menu bar, there is a toolbar with icons for various functions such as Replace, and a dropdown menu currently set to "(None)." There are also icons for other actions, but their specific functions are not clear from the image.
+3. **Main Toolbar**:
+   - Below the menu bar, there is a toolbar with various icons and options.
+   - There is a search bar with the placeholder text "Replace" and a dropdown menu labeled "(None)".
+   - To the right of the search bar, there are icons for different functions, including a folder icon, a red arrow, and a yellow pencil.
 
-4. **Left Panel**: On the left side, there is a panel with a list of items under "Setup," including:
-   - TB_BGR_tb_bgr
-   - Simulator
-   - Analyses
-   - Design Variables
-   - Parameters
-   - Corners
-   - Reliability Analysis
-   - Monte Carlo
-   - Checks/Asserts
+4. **Left Sidebar**:
+   - The left sidebar contains a section labeled "Setup" with a list of items such as Parameters, Corners, Reliability Analysis, Monte Carlo, and Checks/Asserts.
+   - The item "TB_BGR_tb_bgr" is selected, and there are icons indicating different statuses or actions next to each item.
 
-5. **Main Workspace**: The main workspace area is mostly blank, with a tab labeled "maestro_Dc" open. There is a "Details" column header, but no specific details are visible in the workspace.
+5. **Main Workspace**:
+   - The main workspace area is mostly blank, with a tab labeled "maestro_Dc" open.
+   - There is a "Details" column header, but no specific details are visible in the workspace.
 
-6. **Right Panel**: On the right side, there are icons for various actions, including what appears to be options for AC, DC, and Transient analysis, as well as icons for running simulations and viewing results.
+6. **Right Sidebar**:
+   - The right sidebar contains a few icons, including a pencil, a checkmark, a cross, a play button, and a waveform icon, which likely represent different actions or tools available for use.
 
-The overall interface is designed for setting up and running simulations, managing design variables, and analyzing results within the Cadence Virtuoso ADE Explorer environment.
+Overall, the image captures the user interface of the Cadence Virtuoso ADE Explorer software, highlighting the "Setup" menu and its options, with a focus on the "Model Libraries..." option.
 ```
 
  **Figure 5: Opening Model Library Setup form from ADE Explorer window**
@@ -229,23 +246,30 @@ Action 10: In the ADE Explorer **Setup** assistant, select **Click to add analys
 
 Here is the image describtion:
 ```
-The image shows a screenshot of a software interface, specifically a setup window for a simulation or analysis tool. The window is titled "Setup" and contains a hierarchical list of options and settings.
+The image is a screenshot of a software interface, specifically a setup window for a simulation tool. The window is titled "Setup" and contains a hierarchical tree structure with various options and settings for configuring a simulation.
 
-At the top of the list, there is an entry labeled "TB_BGR_tb_bgr_1" with an upward-pointing arrow icon next to it, indicating it might be a project or file name.
+Here is a detailed description of the elements in the image:
 
-Below that, there is an entry labeled "Simulator spectre" with a green icon resembling a gear or a tool, suggesting it is the selected simulator.
+1. **Title Bar**: The top of the window has a title bar with the label "Setup" and a help icon (a question mark inside a circle) on the right side.
 
-Next, there is a section labeled "Analyses" with a green icon that looks like a graph or chart. Under this section, there is a highlighted yellow text that says "Click to add analysis," indicating that the user can add a new analysis here.
+2. **Tree Structure**: The main part of the window displays a tree structure with expandable and collapsible nodes. Each node has an icon and a label. The nodes are as follows:
+   - **TB_BGR_tb_bgr_1**: This is the root node, indicated by an upward arrow icon.
+   - **Simulator spectre**: This node has a green icon with a gear and a waveform, indicating the simulator being used is "spectre."
+   - **Analyses**: This node has a green icon with a gear and a magnifying glass. It is expandable, and currently, it shows a sub-item labeled "Click to add analysis" highlighted in yellow.
+   - **Design Variables**: This node has a red icon with a gear and a pencil. It is expandable, and currently, it shows a sub-item labeled "Click to add variable."
+   - **Parameters**: This node has a red icon with a gear and a checkmark, indicating that parameters are selected.
+   - **Corners**: This node has a red icon with a gear and a document, indicating that corner analysis is selected.
+   - **Reliability Analyses**: This node has a green icon with a gear and a clock. It is not expanded.
+   - **Monte Carlo Sampling**: This node has a green icon with a gear and a dice, indicating Monte Carlo sampling options.
+   - **Checks/Asserts**: This node has a red icon with a gear and a checkmark. It is not expanded.
 
-Following that, there is a section labeled "Design Variables" with a red icon that looks like a set of sliders or controls. Under this section, there is a text that says "Click to add variable," suggesting that the user can add new design variables.
+3. **Columns**: The tree structure is divided into two columns:
+   - **Name**: This column lists the names of the nodes and sub-items.
+   - **Value**: This column is currently empty, but it is intended to display the values or settings associated with each node.
 
-Within the "Design Variables" section, there are two sub-sections: "Parameters" and "Corners." The "Parameters" sub-section has a red checkmark icon next to it, indicating it is selected or active. The "Corners" sub-section has a red checkmark icon and a small icon that looks like a document or a piece of paper.
+4. **Filter Options**: At the top of each column, there are filter options indicated by red downward arrows, allowing the user to filter the items in the tree structure.
 
-Further down, there is a section labeled "Reliability Analyses" with a green icon that looks like a graph or chart. Under this section, there is a sub-section labeled "Monte Carlo Sampling" with a green icon that looks like a dice or a randomization symbol.
-
-At the bottom of the list, there is a section labeled "Checks/Asserts" with a red checkmark icon, indicating it is selected or active.
-
-The window also has columns labeled "Name" and "Value" with filter options at the top, suggesting that the user can filter the list based on these columns.
+Overall, the image shows a setup interface for configuring a simulation, with various options for analyses, design variables, parameters, corners, reliability analyses, Monte Carlo sampling, and checks/asserts.
 ```
 
 **Figure 7: Opening 'Analyses' form from 'Click to add analysis'**
@@ -295,30 +319,32 @@ Action 12: In the **ADE Explorer** window, select **Outputs > Save All** as show
 
 Here is the image describtion:
 ```
-The image is a screenshot of the Virtuoso ADE Explorer software interface, specifically showing the editing environment for a project named "TB_BGR tb_bgr maestro_Dc." The interface is divided into several sections:
+The image is a screenshot of the Virtuoso ADE Explorer Editing interface, specifically for a test bench named "TB_BGR tb_bgr maestro_Dc" in the Cadence design environment. The interface is divided into several sections:
 
-1. **Top Menu Bar**: This contains various menu options such as Launch, Session, Setup, Analyses, Variables, Outputs, Simulation, Results, Tools, EAD, Parasitics/LDE, Window, and Help. The "Outputs" menu is currently expanded, showing options like Add, Delete, Import, Export, Send To Expression Editor, To Be Saved, To Be Plotted, and Save All (highlighted in yellow).
+1. **Top Menu Bar**: 
+   - The top menu bar includes options such as Launch, Session, Setup, Analyses, Variables, Outputs, Simulation, Results, Tools, EAD, Parasitics/LDE, Window, and Help.
+   - The "Outputs" menu is currently expanded, showing options like Add, Delete, Import, Export, Send To Expression Editor, To Be Saved, To Be Plotted, and Save All. The "Save All" option is highlighted in yellow.
 
-2. **Setup Panel (Left Side)**: This panel lists the setup components for the project. It includes:
-   - A filter option at the top.
-   - A hierarchical tree structure showing:
-     - The test bench "TB_BGR_tb_bgr_1."
-     - The simulator being used, which is "spectre."
-     - The analyses being performed, specifically a DC analysis with a temperature range from -40 to 120 degrees Celsius and an automatic start-stop feature.
-     - Design Variables, which include Parameters, Corners, Reliability Analyses, Monte Carlo Sampling, and Checks/Asserts.
+2. **Setup Panel (Left Side)**:
+   - This panel lists the setup details for the test bench.
+   - It includes the name of the test bench "TB_BGR_tb_bgr_1".
+   - The simulator being used is "spectre".
+   - Under "Analyses", there is a DC analysis named "dc" with a temperature range from -40 to 120 and an automatic start-stop feature.
+   - There are sections for Design Variables, Parameters, Corners, Reliability Analyses, Monte Carlo Sampling, and Checks/Asserts, though these sections are not expanded.
 
-3. **Main Workspace (Right Side)**: This is a large, mostly empty area labeled "Details," which is likely where detailed information or results would be displayed.
+3. **Main Workspace (Right Side)**:
+   - The main workspace is currently empty, with no specific details or results displayed.
+   - There are a few icons on the right side of the workspace, including options for details, a green play button (likely for running simulations), a brown stop button, and a waveform icon.
 
-4. **Toolbar (Above the Main Workspace)**: This contains various icons for different functions, such as adding, deleting, and other operations. There is also a dropdown menu labeled "(None)" and a search bar.
+4. **Toolbar**:
+   - The toolbar at the top of the workspace includes icons for various functions such as saving, opening, and other common actions.
 
-5. **Right Sidebar**: This contains additional tool icons, including options for running simulations, stopping processes, and other actions.
-
-The overall interface is designed for managing and analyzing electronic design automation (EDA) projects, with a focus on setting up simulations, defining variables, and handling outputs.
+Overall, the image shows a user interface for setting up and managing simulations in the Cadence Virtuoso ADE Explorer, with a focus on the outputs configuration.
 ```
 
 Here is the image describtion:
 ```
-The image is a text label that reads "Figure 9: Options for saving outputs." The text is in a bold, black font, indicating that it is likely a caption or title for a figure in a document or presentation. The label suggests that the figure it refers to provides information or options related to saving outputs, possibly in a software or data processing context.
+The image is a screenshot of a figure caption. The caption reads "Figure 9: Options for saving outputs" in bold text. The font appears to be a standard sans-serif typeface, and the text is black on a white background. The caption suggests that it is part of a larger document, likely a report or a presentation, and it indicates that the figure associated with this caption provides information about different options available for saving outputs.
 ```
 
 Action 13: Enable **all** for **Select device currents**. For **Select signals to output**, **allpub** will be enabled by default. Then, click **OK**.
@@ -348,26 +374,37 @@ Action 16: Set **avss** to **0**.
 
 Here is the image describtion:
 ```
-The image is a screenshot of the Virtuoso ADE Explorer Editing interface, specifically for a project named "TB_BGR tb_bgr maestro_Dc." The interface is part of the Cadence design environment, used for electronic design automation.
+The image is a screenshot of the Virtuoso ADE Explorer Editing interface, specifically for a test bench named "TB_BGR tb_bgr maestro_Dc" in the Cadence design environment. The interface is divided into several sections and menus.
 
-At the top of the interface, there is a menu bar with various options such as Launch, Session, Setup, Analyses, Variables, Outputs, Simulation, Results, Tools, EAD, Parasitics/LDE, Window, and Help. The "Variables" menu is currently open, showing options like Edit, Delete, Find, Copy From Cellview, and Copy To Cellview. The "Copy From Cellview" option is highlighted.
+1. **Top Menu Bar**: 
+   - The top menu bar includes options such as Launch, Session, Setup, Analyses, Variables, Outputs, Simulation, Results, Tools, EAD, Parasitics/LDE, Window, and Help.
+   - The "Variables" menu is currently open, showing options like Edit, Delete, Find, Copy From Cellview, and Copy To Cellview. The "Copy From Cellview" option is highlighted.
 
-Below the menu bar, there is a toolbar with icons for different functions, including a replace function, a drop-down menu for selecting different views, and a search bar. The toolbar also includes icons for running simulations and other tasks.
+2. **Setup Section**:
+   - On the left side, there is a "Setup" section with a hierarchical tree structure.
+   - The tree includes:
+     - **TB_BGR_tb_bgr_1**: The name of the test bench.
+     - **Simulator**: The simulator being used is "spectre".
+     - **Analyses**: Under this, there is a "dc" analysis with parameters t=-40 120 Automatic Start-Stop.
+     - **Design Variables**: This section lists variables used in the design. Two variables are shown:
+       - `avdd` with a value of 2 (highlighted in yellow).
+       - `avss` with a value of 0 (highlighted in yellow).
+     - **Parameters, Corners, Reliability Analyses, Monte Carlo Sampling, Checks/Asserts**: These sections are present but not expanded.
 
-The main part of the interface is divided into two sections. The left section, labeled "Setup," contains a hierarchical tree structure with various elements related to the project. These elements include:
-- TB_BGR_tb_bgr_1 (the testbench)
-- Simulator (spectre)
-- Analyses (with a sub-item "dc" and a range of -40 to 120 for Automatic Start-Stop)
-- Design Variables (with variables "avdd" set to 2 and "avss" set to 0, both highlighted in yellow)
-- Parameters
-- Corners
-- Reliability Analyses
-- Monte Carlo Sampling
-- Checks/Asserts
+3. **Main Workspace**:
+   - The main workspace on the right side is mostly empty, with a tab labeled "maestro_Dc".
+   - There are options to "Replace" and a dropdown menu with "(None)" selected.
+   - There are icons for various actions, such as saving, running simulations, and viewing results.
 
-The right section of the interface is currently empty, with a placeholder for "maestro_Dc" under the "Type" column, but no details are filled in.
+4. **Right Toolbar**:
+   - The right side of the interface has a vertical toolbar with icons for different functions, including:
+     - A green checkmark (possibly for validation or running checks).
+     - A red cross (likely for stopping or canceling an action).
+     - A green play button (for starting a simulation).
+     - A brown square (possibly for stopping a simulation).
+     - A waveform icon (likely for viewing simulation results).
 
-Overall, the image shows a detailed view of the setup and configuration options available in the Virtuoso ADE Explorer for a specific electronic design project.
+Overall, the image shows a user interface for setting up and running simulations in the Cadence Virtuoso ADE Explorer, with a focus on managing design variables and analyses.
 ```
 
 #### **Figure 11: Copying variables from cell view**
@@ -377,29 +414,31 @@ Overall, the image shows a detailed view of the setup and configuration options 
 
 Here is the image describtion:
 ```
-The image shows a screenshot of a software interface, specifically a menu related to plotting results in a simulation environment. The title bar at the top indicates that the software is "Explorer Editing: TB_BGR tb_bgr maestro_Dc."
+The image is a screenshot of a software interface, specifically from a tool used for electronic design automation (EDA). The title bar at the top indicates that the current project is "TB_BGR tb_bgr maestro_Dc."
 
-The menu bar below the title bar contains several options: "Simulation," "Results," "Tools," "EAD," "Parasitics/LDE," "Window," and "Help." The "Results" menu is expanded, revealing a dropdown list of options. The highlighted option in this list is "Direct Plot," which is selected.
+The interface has a menu bar with several options: "Simulation," "Results," "Tools," "EAD," "Parasitics/LDE," "Window," and "Help." The "Results" menu is expanded, showing a dropdown list of options. The highlighted option in this list is "Direct Plot," which is selected.
 
-Upon selecting "Direct Plot," a secondary menu appears to the right, titled "Direct Plot." This menu contains a list of plotting options under the heading "Main Form ...". The options listed are:
-- Transient Signal
-- Transient Minus DC
-- Transient Sum
-- Transient Difference
-- AC Magnitude
-- AC dB10
-- AC dB20
-- AC Phase
-- AC Magnitude & Phase
-- AC Gain & Phase
-- Equivalent Output Noise
-- Equivalent Input Noise
-- Squared Output Noise
-- Squared Input Noise
-- Noise Figure
-- DC
+Upon selecting "Direct Plot," a side panel titled "Direct Plot" appears on the right side of the interface. This panel contains a list of various plotting options, which include:
 
-The interface appears to be part of a simulation or design tool, likely used for electrical or electronic circuit analysis, given the context of the options available for plotting various signal and noise characteristics.
+1. Main Form ...
+2. Transient Signal
+3. Transient Minus DC
+4. Transient Sum
+5. Transient Difference
+6. AC Magnitude
+7. AC dB10
+8. AC dB20
+9. AC Phase
+10. AC Magnitude & Phase
+11. AC Gain & Phase
+12. Equivalent Output Noise
+13. Equivalent Input Noise
+14. Squared Output Noise
+15. Squared Input Noise
+16. Noise Figure
+17. DC
+
+The options in the "Direct Plot" panel are likely used for different types of data visualization and analysis related to electronic circuit simulations. The interface appears to be part of a sophisticated tool used by engineers to analyze and visualize the performance of electronic circuits.
 ```
 
 **Figure 12: Opening Direct Plot Form from ADE Explorer**
@@ -436,32 +475,21 @@ The v("/V\_BGR" ?result "dc") expression is also added to the **Outputs Setup** 
 
 Here is the image describtion:
 ```
-The image is a screenshot of a software interface from Cadence Virtuoso, specifically the Visualization & Analysis XL tool. The interface is displaying a graph of a DC response analysis for a test bench named "TB_BGR_tb_bgr_1".
+The image is a screenshot of the Cadence Virtuoso Visualization & Analysis XL software, which is used for analyzing electronic circuits. The specific analysis shown is a DC response of a circuit, likely a bandgap reference (BGR) circuit, as indicated by the file name "TB_BGR_tb_bgr_1".
 
-Here are the detailed observations:
+The main part of the image is a graph plotting voltage (V) on the y-axis against temperature (temp in °C) on the x-axis. The graph shows a parabolic curve, which is typical for a bandgap reference voltage versus temperature plot. The curve starts at around 1.17875V at -40°C, peaks at approximately 1.182303V at 40°C, and then decreases to about 1.178871V at 120°C.
 
-1. **Software Interface**:
-   - The title bar at the top reads "Virtuoso (R) Visualization & Analysis XL: TB_BGR_tb_bgr maestro_Dc".
-   - The Cadence logo is visible in the top right corner.
-   - The menu bar includes options like File, Edit, View, Graph, Axis, Trace, Marker, Measurements, Tools, Window, Browser, and Help.
-   - Below the menu bar, there is a toolbar with various icons for different functions, such as zoom, pan, and data point selection.
+Several markers and annotations are present on the graph:
+1. A red marker labeled "A" at the peak of the curve, indicating the maximum voltage of 1.182303V at 40.0°C.
+2. A blue marker labeled "B" at the right end of the curve, indicating a voltage of 1.178871V at 120.0°C.
+3. A purple annotation showing the difference in voltage (dy) and temperature (dx) between the peak and the right end of the curve. It indicates a change of 80.0°C in temperature and a voltage change of 3.43138662mV, with a slope (s) of 42.8923327uV/°C.
 
-2. **Graph Details**:
-   - The graph is labeled "DC Response" on the left side.
-   - The x-axis represents temperature (temp) in degrees Celsius (C), ranging from -40.0 to 120.0.
-   - The y-axis represents voltage (V) in volts (V), ranging from approximately 1.17875 to 1.1825.
-   - The graph shows a single curve (green line) that forms a parabolic shape, peaking at around 40.0°C with a voltage of approximately 1.182303V.
-   - There are markers on the graph indicating specific data points:
-     - A red marker at the peak (40.0°C, 1.182303V).
-     - A blue marker at the right end (120.0°C, 1.178871V).
-     - A purple marker indicating a delta (dx: 80.0°C, dy: 3.43138662mV, slope: 42.8923327uV/C).
+The software interface includes various toolbars and menus:
+- The top menu bar includes options like File, Edit, View, Graph, Axis, Trace, Marker, Measurements, Tools, Window, Browser, and Help.
+- Below the menu bar, there are icons for different tools and settings, including options for subwindows, data points, and different graph styles.
+- The left sidebar shows the "DC Response" section with a list of plotted variables, in this case, "v" representing the voltage of the bandgap reference.
 
-3. **Additional Interface Elements**:
-   - On the left side, there is a panel titled "DC Response" with a list of names, currently showing "v" and "V_BGR; dc (V)".
-   - The toolbar above the graph includes options for different graph types and settings, with the "Classic" view selected.
-   - The status bar at the bottom shows mouse coordinates (L: 18(48), M:, R:).
-
-Overall, the image depicts a detailed analysis of a DC response in a temperature sweep, showing how the voltage varies with temperature for a specific circuit or component.
+The software window is titled "Virtuoso (R) Visualization & Analysis XL: TB_BGR tb_bgr maestro_Dc," indicating the specific tool and analysis being used. The Cadence logo is visible in the top right corner of the window.
 ```
 
 **Figure 14: BGR output plot with temperature sweep DC analysis**
@@ -499,17 +527,27 @@ The expression is added to the **ADE Output Setup** table.
 
 Here is the image describtion:
 ```
-The image shows a screenshot of a software interface, likely related to data analysis or signal processing. The interface includes several buttons and options at the top, such as "Off," "Family," "Wave," "Clip," "Append," and "Rectangular." There is also a gear icon highlighted with a red box, indicating it might be a settings or configuration button.
+The image shows a screenshot of a software interface, likely related to data analysis or signal processing. Here are the details:
 
-Below the toolbar, there is a text input area where a command is written in a programming or scripting language. The command shown is:
-```
-ymax(v("V_BGR"?result "dc"))
-```
-This suggests that the user is working with some form of data manipulation or analysis, possibly involving variables and functions.
+1. **Top Toolbar**:
+   - There are several buttons and options in the top toolbar.
+   - From left to right, the first button is a red circle labeled "Off".
+   - Next, there are three radio buttons labeled "Family", "Wave", and "Clip", with "Clip" being checked.
+   - Following these, there is a button with a grid icon.
+   - Then, there is a button with a green arrow pointing to the right, labeled "Append".
+   - Next to it, there is a dropdown menu set to "Rectangular".
+   - Finally, there is a gear icon button highlighted with a red box around it, indicating it is likely the settings or configuration button.
 
-On the left side of the interface, there is a small section labeled "Key P..." with buttons numbered 7, 8, 9, and a division symbol (/), which might be part of a virtual keypad or a quick access panel for numerical input.
+2. **Text Box**:
+   - Below the toolbar, there is a text box with some code written in it.
+   - The code reads: `ymax(v("V_BGR"?result "dc"))`
+   - The text is color-coded, with "ymax" in blue, `v("V_BGR"?result "dc")` in green, and the rest in black.
 
-The overall design and elements suggest that this software is used for technical or scientific purposes, involving data entry, manipulation, and possibly visualization.
+3. **Key Pad**:
+   - On the left side of the interface, there is a small keypad with buttons labeled 7, 8, 9, and a division symbol (/).
+   - The keypad is labeled "Key P..." at the top, which is likely short for "Key Pad".
+
+The overall interface appears to be part of a specialized software tool, possibly for scientific or engineering purposes, where users can input and manipulate data or signals.
 ```
 
 **Figure 17: ViVA-XL calculator buffer**
@@ -547,25 +585,41 @@ Action 31: Similarly, add the name BGR\_variation for the last expression.
 
 Here is the image describtion:
 ```
-The image is a screenshot of the Virtuoso ADE Explorer Editing interface from Cadence. The interface is divided into two main sections: the left panel titled "Setup" and the right panel showing tabs for "tb_bgr" and "maestro_Dc".
+The image is a screenshot of the Virtuoso ADE Explorer, a tool used for analog and mixed-signal design and simulation, specifically showing a setup for a testbench named "TB_BGR_tb_bgr_1". The interface is divided into two main sections: the left panel and the right panel.
 
-In the left panel under "Setup," there is a hierarchical list of settings and parameters for a simulation setup named "TB_BGR_tb_bgr_1." The list includes:
-- "Simulator spectre" indicating the simulator being used.
-- "Analyses" with a checked "dc" analysis, which has parameters t=-40, 120, 10 Linear Step Size Start.
-- "Design Variables" with variables "avdd" set to 2 and "avss" set to 0.
-- "Parameters" and "Corners" sections.
-- "Reliability Analyses" with "Monte Carlo Sampling" checked.
-- "Checks/Asserts" section.
+### Left Panel:
+- **Header**: The header of the left panel shows the hierarchy of the setup, starting with "TB_BGR_tb_bgr_1".
+- **Simulator**: The simulator being used is "spectre".
+- **Analyses**: The analysis type selected is "dc" with a temperature sweep from -40 to 120 degrees Celsius in 10-degree steps.
+- **Design Variables**: Two design variables are listed:
+  - `avdd` with a value of 2.
+  - `avss` with a value of 0.
+- **Parameters**: This section is checked but not expanded, so no details are visible.
+- **Corners**: This section is checked but not expanded, so no details are visible.
+- **Reliability Analyses**: This section is checked and includes "Monte Carlo Sampling".
+- **Checks/Asserts**: This section is checked but not expanded, so no details are visible.
 
-The right panel shows the "maestro_Dc" tab, which lists expressions related to the simulation. There are two highlighted entries:
-1. "BGR_output" with three expressions:
-   - v("V_BGR" ?result "dc")
-   - ymax(v("V_BGR" ?result "dc"))
-   - ymin(v("V_BGR" ?result "dc"))
-2. "BGR_variation" with one expression:
-   - (ymax(v("V_BGR" ?result "dc")) - ymin(v("V_BGR" ?result "dc")))
+### Right Panel:
+- **Header**: The header of the right panel shows two tabs: "tb_bgr" and "maestro_Dc". The "maestro_Dc" tab is currently active.
+- **Table**: The table in the right panel lists expressions and their details:
+  - **BGR_output**:
+    - **Name**: `BGR_output`
+    - **Type**: `expr`
+    - **Details**: `v("/V_BGR" ?result "dc")`
+  - **BGR_variation**:
+    - **Name**: `BGR_variation`
+    - **Type**: `expr`
+    - **Details**: `(ymax(v("/V_BGR" ?result "dc")) - ymin(v("/V_BGR" ?result "dc")))`
 
-The interface also includes a toolbar at the top with various icons for launching, session management, setup, analyses, variables, outputs, simulation, results, tools, EAD, Parasitics/LDE, window, and help options. The Cadence logo is visible in the top right corner.
+### Toolbar:
+- The toolbar at the top includes various icons for launching, session management, setup, analyses, variables, outputs, simulation, results, tools, EAD, parasitics/LDE, window, and help.
+- There is a search bar with the option to replace text and a dropdown menu for selecting different options.
+- Additional icons for saving, opening, and other file operations are present.
+
+### Additional Elements:
+- On the right side of the interface, there are icons for AC, DC, and Transient analyses, as well as a green checkmark and a brown box, possibly indicating the status of the setup or simulation.
+
+Overall, the image shows a detailed setup for a DC analysis of a bandgap reference (BGR) circuit, with specific expressions defined for output voltage and its variation across the temperature sweep.
 ```
 
 **Figure 20: ADE maestro\_Dc view**
@@ -576,19 +630,30 @@ Action 33: In the **ADE Explorer** window, click on the **Add outputs** icon and
 
 Here is the image describtion:
 ```
-The image shows a user interface menu from a software application, likely related to engineering or data analysis. The menu is displayed in a vertical layout with various options listed. Each option is accompanied by an icon to its left for visual identification. The options listed in the menu are:
+The image shows a section of a graphical user interface (GUI) with a vertical toolbar on the left side and a dropdown menu on the right side. The toolbar contains several icons arranged vertically, each representing different functions or tools. Here is a detailed description of the elements:
 
-1. Expression (icon: f0)
-2. Signal (icon: a waveform)
-3. OCEAN script (icon: a document with "SKILL" written on it)
-4. MATLAB expression (icon: f0)
-5. MATLAB script (icon: a document)
-6. Area Specification (icon: a grid or area)
-7. Op Region Spec (icon: a region or area)
-8. Violation Filter (icon: an exclamation mark)
-9. OP Parameters (icon: highlighted in yellow)
+1. **Toolbar Icons (from top to bottom):**
+   - **First Icon:** A small image of a document with a pencil, likely representing a general editing or documentation tool.
+   - **Second Icon:** A green icon with a wrench and screwdriver crossed, indicating settings or configuration options. This icon is highlighted, suggesting it is currently selected.
+   - **Third Icon:** A brown "X" symbol, typically used for closing or deleting an item.
+   - **Fourth Icon:** A green play button, commonly used to start or execute a process.
+   - **Fifth Icon:** A brown square, which might represent a stop button or a different function.
+   - **Sixth Icon:** A waveform or signal icon, possibly related to signal processing or analysis.
 
-The menu is enclosed in a red border, and the "OP Parameters" option is specifically highlighted with a yellow background, indicating it is either selected or emphasized for attention. On the left side of the menu, there are additional icons for other functionalities, including a pencil, a cross, a play button, a stop button, and a waveform.
+2. **Dropdown Menu (highlighted in red):**
+   - The dropdown menu is displayed because the second icon (settings/configuration) is selected.
+   - The menu contains the following options:
+     - **Expression:** Represented by an "f0" symbol, likely used for mathematical or logical expressions.
+     - **Signal:** Indicated by a waveform icon, related to signal processing.
+     - **OCEAN script:** Represented by a document icon with "SKILL" written on it, referring to a scripting language used in certain software environments.
+     - **MATLAB expression:** Another "f0" symbol, indicating the use of MATLAB for expressions.
+     - **MATLAB script:** A document icon, indicating the use of MATLAB scripts.
+     - **Area Specification:** No specific icon, likely used for defining areas within a design or layout.
+     - **Op Region Spec:** No specific icon, possibly used for specifying operational regions.
+     - **Violation Filter:** An exclamation mark icon, likely used for filtering violations or errors.
+     - **OP Parameters:** Highlighted in yellow, indicating it is the currently selected option. This likely refers to operational parameters.
+
+The overall interface appears to be part of a software application used for design, analysis, or simulation, with various tools and options for configuring and executing different tasks.
 ```
 
 #### **Figure 21: Adding operating point parameters in output**
@@ -665,25 +730,26 @@ The **oppoint** parameters expression should appear as shown in the following ta
 
 Here is the image describtion:
 ```
-The image shows a screenshot of a software interface, specifically from a tool used for circuit simulation and analysis. The title bar at the top indicates that the software is in "Explorer Editing" mode for a project named "TB_BGR tb_bgr maestro_Dc."
+The image is a screenshot of a software interface, specifically from a tool used for electronic circuit simulation and analysis. The interface appears to be from a program like Cadence Virtuoso, which is commonly used for designing and simulating integrated circuits.
 
-Below the title bar, there is a menu bar with several options: "Simulation," "Results," "Tools," "EAD," "Parasitics/LDE," "Window," and "Help." The "Results" menu is highlighted, indicating that it is currently selected.
+At the top of the interface, there is a menu bar with several options: "Simulation," "Results," "Tools," "EAD," "Parasitics/LDE," "Window," and "Help." The "Results" menu is currently selected and expanded.
 
-A dropdown menu is open under the "Results" menu, displaying several options:
+Within the "Results" menu, several options are listed:
 - Plot Outputs
 - Direct Plot (highlighted in yellow)
 - Print
 - Annotate
 - Vector
-- Circuit Conditions...
-- Electrothermal Report...
+- Circuit Conditions
+- Electrothermal Report
 - EM/IR Data
-- Save...
-- Select...
-- Delete...
-- Printing/Plotting Options...
+- Save
+- Select
+- Delete
+- Printing/Plotting Options
 
-To the right of this dropdown menu, another panel titled "Direct Plot" is open. This panel lists various plotting options under the "Main Form..." heading:
+The "Direct Plot" option is further expanded, revealing a submenu titled "Direct Plot." This submenu contains a list of different types of plots and analyses that can be performed. The options listed in the "Direct Plot" submenu are:
+- Main Form
 - Transient Signal
 - Transient Minus DC
 - Transient Sum
@@ -701,7 +767,7 @@ To the right of this dropdown menu, another panel titled "Direct Plot" is open. 
 - Noise Figure
 - DC
 
-The interface appears to be part of a software tool used for analyzing and plotting different aspects of circuit simulations, such as transient signals, AC characteristics, and noise figures.
+The interface is designed to allow users to select various types of plots and analyses to visualize and interpret the results of their circuit simulations. The highlighted "Direct Plot" option indicates that the user is currently focused on this feature, and the expanded submenu shows the specific types of plots available for selection.
 ```
 
 #### **Figure 26: Opening Direct Plot Main Form from the ADE Explorer**
@@ -744,24 +810,37 @@ Action 43: Select the **PLUS** node of the **V7** supply voltage source as shown
 
 Here is the image describtion:
 ```
-The image depicts an electronic circuit schematic. The schematic is divided into two main sections:
+The image shows a schematic diagram of an electronic circuit. The diagram is divided into two main sections: the left section and the right section.
 
-1. **Left Section:**
-   - This section contains a power supply arrangement.
-   - There are two voltage sources labeled "vdc=vdd" and "vdc=avss".
-   - The "vdc=vdd" source is connected to a node labeled "PPA" and is grounded.
-   - The "vdc=avss" source is connected to a node labeled "SSA" and is also grounded.
-   - The connections are highlighted with red dots at the nodes.
+### Left Section:
+- The left section contains a simple circuit with two voltage sources and a ground connection.
+- There are two voltage sources labeled "vdc=vdd" and "vdc=avss".
+- The "vdc=vdd" source is connected to a node labeled "PPA" and is also connected to a ground symbol through a component labeled "gnd".
+- The "vdc=avss" source is connected to a node labeled "SSA" and is also connected to the ground symbol.
+- The ground symbol is connected to the bottom of the "vdc=avss" source.
+- The connections are highlighted with red lines, and the "vdc=vdd" source is enclosed in a red square.
 
-2. **Right Section:**
-   - This section contains a circuit labeled "BGR Circuit" which stands for Bandgap Reference Circuit.
-   - The BGR Circuit is enclosed in a green rectangular box.
-   - At the top of the BGR Circuit, there is a current source labeled "I18" connected to a node labeled "vdd".
-   - Inside the BGR Circuit, there are two current sources and several resistors arranged in a specific configuration.
-   - The output of the BGR Circuit is labeled "V_BGR" and is connected to a capacitor labeled "c=1p" and a node labeled "gnd" (ground).
-   - The "V_BGR" node is also connected to the right side of the schematic.
+### Right Section:
+- The right section contains a more complex circuit labeled "BGR_Circuit".
+- The circuit is enclosed in a green rectangular box.
+- At the top of the box, there is a current source labeled "I18" connected to a node labeled "vdd".
+- Below the current source, there are two current sources connected in parallel, each with a resistor connected in series.
+- The node between the two resistors is labeled "V_BGR".
+- The "V_BGR" node is connected to an external capacitor labeled "c=1p" and a ground symbol labeled "gpd".
+- The bottom of the "BGR_Circuit" is connected to a node labeled "vss".
 
-Overall, the schematic shows a power supply section on the left and a Bandgap Reference Circuit on the right, with connections and components clearly labeled.
+### Connections:
+- The "PPA" node from the left section is connected to the "vdd" node in the right section.
+- The "SSA" node from the left section is connected to the "vss" node in the right section.
+
+### Labels and Colors:
+- The labels "PPA" and "SSA" are in blue.
+- The labels "vdc=vdd" and "vdc=avss" are in orange.
+- The labels "vdd", "vss", and "V_BGR" are in red.
+- The ground symbols are in green.
+- The connections are highlighted with red lines.
+
+Overall, the image depicts a schematic of a voltage reference circuit, likely a bandgap reference (BGR) circuit, with connections to power supply nodes and ground.
 ```
 
 **Figure 29: Plotting supply current**
@@ -770,34 +849,35 @@ The waveform is plotted as shown in Figure 30. The "i("/V7/PLUS" ?result "dc")" 
 
 Here is the image describtion:
 ```
-The image is a screenshot of a graph from the Virtuoso Visualization & Analysis XL software, which is used for electronic design automation. The graph displays the results of a DC analysis over a temperature range from -40°C to 120°C.
+The image is a screenshot of a software interface, specifically from Cadence Virtuoso, which is used for electronic design automation (EDA). The interface is displaying a graph from a DC analysis of a circuit, likely a bandgap reference (BGR) circuit, as indicated by the file name "TB_BGR_tb_bgr_1".
 
-Key elements of the image include:
+Here are the detailed observations:
 
-1. **Graph Title and Software Information**:
+1. **Software Interface**:
    - The title bar at the top reads "Virtuoso (R) Visualization & Analysis XL: TB BGR tb_bgr maestro_Dc".
-   - The software is identified as Cadence, a well-known EDA tool.
+   - The interface has multiple toolbars with various icons for different functions such as file operations, graph manipulation, measurements, and window management.
 
 2. **Graph Details**:
-   - The x-axis represents temperature (temp) in degrees Celsius (°C), ranging from -40°C to 120°C.
-   - The y-axis represents current (I) in microamperes (µA), ranging from approximately -81.5 µA to -75.5 µA.
-   - The graph shows a single trace labeled "i/V7/PLUS" with a purple line.
+   - The graph is labeled "DC Analysis `dc`: temp = (-40 C -> 120 C)" indicating that the analysis is performed over a temperature range from -40°C to 120°C.
+   - The x-axis represents the temperature in degrees Celsius (°C), ranging from -40°C to 120°C.
+   - The y-axis represents the current (I) in microamperes (µA), ranging from approximately -81.5 µA to -75.5 µA.
 
-3. **Data Points and Annotations**:
+3. **Data Points and Line**:
+   - A magenta line represents the current variation with temperature.
    - There are two marked data points on the graph:
      - At -40.0°C, the current is -75.92529 µA.
      - At 120.0°C, the current is -81.23888 µA.
-   - An annotation indicates the change in current (dy) over the temperature range (dx) with values: dx = 160.0°C, dy = 5.313584 µA, and a slope (s) of 33.2099 nA/°C.
+   - The slope of the line (dy/dx) is calculated as 33.2099 nA/°C, indicating the rate of change of current with temperature.
 
-4. **Graphical User Interface (GUI)**:
-   - The GUI includes various toolbars and menus for file operations, editing, viewing, graphing, axis adjustments, tracing, markers, measurements, tools, window management, and browsing.
-   - There are icons for different functions such as zooming, panning, and data point selection.
-   - The left panel shows the trace name "i/V7/PLUS" with a filter icon.
+4. **Annotations**:
+   - The graph has annotations showing the exact values at the marked data points.
+   - There is a label indicating the change in current (dy) over the change in temperature (dx), which is 5.313584 µA over 160.0°C.
 
-5. **Additional Information**:
-   - The bottom of the image shows a status bar with details about the trace, history, test, design point, and corner.
+5. **Additional Interface Elements**:
+   - On the left side, there is a panel showing the trace being analyzed, labeled "i/V7/PLUS...".
+   - The bottom of the interface shows a status bar with information about the trace and the design point.
 
-Overall, the image provides a detailed view of the current versus temperature analysis for a specific electronic component or circuit, with clear annotations and a user-friendly interface for further analysis and exploration.
+Overall, the image provides a detailed view of the current variation with temperature for a specific circuit, analyzed using the Cadence Virtuoso software.
 ```
 
 #### **Figure 30: BGR supply current plot with temperature sweep DC analysis**
@@ -830,32 +910,26 @@ Action 45: In the **ADE Explorer** window, click on the **Plot Outputs** icon to
 
 Here is the image describtion:
 ```
-The image is a screenshot of the Cadence Virtuoso Visualization & Analysis XL tool, which is used for analyzing electronic circuits. The interface is divided into two main sections, each displaying different graphs and data points.
+The image is a screenshot of the Cadence Virtuoso Visualization & Analysis XL software, which is used for analyzing electronic circuits. The interface is divided into several sections, each displaying different types of data and analysis results.
 
-1. **Left Section:**
-   - This section shows a scatter plot with the title "BGR_variation:ymin(v("/V_BGR")...ymax(v("/V_BGR")?result "dc")".
-   - The x-axis is labeled "avss" and ranges from -1.0 to 1.0.
-   - The y-axis ranges from -0.1 to 1.3.
-   - There are three data points labeled M2, M3, and M4:
-     - M2: Located at (0.0, 1.1789)
-     - M3: Located at (0.0, 1.1823)
-     - M4: Located at (0.0, 3.4314m)
-   - The data points are color-coded: M2 and M3 are green, while M4 is red with a cross symbol.
+1. **Top Menu Bar**: The top of the window contains a menu bar with options like File, Edit, View, Graph, Axis, Trace, Marker, Measurements, Tools, Window, and Browser. These menus provide various functionalities for managing and analyzing the data.
 
-2. **Right Section:**
-   - This section shows a line graph with the title "BGR_output:Supply_Current".
-   - The x-axis is labeled "temp (C)" and ranges from 40.0 to 120.0.
-   - The left y-axis is labeled "V (V)" and ranges from 1.17875 to 1.1825.
-   - The right y-axis is labeled "I (n)" and ranges from -81.5 to -75.5.
-   - There are two lines plotted:
-     - A red line representing "BGR_output" which forms a parabolic shape.
-     - A yellow line representing "Supply_Current" which is linear.
-   - There are two data points labeled:
-     - A red point at 40.0C with a value of 1.182303V.
-     - A blue point at 120.0C with a value of 1.17875V.
-   - An annotation indicates a delta (dx) of 80.0C and a delta (dy) of 3.43138662mV with a slope of 42.8923.
+2. **Toolbar**: Below the menu bar, there is a toolbar with icons for quick access to common functions such as opening files, saving, zooming, and other analysis tools.
 
-The interface includes various toolbars and menus at the top for different functions like File, Edit, View, Graph, Axis, Trace, Marker, Measurements, Tools, Window, and Browser. The bottom of the interface shows a status bar with information about the current trace, history, test, design point, and corner.
+3. **Subwindow Tabs**: There are tabs labeled "Subwindow" and "Data Point" which allow users to switch between different views or data points within the analysis.
+
+4. **Main Analysis Area**: The main area of the interface is divided into two sections:
+   - **Left Section**: This section shows a scatter plot with the title "BGR_variation:ymin(v("/V_BGR")...ymax(v("/V_BGR")?result "dc")". The plot has a vertical axis labeled from -0.1 to 1.3 and a horizontal axis labeled from -1.0 to 1.0. There are three markers labeled M2, M3, and M4, with their respective coordinates displayed. M2 and M3 are green markers, while M4 is a red marker.
+   - **Right Section**: This section shows a graph with the title "BGR_output:Supply_Current". The graph has two vertical axes: the left axis labeled "V (V)" ranging from 1.17875 to 1.1825, and the right axis labeled "I (n)" ranging from -81.5 to -75.5. The horizontal axis is labeled "temp (C)" and ranges from 40.0 to 120.0. The graph displays two curves: a red curve labeled "BGR_output" and a yellow curve labeled "Supply_Current". There are markers on the curves indicating specific data points, with one marker at 40.0C and 1.182303V, and another at 120.0C. The difference between these points is also indicated (dx: 80.0C, dy: 3.43138662mV).
+
+5. **Status Bar**: At the bottom of the window, there is a status bar displaying information about the current trace, history, test, design point, and corner. The specific details shown are:
+   - Trace: BGR_output
+   - History: ExplorerRun.0
+   - Test: TB_BGR_tb_bgr_1
+   - Design Point: 1
+   - Corner: nom
+
+Overall, the image shows a detailed analysis of a bandgap reference (BGR) circuit, with specific focus on the output voltage variation and supply current over a range of temperatures.
 ```
 
 #### **Figure 32: Plots in ViVA**
@@ -864,58 +938,76 @@ Action 46: In the **ADE Explorer** window, click on the up arrow to open the **A
 
 Here is the image describtion:
 ```
-The image is a screenshot of a software interface, specifically a setup window for a simulation tool. The window is titled "Setup" and contains a hierarchical list of settings and parameters for a simulation.
+The image is a screenshot of a software interface, likely from an electronic design automation (EDA) tool used for circuit simulation. The interface is titled "Setup" and contains a hierarchical tree structure with various settings and parameters for a simulation.
 
-At the top of the window, there are two columns labeled "Name" and "Value." Below these columns, there is a list of items organized in a tree structure. The items are as follows:
+Here is a detailed description of the elements in the image:
 
-1. **TB_BGR_tb_bgr_1**: This appears to be the name of the test bench or the top-level simulation setup.
-   - **Simulator spectre**: Indicates that the simulator being used is Spectre.
-   - **Analyses**: This section contains the types of analyses to be performed.
-     - **dc**: A DC analysis is specified with parameters "t -40 120 Automatic Start-Stop."
-   - **Design Variables**: This section lists the design variables used in the simulation.
-     - **avdd**: A design variable with a value of 2.
-     - **avss**: A design variable with a value of 0.
-   - **Parameters**: This section is currently empty, with a prompt to "Click to add variable."
-   - **Corners**: This section is also empty, with a prompt to "Click to add variable."
-   - **Reliability Analyses**: This section includes a sub-item.
-     - **Monte Carlo Sampling**: Indicates that Monte Carlo sampling is part of the reliability analyses.
-   - **Checks/Asserts**: This section is currently empty, with a prompt to "Click to add variable."
+1. **Top Bar**:
+   - The top bar contains the title "Setup" and has two columns labeled "Name" and "Value".
+   - There is a filter icon (funnel shape) next to the "Filter" text box, which is currently empty.
 
-There are various icons next to each item, such as a green checkmark, a red cross, and a blue arrow pointing upwards, which likely represent different statuses or actions that can be taken for each item. The blue arrow icon is highlighted with a red border, indicating it might be the currently selected or active item.
+2. **Tree Structure**:
+   - The tree structure is organized into several expandable and collapsible sections, indicated by small icons next to each item.
+   - The first item in the tree is "TB_BGR_tb_bgr_1", which appears to be the name of the testbench or simulation setup.
+   - Below this, there are several categories, each with specific settings and parameters.
 
-Overall, the image depicts a detailed setup for running a simulation with specific analyses, design variables, and reliability checks.
+3. **Categories and Settings**:
+   - **Simulator**: The simulator being used is "spectre".
+   - **Analyses**: This section includes a "dc" analysis with parameters "t -40 120 Automatic Start-Stop".
+   - **Design Variables**: This section lists two variables:
+     - "avdd" with a value of 2.
+     - "avss" with a value of 0.
+   - **Parameters**: This section is present but does not have any specific parameters listed.
+   - **Corners**: This section is present but does not have any specific corners listed.
+   - **Reliability Analyses**: This section includes "Monte Carlo Sampling".
+   - **Checks/Asserts**: This section is present but does not have any specific checks or asserts listed.
+
+4. **Icons**:
+   - Each category and item has an associated icon. For example, the "Analyses" section has a green icon with a waveform symbol, and the "Design Variables" section has a red icon with a variable symbol.
+   - The first item, "TB_BGR_tb_bgr_1", has a blue arrow icon pointing upwards, which is highlighted with a red square around it. This likely indicates that this item is currently selected or has some special status.
+
+Overall, the image shows a detailed setup for a circuit simulation, including the simulator type, analysis type, design variables, and other parameters. The interface allows users to configure and manage various aspects of the simulation.
 ```
 
 #### **Figure 33: Up Arrow to open ADE Assembler**
 
 Here is the image describtion:
 ```
-The image is a screenshot of the Virtuoso ADE Assembler software interface, specifically showing the editing of a test bench named "TB_BGR tb_bgr maestro_Dc." The interface is divided into several sections:
+The image is a screenshot of the Virtuoso ADE Assembler software interface, specifically showing the editing of a test bench named "TB_BGR tb_bgr maestro_Dc." The interface is divided into several sections and panels, each serving a different purpose.
 
-1. **Top Menu Bar**: This contains various menu options such as Launch, File, Create, Tools, Options, Run, EAD, Parasitics/LDE, Window, and Help. There are also several icons for quick access to common functions like saving, opening files, and running simulations.
+1. **Top Menu Bar**: 
+   - The topmost part of the interface contains a menu bar with options such as Launch, File, Create, Tools, Options, Run, EAD, Parasitics/LDE, Window, and Help.
+   - Below the menu bar, there are various icons for quick access to common functions like saving, opening files, running simulations, and more.
 
-2. **Data View Panel (Left Side)**: This panel shows a hierarchical tree structure with categories such as Tests, Global Variables, Parameters, Corners, Documents, Setup States, Reliability Analyses, and Checks/Asserts. The "Nominal" corner is selected under the Corners category.
+2. **Data View Panel (Left Side)**:
+   - This panel is on the left side of the interface and is labeled "Data View."
+   - It contains a hierarchical tree structure with categories such as Tests, Global Variables, Parameters, Corners, Documents, Setup States, Reliability Analyses, and Checks/Asserts.
+   - The "Tests" category is expanded, showing "TB_BGR_tb_bgr_1" as the selected test.
+   - The "Corners" category is also expanded, showing "Nominal" as the selected corner.
 
-3. **Run Summary Panel (Bottom Left)**: This panel provides a summary of the current run, indicating that there is 1 Test, 1 Point Sweep, and 0 Corners selected.
+3. **Run Summary Panel (Bottom Left)**:
+   - Below the Data View panel, there is a "Run Summary" panel.
+   - It shows that there is 1 Test, 1 Point Sweep, and 0 Corners selected for the current run.
 
-4. **Main Panel (Center)**: This is the primary workspace where the test setup and results are displayed. It is divided into two tabs: "Data" and "History." The "Data" tab is currently active.
+4. **Outputs Setup Panel (Center)**:
+   - The central part of the interface is the "Outputs Setup" panel.
+   - It displays a table with columns labeled Test, Name, Type, Details, EvalType, Plot, Save, Spec, Weight, Units, and Digits.
+   - The table lists seven rows, each representing a different output or expression to be evaluated:
+     - Row 1: supply current (expr) - `I("/V7/PLUS" ?result "dc")`
+     - Row 2: BGR_output (expr) - `v("/V_BGR" ?result "dc")`
+     - Row 3: BGR_expression (expr) - `v(max("/V_BGR" ?result "dc"))`
+     - Row 4: /I18/M12 (oppoint) - `/I18/M12 region`
+     - Row 5: /I18/M5 (oppoint) - `/I18/M5 region`
+     - Row 6: (expr) - `ymax("/V_BGR" ?result "dc")`
+     - Row 7: (expr) - `ymin("/V_BGR" ?result "dc")`
+   - The "EvalType" for all rows is set to "point."
+   - The "Plot" and "Save" checkboxes are checked for some rows, indicating which outputs will be plotted and saved.
 
-5. **Outputs Setup Section**: This section lists the outputs for the test bench "TB_BGR_tb_bgr_1." There are seven rows, each representing a different output or expression to be evaluated. The columns include:
-   - **Test**: The name of the test bench.
-   - **Name**: The name of the output or expression.
-   - **Type**: The type of the output (e.g., expr, oppoint).
-   - **Details**: Specific details or expressions for the output.
-   - **EvalType**: The evaluation type, which is set to "point" for all rows.
-   - **Plot**: A checkbox to indicate whether the output should be plotted.
-   - **Save**: A checkbox to indicate whether the output should be saved.
-   - **Spec**: Specification details (currently empty).
-   - **Weight**: Weight details (currently empty).
-   - **Units**: Units of measurement (currently empty).
-   - **Digits**: Number of digits for precision (currently empty).
+5. **Status Bar (Bottom)**:
+   - At the bottom of the interface, there is a status bar showing the current trace, history, test, design point, and corner information.
+   - It indicates that the trace is "BGR_output," the history is "ExplorerRun.0," the test is "TB_BGR_tb_bgr_1," the design point is "1," and the corner is "nom."
 
-6. **Status Bar (Bottom)**: This bar shows the status of the current operation, including trace information and design point details.
-
-Overall, the image depicts a detailed setup for running and analyzing a test bench in the Virtuoso ADE Assembler environment, with various outputs and expressions configured for evaluation.
+Overall, the image shows a detailed setup for running a simulation in the Virtuoso ADE Assembler, with specific outputs and expressions configured for evaluation.
 ```
 
 #### **Figure 34: Assembler view of maestro\_Dc**
@@ -924,22 +1016,26 @@ Action 47: In the ADE Assembler **Data View** window, expand **Corners** using t
 
 Here is the image describtion:
 ```
-The image shows a software interface titled "Data View." It appears to be a hierarchical tree structure used for organizing and managing different elements within a project or dataset. The interface is divided into two main columns: "Name" and "Value," each with a filter option at the top.
+The image is a screenshot of a software interface, specifically a "Data View" panel. The panel is divided into two main columns: "Name" and "Value," each with a filter option at the top.
 
-The tree structure includes the following elements, each with a checkbox to the left indicating whether they are selected or not:
+The "Name" column lists various categories, each with an associated checkbox that can be checked or unchecked to include or exclude the category from the view. The categories listed are:
 
-1. **Tests** - This item is selected, as indicated by the checked box.
-2. **Global Variables** - This item is also selected.
-3. **Parameters** - This item is selected as well.
-4. **Corners** - This item is partially selected, indicated by a yellow box with a check mark. It has a sub-item:
-   - **Nominal** - This sub-item is selected.
-   - **Click to add corner** - This is highlighted in yellow, suggesting it is an interactive element where the user can add a new corner.
-5. **Documents** - This item is not selected.
-6. **Setup States** - This item is not selected.
-7. **Reliability Analyses** - This item is not selected.
-8. **Checks/Asserts** - This item is not selected.
+1. Tests (checked)
+2. Global Variables (checked)
+3. Parameters (checked)
+4. Corners (partially checked, indicated by a yellow square in the checkbox)
+   - Nominal (checked)
+   - Click to add corner (highlighted in yellow)
+5. Documents (unchecked)
+6. Setup States (unchecked)
+7. Reliability Analyses (unchecked)
+8. Checks/Asserts (unchecked)
 
-Each item in the tree has an icon next to it, representing its type or category. The interface is designed to allow users to manage and organize various components of their project efficiently.
+Each category has an icon next to it, representing its type. For example, "Tests" has a gear icon, "Global Variables" and "Parameters" have a group of people icon, "Corners" has a thermometer icon, and "Documents" has a document icon.
+
+The "Corners" category is expanded to show its subcategories, "Nominal" (which is checked) and "Click to add corner" (highlighted in yellow, indicating it is an interactive element where the user can add a new corner).
+
+The interface appears to be part of a software tool used for managing and organizing various elements related to testing, variables, parameters, and other aspects of a project or system.
 ```
 
  **Figure 35: Opening Corner Setup**
@@ -1128,28 +1224,23 @@ Action 56: Right-click on the **Nominal** column for BGR\_output and select **Pl
 
 Here is the image describtion:
 ```
-The image is a screenshot of a software interface, specifically from Cadence Virtuoso Visualization & Analysis XL. The interface is used for analyzing electronic circuits, and the current display shows a graph of the output voltage (V) versus temperature (temp in °C) for a bandgap reference (BGR) circuit.
+The image is a screenshot of the Cadence Virtuoso Visualization & Analysis XL tool, which is used for analyzing electronic circuit simulations. The specific simulation being analyzed is labeled "TB_BGR_tb_bgr_1" and the data being displayed is for "BGR_output."
 
-Key elements of the image include:
+The main part of the image is a graph plotting the output voltage (V) of a bandgap reference circuit against temperature (°C). The x-axis represents the temperature range from -40°C to 120°C, while the y-axis represents the output voltage ranging from approximately 1.172V to 1.194V.
 
-1. **Software Interface**: The top bar shows the software name "Virtuoso (R) Visualization & Analysis XL" and the specific testbench file "TB_BGR_tb_bgr_ref_maestro_Dc".
+There are multiple colored curves on the graph, each representing the output voltage of the bandgap reference circuit under different conditions or process corners. The curves show how the output voltage changes with temperature. The curves generally exhibit a parabolic shape, indicating that the output voltage increases with temperature up to a certain point and then decreases.
 
-2. **Graph**: The main part of the image is a graph plotting the output voltage (V) on the Y-axis against temperature (°C) on the X-axis. The temperature range is from -40°C to 120°C, and the voltage range is from approximately 1.172V to 1.194V.
+Two specific data points are highlighted on the graph:
+1. A point at 60.0°C with an output voltage of 1.192176V, marked with a red triangle and a label.
+2. A point at 120.0°C with an output voltage of 1.171816V, marked with a red circle and a label.
 
-3. **Curves**: There are multiple colored curves on the graph, each representing the BGR output voltage at different process corners or conditions. The colors include red, orange, yellow, green, cyan, blue, and magenta.
+The difference in voltage between these two points is also indicated, with a delta (dy) of -20.359974mV and a temperature coefficient (s) of -339.3329uV/°C.
 
-4. **Markers and Annotations**: 
-   - A vertical line at 60°C intersects the curves, with a marker showing the voltage at this temperature for each curve.
-   - Two specific points are highlighted: one at 60.0°C with a voltage of 1.192176V (top curve) and another at 120.0°C with a voltage of 1.171816V (bottom curve).
-   - An annotation at the bottom right corner indicates a change in voltage (dy) of -20.359974mV over a temperature change (dx) of 60.0°C, resulting in a temperature coefficient of 339.3329uV/°C.
+The toolbar at the top of the window contains various icons and options for manipulating the graph, such as zooming, panning, and changing the display settings. The left sidebar lists the available data traces, with "BGR_output" being the selected trace.
 
-5. **Tabs and Controls**: 
-   - On the left side, there is a tab labeled "BGR_output" with a tree structure showing "BGR_output" as the selected item.
-   - The top toolbar contains various icons and dropdown menus for file operations, graph settings, measurements, and other tools.
+The bottom of the window shows a status bar with information about the selected trace, including the model files, test name, design point, and corner.
 
-6. **Date and Time**: The top right corner of the graph area shows the date and time "Thu Oct 14 08:11:32 2021".
-
-Overall, the image depicts a detailed analysis of the BGR circuit's output voltage behavior over a range of temperatures, with specific focus on the voltage stability and temperature coefficient.
+Overall, the image provides a detailed view of the temperature dependence of the bandgap reference circuit's output voltage, with specific data points and differences highlighted for analysis.
 ```
 
 **Figure 44: BGR\_output plots Across PVT Corners**
@@ -1166,22 +1257,38 @@ Action 58: From the Library Manager, open **TB\_BGR > tb\_bgr > schematic**. The
 
 Here is the image describtion:
 ```
-The image depicts an electronic circuit schematic. The schematic is divided into two main sections:
+The image shows a schematic diagram of an electronic circuit, likely created using a circuit design software. The diagram is displayed on a grid background, which is typical for such software to help with component placement and alignment.
 
-1. **Left Section:**
-   - This section contains two voltage sources labeled V7 and V8.
-   - V7 is connected to a node labeled "PPA" and has parameters vdc=vdd and ac=1.
-   - V8 is connected to a node labeled "BGR" and has parameters vdc=vss.
-   - Both voltage sources are connected to a common ground.
+### Components and Connections:
+1. **Power Supplies:**
+   - There are two voltage sources labeled `V7` and `V8`.
+   - `V7` is connected to a node labeled `PPA` and has parameters `vdc=vdd` and `ac=1`.
+   - `V8` is connected to a node labeled `VSS` and has a parameter `vdc=vss`.
 
-2. **Right Section:**
-   - This section contains a more complex circuit enclosed in a green rectangle labeled "BGR Circuit."
-   - The circuit includes two current sources at the top, connected to resistors in series.
-   - The resistors are connected to a node labeled "V_BGR."
-   - The node "V_BGR" is connected to a capacitor labeled "C0" which is grounded.
-   - The bottom part of the circuit includes additional components and connections, forming a more intricate design.
+2. **Ground Connection:**
+   - The ground symbol is connected to the bottom node of `V7`.
 
-The entire schematic is drawn on a black background with a grid pattern, which is typical for electronic design automation (EDA) tools. The connections and components are color-coded for clarity, with red, green, and blue lines representing different parts of the circuit.
+3. **BGR Circuit:**
+   - The main part of the diagram is enclosed in a green rectangle labeled `BGR Circuit`, which stands for Bandgap Reference Circuit.
+   - Inside the BGR Circuit, there are two current sources connected in parallel, each with a resistor in series.
+   - The top node of the left current source is connected to the `PPA` node.
+   - The top node of the right current source is connected to a node labeled `V_BGR`.
+   - The bottom nodes of both current sources are connected to a common node at the bottom of the BGR Circuit.
+
+4. **Resistors:**
+   - There are two resistors inside the BGR Circuit, each connected in series with the current sources.
+   - The resistors are connected to the `PPA` and `V_BGR` nodes.
+
+5. **Output Node:**
+   - The node labeled `V_BGR` is connected to an output node labeled `V_BGR` outside the BGR Circuit.
+   - This output node is connected to a capacitor labeled `C0`, which is grounded.
+
+6. **Labels and Annotations:**
+   - The nodes and components are labeled with various annotations such as `PPA`, `V_BGR`, `VSS`, and `BGR Circuit`.
+   - The current sources and resistors inside the BGR Circuit are not explicitly labeled with values.
+
+### Summary:
+The schematic represents a Bandgap Reference Circuit, which is a common circuit used to generate a stable reference voltage that is independent of temperature and supply voltage variations. The circuit includes voltage sources, current sources, resistors, and a capacitor, all interconnected to achieve the desired reference voltage output.
 ```
 
 **Figure 45: Schematic of tb\_bgr cell testbench**
@@ -1246,32 +1353,32 @@ The **ADE Explorer** window opens as shown in Figure 49.
 
 Here is the image describtion:
 ```
-The image is a screenshot of the Virtuoso ADE Explorer software interface, which is used for analog and mixed-signal design and simulation. The title bar at the top indicates that the current project being edited is "TB_BGR tb_bgr maestro_Ac."
+The image is a screenshot of the Virtuoso ADE Explorer, a tool used for analog and mixed-signal design and simulation, developed by Cadence Design Systems. The interface is divided into several sections:
 
-The interface is divided into several sections:
+1. **Title Bar**: At the top, it displays "Virtuoso® ADE Explorer Editing: TB_BGR tb_bgr maestro_Ac" indicating the current project or file being worked on.
 
-1. **Menu Bar**: At the very top, there is a menu bar with options such as Launch, Session, Setup, Analyses, Variables, Outputs, Simulation, Results, Tools, EAD, Parasitics/LDE, Window, and Help.
+2. **Menu Bar**: Below the title bar, there is a menu bar with options such as Launch, Session, Setup, Analyses, Variables, Outputs, Simulation, Results, Tools, EAD, Parasitics/LDE, Window, and Help.
 
-2. **Toolbar**: Below the menu bar, there is a toolbar with various icons for common actions like opening, saving, and running simulations. There is also a search bar with options to replace text and a dropdown menu currently set to "(None)."
+3. **Toolbar**: Directly under the menu bar, there is a toolbar with various icons for quick actions like saving, opening files, and other common tasks. There is also a search bar with "Replace" and a dropdown menu set to "(None)".
 
-3. **Setup Panel**: On the left side, there is a panel titled "Setup" which contains a hierarchical tree structure. The tree includes:
+4. **Setup Panel**: On the left side, there is a panel titled "Setup" which contains a hierarchical tree structure. The tree includes:
    - TB_BGR_tb_bgr_1
    - Simulator spectre
-   - Analyses (with an option to add analysis)
-   - Design Variables (with an option to add variable)
+   - Analyses (with a prompt to "Click to add analysis")
+   - Design Variables (with a prompt to "Click to add variable")
    - Parameters
-   - Corners (checked)
+   - Corners (with a checkbox ticked)
    - Reliability Analyses
    - Monte Carlo Sampling
    - Checks/Asserts
 
-4. **Main Workspace**: The central part of the interface is a large blank area, which is likely where detailed information or results would be displayed once a simulation is run or a specific item is selected from the setup panel.
+5. **Main Workspace**: The central part of the interface is a large blank area, likely where the main content or results would be displayed. It currently shows a tab labeled "maestro_Ac".
 
-5. **Right Toolbar**: On the right side, there is a vertical toolbar with icons for various actions such as running simulations, stopping simulations, and other controls.
+6. **Right Toolbar**: On the right side, there is a vertical toolbar with icons for various actions such as running simulations, stopping simulations, and other controls.
 
-6. **Status Bar**: At the bottom, there is a status bar that shows the current mouse position and other status messages. It indicates that the current schematic is "TB_BGR tb_bgr schematic" and the simulator being used is "spectre aps."
+7. **Status Bar**: At the bottom, there is a status bar with some text indicating "TB_BGR tb_bgr schematic" and "Simulator: spectre aps".
 
-Overall, the interface is designed to manage and run simulations for analog and mixed-signal designs, providing various tools and options for setting up and analyzing the design parameters and results.
+The interface is designed to facilitate the setup, execution, and analysis of simulations for electronic circuit designs.
 ```
 
 #### **Figure 49: ADE Explorer window showing maestro\_Ac view**
@@ -1280,21 +1387,43 @@ Action 64: In the **ADE Explorer** window, select **Click to add analysis** in t
 
 Here is the image describtion:
 ```
-The image is a screenshot of a software interface, specifically a setup window for a simulation or analysis tool. The window is divided into two main columns: "Name" and "Value," each with a filter option at the top.
+The image is a screenshot of a software interface, specifically a setup window for a simulation or analysis tool. The window is titled "Setup" and is divided into two main columns: "Name" and "Value," each with a filter option at the top.
 
-The left column lists various components and settings for the simulation:
+The left column, under "Name," contains a hierarchical list of items, each with an associated icon:
 
-1. **TB_BGR_tb_bgr_1**: This appears to be the name of the current project or test bench.
-2. **Simulator spectre**: Indicates the simulator being used, which is "spectre."
-3. **Analyses**: A section for adding and managing different types of analyses. There is a highlighted prompt "Click to add analysis" suggesting that the user can add a new analysis here.
-4. **Design Variables**: A section for managing design variables, with a prompt "Click to add variable."
-5. **Parameters**: This section is checked, indicating it is active or selected.
-6. **Corners**: This section is also checked, indicating it is active or selected.
-7. **Reliability Analyses**: This section is not expanded, suggesting it contains additional settings or options.
-8. **Monte Carlo Sampling**: This section is not expanded, suggesting it contains additional settings or options.
-9. **Checks/Asserts**: This section is not expanded, suggesting it contains additional settings or options.
+1. **TB_BGR_tb_bgr_1**: This appears to be the name of the test bench or project.
+   - Icon: A blue upward arrow.
 
-The interface uses icons to represent different sections and their statuses, such as checkboxes for active items and folder icons for expandable sections. The overall design is typical of engineering or simulation software, with a focus on organizing and managing various parameters and analyses.
+2. **Simulator spectre**: This indicates the simulator being used, which is "spectre."
+   - Icon: A green gear.
+
+3. **Analyses**: This section is for adding different types of analyses.
+   - Icon: A green gear.
+   - Sub-item: "Click to add analysis" (highlighted in yellow), suggesting that the user can click here to add a new analysis.
+
+4. **Design Variables**: This section is for managing design variables.
+   - Icon: A red cube.
+   - Sub-item: "Click to add variable," indicating that the user can add new variables here.
+
+5. **Parameters**: This section is for setting parameters.
+   - Icon: A red cube.
+   - Checkbox: Checked, indicating that this section is active or selected.
+
+6. **Corners**: This section is likely for corner case analyses.
+   - Icon: A thermometer.
+   - Checkbox: Checked, indicating that this section is active or selected.
+
+7. **Reliability Analyses**: This section is for reliability analyses.
+   - Icon: Not visible, but the section is collapsed.
+
+8. **Monte Carlo Sampling**: This section is for Monte Carlo sampling analyses.
+   - Icon: A green circular arrow.
+   - Checkbox: Unchecked, indicating that this section is not active or selected.
+
+9. **Checks/Asserts**: This section is for checks and assertions.
+   - Icon: Not visible, but the section is collapsed.
+
+The right column under "Value" is empty, suggesting that no specific values or settings are currently displayed or selected for the items in the "Name" column. The interface also includes small question mark icons in the top right corner, likely for help or additional information.
 ```
 
 **Figure 50: Opening 'Analyses' form from 'Click to add analysis'**
@@ -1336,29 +1465,33 @@ Action 65: In the **Choosing Analyses** form, select the **ac** analysis and set
 
 Here is the image describtion:
 ```
-The image is a screenshot of the Virtuoso ADE Explorer Edition software interface. The interface is divided into several sections and menus, with a focus on the "Setup" tab.
+The image is a screenshot of the Virtuoso ADE Explorer Edition software interface, which is used for analog and mixed-signal design and simulation. The interface is divided into several sections and menus.
 
 1. **Top Menu Bar**:
-   - The top menu bar includes options such as Launch, Session, Setup, Analyses, Variables, Outputs, Simulation, and Results.
+   - The top menu bar includes options such as Launch, Session, Setup, Analyses, Variables, Outputs, Simulation, and more.
    - The "Variables" menu is highlighted in yellow, indicating it is currently selected or active.
-   - A dropdown menu under "Variables" is open, showing options like Edit, Delete, Find, Copy From Cellview (highlighted in yellow), and Copy To Cellview.
 
-2. **Setup Section**:
-   - The left panel is labeled "Setup" and contains a hierarchical tree structure.
-   - The tree structure includes:
-     - **TB_BGR_tb_bgr_1**: The top-level item, likely representing a test bench or project.
-     - **Simulator_spectre**: The simulator being used.
-     - **Analyses**: A section for different types of analyses, with "ac" analysis (1.1G Automatic Start-Stop) checked.
-     - **Design Variables**: A section listing design variables, with two variables highlighted in yellow:
-       - **avdd**: Set to a value of 2.
-       - **avss**: Set to a value of 0.
-     - Other sections include Parameters, Corners, Reliability Analyses, Monte Carlo Sampling, and Checks/Asserts, but these are not expanded or detailed in the image.
+2. **Dropdown Menu**:
+   - Under the "Variables" menu, a dropdown menu is visible with options: Edit, Delete, Find, Copy From Cellview, and Copy To Cellview.
+   - The "Copy From Cellview" option is highlighted in yellow, indicating it is the selected option.
 
-3. **Icons and Buttons**:
-   - Various icons and buttons are present at the top of the Setup panel, including options to save, open, and manage files or settings.
-   - A temperature setting of 27°C is displayed, possibly indicating the operating condition for the simulation.
+3. **Setup Panel**:
+   - The left side of the interface shows the "Setup" panel.
+   - The panel includes a hierarchical tree structure with various components:
+     - **TB_BGR_tb_bgr_1**: This appears to be the name of the testbench or the top-level design.
+     - **Simulator_spectre**: Indicates that the Spectre simulator is being used.
+     - **Analyses**: Lists the types of analyses being performed. In this case, an "ac" analysis with a range from 1 to 1G (1 GHz) is selected.
+     - **Design Variables**: This section lists the design variables used in the simulation.
+       - Two design variables are shown:
+         - `avdd` with a value of 2.
+         - `avss` with a value of 0.
+     - Other sections include Parameters, Corners, Reliability Analyses, Monte Carlo Sampling, and Checks/Asserts, but they are not expanded or detailed in this screenshot.
 
-Overall, the image provides a detailed view of the Virtuoso ADE Explorer Edition interface, focusing on the setup and configuration of a simulation environment, with specific attention to design variables and analysis settings.
+4. **Highlighted Elements**:
+   - The "Variables" menu and the "Copy From Cellview" option are highlighted in yellow.
+   - The design variables `avdd` and `avss` are also highlighted in yellow, indicating they are of particular interest or importance in this context.
+
+Overall, the image provides a detailed view of the setup and configuration of a simulation environment within the Virtuoso ADE Explorer Edition software, focusing on the design variables and the action of copying variables from a cell view.
 ```
 
  **Figure 52: Copying variables from cell view**
@@ -1369,28 +1502,31 @@ Overall, the image provides a detailed view of the Virtuoso ADE Explorer Edition
 
 Here is the image describtion:
 ```
-The image is a screenshot of a software interface, specifically from the Virtuoso ADE Explorer Editing environment. The interface appears to be related to simulation tasks within the software. 
+The image is a screenshot of a software interface, specifically the Virtuoso ADE Explorer Editing environment. The interface appears to be part of a simulation tool used for electronic design automation (EDA). 
 
-At the top of the image, there is a menu bar with several tabs, including "Outputs," "Results," "Tools," "EAD," and "Parasitic." The tab "Simulation" is highlighted in yellow, indicating that it is currently selected.
+At the top of the interface, there is a menu bar with several options, including "Outputs," "Results," "Tools," "EAD," and "Parasitics." The "Simulation" menu is highlighted in yellow, indicating that it is currently selected or active.
 
-Below the "Simulation" tab, a dropdown menu is open, displaying several options. The options listed in the dropdown menu are:
-- Netlist and Run
-- Run
-- Stop
-- Suspend (grayed out, indicating it is not currently available)
-- Resume (grayed out, indicating it is not currently available)
-- Run Preview
-- MDL Control
-- Options (with a submenu indicated by a right arrow)
-- Netlist (with a submenu indicated by a right arrow)
-- Output Log (highlighted in yellow)
-- Linter Log
-- Convergence Aids
-- Diagnostics
+Below the menu bar, there is a dropdown menu that has been expanded. This dropdown menu contains several options related to simulation tasks. The options listed in the dropdown menu are:
 
-To the right of the dropdown menu, there is a section with a dropdown box labeled "(None)" and a red arrow indicating it can be expanded or collapsed. 
+1. Netlist and Run
+2. Run
+3. Stop
+4. Suspend (grayed out, indicating it is not currently available)
+5. Resume (grayed out, indicating it is not currently available)
+6. Run Preview
+7. MDL Control
+8. Options (with a submenu indicated by a right arrow)
+9. Netlist (with a submenu indicated by a right arrow)
+10. Output Log (highlighted in yellow)
+11. Linter Log
+12. Convergence Aids
+13. Diagnostics
 
-The interface is designed for managing and executing simulation tasks, with various options for running, stopping, and previewing simulations, as well as accessing logs and diagnostic tools.
+The "Output Log" option is also highlighted in yellow, suggesting that it is either selected or being pointed out for emphasis.
+
+To the right of the dropdown menu, there is a field with the label "(None)" and a red arrow, which might be a dropdown selector for additional options or settings.
+
+Overall, the image shows a detailed view of the simulation menu within the Virtuoso ADE Explorer Editing environment, highlighting the "Simulation" menu and the "Output Log" option.
 ```
 
 **Figure 53: Opening simulation log file from ADE Explorer window**
@@ -1401,11 +1537,11 @@ Learn more at Cadence Learning and Support Portal - https://support.cadence.com 
 
 Here is the image describtion:
 ```
-The image shows a screenshot of a software interface, specifically from a tool used for circuit design or simulation, likely Cadence Virtuoso. The title bar at the top indicates that the user is in the "TB_BGR tb_bgr maestro_Ac" environment.
+The image is a screenshot of a software interface, specifically from a tool used for circuit simulation and analysis. The title bar at the top indicates that the software is "Explorer Editing: TB_BGR tb_bgr maestro_Ac." The interface appears to be from a software suite used for electronic design automation (EDA), likely Cadence Virtuoso, which is commonly used for integrated circuit design.
 
-The interface has a menu bar with several options: "Results," "Tools," "EAD," "Parasitics/LDE," "Window," and "Help." The "Results" menu is expanded, revealing a dropdown list of options. The highlighted option in this list is "Direct Plot," which is further expanded to show another submenu.
+The screenshot shows a dropdown menu under the "Results" tab, which is highlighted in yellow. The "Results" menu has several options, and the "Direct Plot" option is selected, also highlighted in yellow. When "Direct Plot" is selected, a sub-menu appears to the right, titled "Direct Plot," which lists various plotting options.
 
-The "Direct Plot" submenu contains several options, including:
+The "Direct Plot" sub-menu includes the following options:
 - Main Form ...
 - Transient Signal
 - Transient Minus DC
@@ -1424,7 +1560,7 @@ The "Direct Plot" submenu contains several options, including:
 - Noise Figure
 - DC
 
-The highlighted options in the image are "Direct Plot" and "Main Form ...", indicating that these are the currently selected or focused items. The interface appears to be designed for plotting and analyzing various types of simulation data, such as transient signals, AC characteristics, and noise figures.
+Each of these options represents different types of plots or analyses that can be performed on the simulation results. The interface is designed to allow users to visualize and analyze various aspects of their circuit's performance, such as transient response, AC response, noise characteristics, and DC operating points.
 ```
 
 **Figure 54: Opening Direct Plot Form from ADE Explorer window**
@@ -1453,36 +1589,26 @@ The PSRR waveform is plotted as shown in Figure 56. The db(vfreq('ac "/V\_BGR"))
 
 Here is the image describtion:
 ```
-The image is a screenshot of the Cadence Virtuoso Visualization & Analysis XL tool, displaying an AC response graph. The graph plots the voltage gain (V in dB) against frequency (freq in Hz) on a logarithmic scale. 
+The image is a screenshot of the Cadence Virtuoso Visualization & Analysis XL software, which is used for analyzing electronic circuits. The main window displays an AC response graph, showing the voltage gain (V) in decibels (dB) on the y-axis versus frequency (freq) in Hertz (Hz) on the x-axis. The graph is plotted on a logarithmic scale for both axes.
 
-Key features of the image include:
+Key elements of the image include:
 
-1. **Graph Title and Labels**:
-   - The graph is titled "AC Response".
-   - The y-axis is labeled "V (dB)" and ranges from -48.0 dB to -15.0 dB.
-   - The x-axis is labeled "freq (Hz)" and ranges from 10^0 to 10^9 Hz.
+1. **Graph Plot**: The graph shows a single trace labeled "v / V_BGR; ac dB20(V)" with a green line. The trace has three markers:
+   - **M1**: Located at 7.94328 Hz with a gain of -41.2436 dB.
+   - **M2**: Located at 1.99526 MHz with a gain of -17.2929 dB, indicating a peak in the response.
+   - **M3**: Located at 436.516 MHz with a gain of -47.8076 dB.
 
-2. **Data Points and Markers**:
-   - There are three markers on the graph:
-     - M1 at 7.94328 Hz with a value of -41.2436 dB.
-     - M2 at 1.99526 MHz with a value of -17.2929 dB, which appears to be the peak of the response curve.
-     - M3 at 436.516 MHz with a value of -47.8076 dB.
+2. **Toolbar**: The toolbar at the top of the window contains various icons for different functions, such as opening files, saving, zooming, panning, and other analysis tools. The "Data Point" tool is highlighted, and the "family" and "Classic" options are selected.
 
-3. **Graph Curve**:
-   - The curve starts at a low frequency with a relatively flat response around -41 dB.
-   - It then rises sharply to a peak at approximately 1.99526 MHz.
-   - After the peak, the curve drops steeply and continues to decline, reaching around -47.8076 dB at 436.516 MHz.
+3. **Subwindow**: The subwindow is labeled "1" and contains the AC response graph. There is a scrollbar above the graph for navigating through the data.
 
-4. **Interface Elements**:
-   - The top menu bar includes options like File, Edit, View, Graph, Axis, Trace, Marker, Measurements, Tools, Window, Browser, and Help.
-   - There are various toolbar icons for different functions, such as zoom, pan, and data point selection.
-   - The left panel shows the AC response name and a trace labeled "v / V_BGR; ac dB20(V)".
-   - The bottom status bar provides information about the trace and the test being run.
+4. **Left Panel**: The left panel lists the AC response under the "Name" section, with a green checkmark indicating the selected trace.
 
-5. **Highlighted Toolbar Icon**:
-   - A specific toolbar icon is highlighted with a red box, indicating it might be the currently selected or active tool.
+5. **Status Bar**: The status bar at the bottom of the window shows the trace details, including the history, test name, and the specific trace being analyzed.
 
-Overall, the image provides a detailed view of the AC response of a circuit, showing how the voltage gain varies with frequency, with specific markers highlighting key points on the response curve.
+6. **Menu Bar**: The menu bar at the top of the window includes options such as File, Edit, View, Graph, Axis, Trace, Marker, Measurements, Tools, Window, Browser, and Help.
+
+Overall, the image provides a detailed view of the AC response analysis of a circuit, highlighting key frequencies and their corresponding voltage gains.
 ```
 
 Action 74: Add single-point markers using the **M** bindkey on the plot.
@@ -1506,7 +1632,7 @@ The expression for the PSRR plot is added to the calculator as shown in Figure 5
 
 Here is the image describtion:
 ```
-The image is a text label that reads "Figure 57: ViVA-XL calculator." It appears to be a caption or title for a figure in a document, likely referring to an image or illustration of a ViVA-XL calculator that is not shown in the provided image. The text is in a bold font, indicating it is a heading or important label within the document.
+The image is a caption that reads "Figure 57: ViVA-XL calculator." The text is in bold, indicating that it is likely part of a larger document or presentation, specifically referring to a figure labeled as number 57. The subject of the figure is the "ViVA-XL calculator," which suggests that the figure is an illustration or image of a calculator named ViVA-XL. However, the actual image of the calculator is not provided in the text snippet.
 ```
 
 Action 76: In the calculator, select the **value** function from the **Functional Panel** window.
@@ -1551,27 +1677,40 @@ Action 78: Click the **Send buffer expression to ADE output** icon to add the ex
 
 Here is the image describtion:
 ```
-The image shows a screenshot of a software interface, likely related to electrical engineering or signal processing. The interface includes a keypad on the left side with numbers 0-9 and basic arithmetic operators (/, *, -, +). 
+The image shows a screenshot of a software interface, likely related to electronic circuit simulation or analysis. Here are the details:
 
-To the right of the keypad, there is a text input area where a command is being entered. The command shown is:
-```
-value(db(vfreq("ac" "/V_BGR")) 1)
-```
-This command appears to be related to calculating the decibel value of a frequency response, possibly for an AC signal, with a specific reference to "V_BGR".
+1. **Top Toolbar**:
+   - There are several buttons and options in the top toolbar:
+     - "Off" button (possibly to turn off a feature or function).
+     - "Family" button.
+     - "Wave" button.
+     - "Clip" button (checked).
+     - A button with a waveform icon and a green arrow (likely related to running or simulating a waveform).
+     - "Append" button with a dropdown arrow.
+     - "Rectangular" button with a dropdown arrow.
+     - A gear icon button (highlighted with a red box, indicating it might be important or currently selected).
+     - A button with a grid or table icon.
 
-Above the text input area, there is a toolbar with several options:
-- "Off" with a red dot next to it.
-- "Family" and "Wave" options.
-- A "Clip" option with a checkmark next to it.
-- Icons representing different functions, including a waveform icon, an append icon, and a settings gear icon highlighted with a red box.
-- A dropdown menu labeled "Rectangular".
+2. **Main Text Area**:
+   - The main text area contains a command or script:
+     - `value(db(vfreq("ac "/V_BGR")) 1)`
+     - This command seems to be related to calculating or displaying a value in decibels (db) for a frequency response (vfreq) of an AC signal at a node or variable named "V_BGR".
 
-The overall design suggests that this is a specialized tool for analyzing or simulating electrical signals, with a focus on frequency response and decibel calculations.
+3. **Keypad**:
+   - On the left side, there is a virtual keypad with numbers and basic arithmetic operators:
+     - Numbers: 7, 8, 9, 4, 5, 6.
+     - Operators: division (/), multiplication (*).
+
+4. **Additional Buttons**:
+   - There is a button labeled "Key P..." which might be for additional keypad options or functions.
+   - A button with a folder icon, possibly for opening or saving files.
+
+The interface appears to be designed for users who are performing calculations or simulations, likely in the context of electrical engineering or circuit design. The highlighted gear icon suggests that the user might be in a settings or configuration mode.
 ```
 
 Here is the image describtion:
 ```
-The image is a screenshot of a text label that reads "Figure 60: ViVA-XL calculator buffer." The text is in black font on a white background. The label appears to be a caption or title for a figure in a document, likely referring to an image or diagram related to the ViVA-XL calculator buffer.
+The image is a screenshot of a figure caption from a document or presentation. The caption reads "Figure 60: ViVA-XL calculator buffer" in bold text. The font is black and appears to be a standard sans-serif typeface. The text is centered and clearly legible against a white background. The figure number "60" suggests that this is part of a larger series of figures, and the mention of "ViVA-XL calculator buffer" indicates that the figure likely pertains to a specific feature or component of the ViVA-XL calculator.
 ```
 
 Action 79: In the **ADE Explorer** window, select the **Name** field and add the expression name BGR\_output as shown in Figure 61.
@@ -1598,35 +1737,36 @@ The maestro view should now look like this:
 
 Here is the image describtion:
 ```
-The image appears to be a screenshot or a snippet from a document or presentation. It includes a figure label at the top that reads "Figure 61: ADE maestro_Ac view." The text is in black and uses a bold font, indicating that it is a title or caption for an image or diagram that is supposed to be displayed below it. However, the actual image or diagram referred to by the caption is not visible in the provided snippet. The context suggests that the image would be related to a view or interface of a software or system named "ADE maestro_Ac."
+The image is a caption that reads "Figure 61: ADE maestro_Ac view." The text is in bold and appears to be a label or title for a figure in a document, likely referring to a specific view or screenshot from a software or application named "ADE maestro_Ac." The caption is straightforward and does not include any graphical elements or additional context.
 ```
 
 Action 81: Click **Plot Outputs** . The expressions are plotted as shown in Figure 62.
 
 Here is the image describtion:
 ```
-The image is a screenshot of a software interface, specifically from Cadence Virtuoso Visualization & Analysis XL. The interface is used for analyzing and visualizing data, likely related to electronic circuit design and simulation.
+The image is a screenshot of a software interface, specifically the Cadence Virtuoso Visualization & Analysis XL tool, which is used for analyzing electronic circuits. The interface is divided into several sections and contains various graphical elements and data points.
 
-The interface is divided into three main sections:
+1. **Top Bar**: 
+   - The top bar contains the title "Virtuoso (R) Visualization & Analysis XL: TB_BGR tb_bgr maestro_Ac" indicating the tool and the specific test bench being analyzed.
+   - There are multiple menu options such as File, Edit, View, Graph, Axis, Trace, Marker, Measurements, Tools, Window, Browser, and Help.
+   - Below the menu, there are several icons for quick access to various functions like opening files, saving, zooming, and other analysis tools.
 
-1. **Left Section (PSRR_plot):**
-   - This section contains a plot labeled "PSRR_plot."
-   - The plot is a graph with the y-axis labeled "V (dB)" ranging from -15.0 to -48.0 dB.
-   - The x-axis is labeled "freq (Hz)" and spans from 10^0 to 10^9 Hz.
-   - A red line represents the data, showing a peak at around 1.9953 MHz with a value of -17.293 dB (marked as M6).
-   - Another marker (M5) indicates a point at 7.9433 Hz with a value of -41.244 dB.
+2. **Left Panel**:
+   - The left panel is labeled "PSRR_plot" and contains a list of plots. In this case, there is one plot named "PSRR_plot" with a red line indicating it is visible.
 
-2. **Middle Section:**
-   - This section contains a plot labeled "DC_PSRR."
-   - The y-axis is labeled "V (dB)" ranging from -37.0 to -46.0 dB.
-   - The x-axis is labeled "avss" and ranges from -1.0 to 1.0.
-   - A single red data point is marked at (0, -41.244 dB) with a label M7.
+3. **Main Graph Area**:
+   - The main graph area is divided into two sub-windows.
+   - The left sub-window displays a plot with the title "Tue Oct 12 13:05:48 2021". The x-axis is labeled "freq (Hz)" and spans from 10^0 to 10^9 Hz, while the y-axis is labeled "V (dB)" and ranges from -48.0 to -15.0 dB.
+   - The plot shows a red line graph representing the Power Supply Rejection Ratio (PSRR) over frequency. There are two markers on the graph:
+     - Marker M6 at 1.9953 MHz with a value of -17.293 dB.
+     - Marker M5 at 7.9433 Hz with a value of -41.244 dB.
+   - The right sub-window is labeled "DC_PSRR" and shows a single data point at (0, -41.244) with a marker M7.
 
-3. **Top Menu and Toolbar:**
-   - The top of the interface includes a menu bar with options like File, Edit, View, Graph, Axis, Trace, Marker, Measurements, Tools, Window, Browser, and Help.
-   - Below the menu bar, there is a toolbar with various icons for different functions, such as saving, zooming, and data manipulation.
+4. **Bottom Bar**:
+   - The bottom bar shows the trace information: "Trace: PSRR_plot; History: ExplorerRun0; Test: TB_BGR_tb_bgr_1".
+   - There are coordinates for the mouse position (L:) and another set of coordinates (R:).
 
-The interface also includes a timestamp indicating the date and time of the analysis: "Tue Oct 12 13:05:48 2021." The software appears to be used for analyzing Power Supply Rejection Ratio (PSRR) in electronic circuits, with detailed plots and markers highlighting specific data points.
+Overall, the image depicts the analysis of the PSRR of a bandgap reference circuit over a wide frequency range using the Cadence Virtuoso tool. The markers highlight specific points of interest on the graph.
 ```
 
 #### **Figure 62: Output plots**
@@ -1650,33 +1790,42 @@ BGR\_circuit contains an iprobe, IPRB0, as shown in Figure 63.
 
 Here is the image describtion:
 ```
-The image depicts a detailed electronic circuit schematic, likely designed using a CAD (Computer-Aided Design) tool for integrated circuits. The schematic includes various components and connections, which are described as follows:
+The image is a schematic diagram of an electronic circuit, likely designed using a CAD tool for integrated circuit design. Here is a detailed description of the components and connections in the circuit:
 
-1. **Transistors**: 
-   - There are multiple PMOS and NMOS transistors labeled with their respective types and dimensions. For example, PMOS transistors are labeled as "pmos2v" and NMOS transistors as "nmos2v". The dimensions (width and length) are specified, such as "w=2u" and "l=2u".
-   - Specific transistors are labeled with identifiers like M15, M14, M5, M12, M0, M1, and Q4.
+1. **Transistors:**
+   - There are several MOSFET transistors labeled with their types and dimensions. For example:
+     - M15, M14, M5, M12 are PMOS transistors with dimensions (w=2u, l=2u) for M15 and M14, (w=8u, l=2u) for M5, and (w=8u, l=2u) for M12.
+     - M0, M1 are NMOS transistors with dimensions (w=4u, l=2u).
+     - Q5 and Q4 are bipolar junction transistors (BJTs) with labels vpn2 and vpn2 respectively.
 
-2. **Resistors**:
-   - Several resistors are present, labeled with their resistance values and types. For instance, R1, R2, R3, and R4 have values like 44.8K, 5.33333K, and 130K ohms.
-   - The resistors are also labeled with their segment counts, such as "segmenta=42" and "segmenta=5".
+2. **Resistors:**
+   - Several resistors are present, labeled with their resistance values and types. For example:
+     - R3 with a resistance of 130K.
+     - R4 and R1 with a resistance of 44.8K.
+     - R2 with a resistance of 5.33333K.
 
-3. **Capacitors**:
-   - A capacitor labeled C1 with a value of 5pF is included in the circuit.
+3. **Capacitors:**
+   - There is a capacitor labeled C1 with a capacitance of 5pF.
 
-4. **Operational Amplifier**:
-   - An operational amplifier (op-amp) is depicted in the center of the schematic, labeled as "AVDD_BGR". It has input and output connections labeled "inp", "inn", "out", "vdd", and "vss".
+4. **Operational Amplifier:**
+   - An operational amplifier (op-amp) is present in the center of the schematic, labeled as "AVDD_BGR" with input pins (inp, inn) and output pin (op).
 
-5. **Voltage Sources and Nodes**:
-   - The circuit includes various voltage sources and nodes labeled "vdd", "vss", "V_BGR", and "VF1".
-   - The nodes are connected through blue lines representing the connections between different components.
+5. **Power Supply:**
+   - The circuit is powered by a supply voltage labeled "vdd" and a ground connection labeled "vss".
 
-6. **Highlighted Section**:
-   - A section of the circuit is highlighted with a red rectangle, indicating a specific area of interest or importance. This section includes a transistor labeled "PR1".
+6. **Connections:**
+   - The circuit has various connections between the components, with nodes labeled for clarity. For example:
+     - The output of the op-amp is connected to the gate of the PMOS transistor M12.
+     - The source of M12 is connected to the power supply (vdd), and its drain is connected to the output labeled "V_BGR".
+     - The resistors R1 and R2 are connected in series between the output "V_BGR" and ground (vss), with a connection to the base of the BJT Q4.
 
-7. **Connections**:
-   - The components are interconnected with lines representing electrical connections. The connections are color-coded, with blue lines for general connections and red lines for power supply connections.
+7. **Highlighted Section:**
+   - A section of the circuit is highlighted with a red rectangle, indicating a specific area of interest. This section includes a PMOS transistor labeled PRS.
 
-Overall, the schematic represents a complex electronic circuit, possibly a voltage reference or regulator circuit, given the presence of the operational amplifier and the labeled voltage nodes. The detailed labeling of components and their values suggests a precise design intended for simulation or fabrication in an integrated circuit.
+8. **Labels and Annotations:**
+   - Various labels and annotations are present to indicate the dimensions of the transistors, the resistance values of the resistors, and the connections between components.
+
+Overall, the schematic appears to be a detailed representation of an analog circuit, possibly a bandgap reference circuit, given the presence of BJTs, resistors, and an op-amp. The circuit is designed to provide a stable reference voltage (V_BGR) that is independent of temperature and supply voltage variations.
 ```
 
 **Figure 63: Bandgap circuit Schematic for stability analysis (stb)**
@@ -1715,32 +1864,54 @@ The **ADE Explorer** window appears as shown in Figure 66.
 
 Here is the image describtion:
 ```
-The image shows a screenshot of the Virtuoso ADE Explorer Editing interface from Cadence Design Systems. The title bar at the top indicates that the current project is "TB_BGR tb_bgr maestro_Stb."
+The image is a screenshot of the Virtuoso ADE Explorer Editing interface, specifically for a project named "TB_BGR tb_bgr maestro_Stb." This software is part of the Cadence Design Systems suite, used for electronic design automation (EDA).
 
-The interface is divided into several sections:
+Here are the detailed elements of the interface:
 
-1. **Menu Bar**: Located at the top, it includes various dropdown menus such as Launch, Session, Setup, Analyses, Variables, Outputs, Simulation, Results, Tools, EAD, Parasitics/LDE, Window, and Help.
+1. **Title Bar**: 
+   - The title bar at the top reads "Virtuoso ADE Explorer Editing: TB_BGR tb_bgr maestro_Stb," indicating the current project and file being edited.
 
-2. **Toolbar**: Below the menu bar, there is a toolbar with icons for common actions like saving, opening files, and other utilities. There is a search bar with the label "Replace" and a dropdown menu set to "(None)." There are also icons for additional functionalities.
+2. **Menu Bar**:
+   - Below the title bar, there is a menu bar with the following options: Launch, Session, Setup, Analyses, Variables, Outputs, Simulation, Results, Tools, EAD, Parasitics/LDE, Window, and Help.
 
-3. **Setup Panel**: On the left side, there is a panel titled "Setup" which lists various components and settings for the project. It includes:
-   - TB_BGR_tb_bgr_1
-   - Simulator spectre
-   - Analyses
-   - Design Variables
-   - Parameters
-   - Corners
-   - Reliability Analyses
-   - Monte Carlo Sampling
-   - Checks/Asserts
+3. **Toolbar**:
+   - Below the menu bar, there is a toolbar with various icons and options. Some of the visible icons include:
+     - A save icon (floppy disk).
+     - A red stop sign (possibly for stopping a process).
+     - A green play button (likely for running a simulation).
+     - A yellow folder (for opening files).
+     - A magnifying glass (for search).
+     - A replace option with a dropdown menu.
+     - A dropdown menu with the label "(None)".
+     - An icon for settings or preferences.
 
-   Each of these items can be expanded or collapsed, and some have checkboxes next to them indicating their selection status.
+4. **Setup Pane**:
+   - On the left side of the interface, there is a pane titled "Setup" with a filter option at the top.
+   - The setup pane contains a hierarchical tree structure with the following items:
+     - TB_BGR_tb_bgr_1
+     - Simulator spectre
+     - Analyses
+     - Design Variables
+     - Parameters
+     - Corners (checked)
+     - Reliability Analyses
+     - Monte Carlo Sampling
+     - Checks/Asserts
 
-4. **Main Workspace**: The central part of the interface is divided into tabs. The active tab is "tb_bgr" and there is another tab labeled "maestro_Stb." The workspace under the "tb_bgr" tab is currently empty, with columns for "Name," "Type," and "Details."
+5. **Main Editing Area**:
+   - The main editing area is divided into two tabs: "tb_bgr" and "maestro_Stb."
+   - The "maestro_Stb" tab is currently active, but the area is empty, indicating no content is displayed or loaded yet.
 
-5. **Right Sidebar**: On the right side, there is a vertical toolbar with icons for various actions, such as adding, editing, and running simulations.
+6. **Details Pane**:
+   - On the right side of the interface, there is a vertical toolbar with several icons, including:
+     - A pencil (edit).
+     - A green checkmark (possibly for validation).
+     - A red cross (delete or cancel).
+     - A green play button (run).
+     - A brown square (stop).
+     - A waveform icon (likely for viewing results or waveforms).
 
-The overall layout is designed to facilitate the setup and execution of electronic design automation (EDA) tasks, specifically for analog and mixed-signal design verification.
+Overall, the interface is designed for setting up and running simulations, managing design variables, and analyzing results within the Virtuoso ADE Explorer environment.
 ```
 
 **Figure 66: ADE Explorer window showing maestro\_Stb view** 
@@ -1749,19 +1920,25 @@ Action 88: In **ADE Explorer**, select **Click to add analysis** in the **Analys
 
 Here is the image describtion:
 ```
-The image is a screenshot of a software interface, specifically a "Setup" window. The window is divided into two main columns: "Name" and "Value," each with a filter option indicated by a red downward arrow.
+The image is a screenshot of a software interface, specifically a setup window for a simulation or analysis tool. The window is titled "Setup" and contains a hierarchical tree structure with various options and settings.
 
-The "Name" column contains a hierarchical list of items, each with an associated icon:
-1. "TB_BGR_tb_bgr_1" with an upward arrow icon.
-2. "Simulator spectre" with a green gear icon.
-3. "Analyses" with a green gear icon, and a sub-item "Click to add analysis" highlighted in yellow.
-4. "Design Variables" with a red cube icon, and a sub-item "Click to add variable" in grey text.
-5. "Parameters" with a red cube icon and a checkmark.
-6. "Corners" with a thermometer icon and a checkmark.
-7. "Reliability Analyses" with a green gear icon, and a sub-item "Monte Carlo Sampling" with a green cube icon.
-8. "Checks/Asserts" with a red cube icon.
+At the top of the tree, there is an entry labeled "TB_BGR_tb_bgr_1" with an upward-pointing arrow icon next to it. Below this, there is an entry labeled "Simulator spectre" with a green icon that looks like a gear or a cog, indicating that the Spectre simulator is being used.
 
-The "Value" column is empty, indicating that no specific values are currently assigned to the items listed in the "Name" column. The interface appears to be part of a software tool used for simulation or analysis, likely in an engineering or scientific context.
+The next entry is "Analyses," which has a folder icon next to it. Under this entry, there is a highlighted line in yellow that says "Click to add analysis," suggesting that the user can add a new analysis at this point.
+
+Following this, there is an entry labeled "Design Variables" with a folder icon. Under this, there is a line that says "Click to add variable," indicating that the user can add design variables here.
+
+Next, there is an entry labeled "Parameters" with a checked box and a red icon that looks like a stack of papers or documents. This indicates that the parameters section is active or selected.
+
+Below "Parameters," there is an entry labeled "Corners" with a checked box and an icon that looks like a small document with a corner folded over. This suggests that corner analysis is also active or selected.
+
+Further down, there is an entry labeled "Reliability Analyses" with a folder icon, which is currently not expanded or selected.
+
+Under "Reliability Analyses," there is an entry labeled "Monte Carlo Sampling" with a green icon that looks like a scatter plot or a set of data points, indicating that Monte Carlo sampling is an available option but not currently selected.
+
+Finally, there is an entry labeled "Checks/Asserts" with a folder icon, which is also not expanded or selected.
+
+Overall, the image shows a setup interface where the user can configure various aspects of a simulation, including adding analyses, design variables, parameters, corner analyses, reliability analyses, and Monte Carlo sampling.
 ```
 
 **Figure 67: Opening 'Analyses' form from 'Click to add analysis'**
@@ -1807,17 +1984,33 @@ Action 92: In the **Setup** view assistant, set the **Design Variables** values 
 
 Here is the image describtion:
 ```
-The image is a screenshot of the Virtuoso ADE Explorer interface, which is a tool used for analog design and simulation. The interface has several menu options at the top, including "Launch," "Session," "Setup," "Analyses," "Variables," "Outputs," "Simulation," "Results," and "Tools." The "Variables" menu is highlighted, and a dropdown menu is visible with options such as "Edit...," "Delete," "Find," "Copy From Cellview," and "Copy To Cellview." The "Copy From Cellview" option is highlighted in yellow.
+The image is a screenshot of the Virtuoso ADE Explorer interface, which is a tool used for analog design and simulation. The interface is divided into several sections and menus, with specific elements highlighted.
 
-Below the menu bar, there is a section labeled "Setup" with a hierarchical list of items. The list includes:
-- "TB_BGR_tb_bgr_1" with a green icon indicating it is a test bench.
-- "Simulator spectre" indicating the simulator being used.
-- "Analyses" with a sub-item "dc" that has a checkbox checked, indicating that a DC analysis is selected. The analysis has parameters "t -40 120 Automatic Start-Stop."
-- "Design Variables" with two variables listed:
-  - "avdd" with a value of 2, highlighted in yellow.
-  - "avss" with a value of 0, also highlighted in yellow.
+1. **Top Menu Bar**: 
+   - The top menu bar contains several options: Launch, Session, Setup, Analyses, Variables, Outputs, Simulation, Results, and Tools.
+   - The "Variables" menu is currently selected and expanded.
 
-The interface also includes various icons and buttons for different functions, such as saving, running simulations, and adjusting settings. The overall layout is typical of a design and simulation tool, with a focus on managing and configuring different aspects of the simulation environment.
+2. **Variables Menu**:
+   - The "Variables" menu is highlighted in yellow, indicating it is active.
+   - The expanded menu shows several options: Edit, Delete, Find, Copy From Cellview, and Copy To Cellview.
+   - The "Copy From Cellview" option is highlighted in yellow, indicating it is the selected action.
+
+3. **Setup Section**:
+   - The left side of the interface shows the "Setup" section.
+   - It lists the current testbench (TB_BGR_tb_bgr_1) and the simulator being used (spectre).
+   - Under "Analyses," a DC analysis is selected with a temperature range from -40 to 120 degrees Celsius and an automatic start-stop feature.
+   - The "Design Variables" section lists two variables: "avdd" with a value of 2 and "avss" with a value of 0. These variables are highlighted in yellow.
+
+4. **Toolbar**:
+   - Above the "Setup" section, there is a toolbar with various icons and options.
+   - A thermometer icon with a value of 27 is visible, likely indicating the current temperature setting.
+   - There are icons for saving, running simulations, and other functions.
+
+5. **Right Side**:
+   - On the right side, there is a dropdown menu labeled "Replace" and a text field with "maestro_Dc" entered.
+   - This section likely pertains to managing different simulation setups or configurations.
+
+Overall, the image shows the user interface of Virtuoso ADE Explorer with a focus on managing design variables and copying them from a cellview.
 ```
 
 **Figure 69: Copying variables from cell view**
@@ -1827,13 +2020,48 @@ The interface also includes various icons and buttons for different functions, s
 
 Here is the image describtion:
 ```
-The image is a screenshot of a software interface, specifically from the Virtuoso ADE Explorer, which is used for analog design environments. The title bar indicates that the current project is "TB_BGR tb_bgr maestro_Stb."
+The image is a screenshot of the Virtuoso ADE Explorer Editing interface, specifically showing the "Results" menu and the "Direct Plot" submenu. The interface appears to be part of a software tool used for electronic design automation (EDA).
 
-The screenshot shows a dropdown menu under the "Results" tab, which is highlighted in yellow. The "Results" menu has several options, including "Plot Outputs," "Direct Plot," "Print," "Annotate," "Vector," "Circuit Conditions," "Electrothermal Report," "EM/IR Data," "Save," "Select," "Delete," and "Printing/Plotting Options."
+1. **Top Menu Bar**: 
+   - The top menu bar includes several options: "Simulation," "Results," "Tools," "EAD," "Parasitics/LDE," "Window," and "Help."
+   - The "Results" menu is currently selected and expanded.
 
-The "Direct Plot" option is selected, and it opens a sub-menu on the right side. This sub-menu is titled "Direct Plot" and contains various plotting options. The first option, "Main Form ...," is highlighted in yellow. Other options in the sub-menu include "Transient Signal," "Transient Minus DC," "Transient Sum," "Transient Difference," "AC Magnitude," "AC dB10," "AC dB20," "AC Phase," "AC Magnitude & Phase," "AC Gain & Phase," and "Equivalent Output Noise."
+2. **Results Menu**:
+   - The "Results" menu has several options listed vertically:
+     - Plot Outputs
+     - Direct Plot (highlighted in yellow)
+     - Print
+     - Annotate
+     - Vector
+     - Circuit Conditions (grayed out)
+     - Electrothermal Report (grayed out)
+     - EM/IR Data
+     - Save
+     - Select
+     - Delete
+     - Printing/Plotting Options
 
-The interface is designed for users to select different plotting and analysis options for their circuit simulations. The highlighted options indicate the current selections or areas of focus within the software.
+3. **Direct Plot Submenu**:
+   - The "Direct Plot" submenu is expanded to the right, showing various plotting options:
+     - Main Form (highlighted in yellow)
+     - Transient Signal
+     - Transient Minus DC
+     - Transient Sum
+     - Transient Difference
+     - AC Magnitude
+     - AC dB10
+     - AC dB20
+     - AC Phase
+     - AC Magnitude & Phase
+     - AC Gain & Phase
+     - Equivalent Output Noise
+
+4. **Interface Details**:
+   - The interface title at the top indicates the current project or file being edited: "Virtuoso ADE Explorer Editing: TB_BGR tb_bgr maestro_Stb."
+   - The background of the interface is predominantly gray and white, with some elements highlighted in yellow for emphasis.
+   - The "Direct Plot" submenu is bordered in red, indicating it is the active selection.
+
+Overall, the image shows a detailed view of the options available under the "Results" menu in the Virtuoso ADE Explorer, specifically focusing on the "Direct Plot" functionality and its various plotting options.
 ```
 
 **Figure 70: Opening Direct Plot Form from ADE Explorer**
@@ -1871,23 +2099,27 @@ Action 98: Place a vertical marker using the **V** bindkey on the plot.
 
 Here is the image describtion:
 ```
-The image is a screenshot of the Virtuoso (R) Visualization & Analysis XL software by Cadence, which is used for analyzing electronic circuits. The specific analysis shown is for a test bench named "TB_BGR_tb_bgr_1" and it displays the loop gain and phase characteristics of a circuit.
+The image is a screenshot of the Virtuoso (R) Visualization & Analysis XL software, which is part of the Cadence suite used for electronic design automation. The software is displaying a graphical analysis of a test bench named "TB_BGR_tb_bgr_1" for a bandgap reference circuit.
 
-The main window is divided into two sections:
-1. The left section lists the different measurements or traces being analyzed. In this case, it shows "Loop Gain Phase" and "Loop Gain dB20" with their respective values.
-2. The right section is a graph plotting the loop gain and phase against frequency (Hz). The x-axis represents the frequency on a logarithmic scale ranging from 10^1 to 10^9 Hz. The y-axis on the left side represents the loop gain in degrees (deg) and the y-axis on the right side represents the loop gain in decibels (dB).
+The main window is divided into several sections:
 
-Two traces are plotted:
-- The red trace represents the loop gain phase, with a marker at M2 indicating a value of 3.46737 Hz and 179.998 degrees.
-- The yellow trace represents the loop gain in dB, with a marker at M1 indicating a value of 2.29087 Hz and 27.5172 dB.
+1. **Top Menu Bar**: This contains various menu options such as File, Edit, View, Graph, Axis, Trace, Marker, Measurements, Tools, Window, Browser, and Help. These menus provide access to different functionalities and tools within the software.
 
-Additional markers on the graph show specific data points:
-- A red marker at 35.55463 degrees.
-- A yellow marker at 50.96456 m dB.
+2. **Toolbar**: Below the menu bar, there is a toolbar with icons for quick access to common functions. Some of the icons include options for opening files, saving, zooming in and out, and other analysis tools.
 
-The top toolbar contains various icons and options for editing, viewing, graphing, and analyzing the data. The software's title bar indicates the current test and the date and time of the analysis (Tue Oct 12 13:42:52 2021).
+3. **Subwindow and Data Point**: There is a small section with a dropdown labeled "Subwindow" and a field labeled "Data Point" with a value of 1.838937MHz. This section allows the user to manage different subwindows and data points within the analysis.
 
-Overall, the image provides a detailed view of the loop gain and phase characteristics of the circuit being analyzed, with specific data points highlighted for further examination.
+4. **Graphical Display Area**: The main part of the window is dedicated to displaying the graphical results of the analysis. It is divided into two main plots:
+   - **Top Plot (Loop Gain Phase)**: This plot shows the phase of the loop gain in degrees (LOOPGAIN (deg)) versus frequency (freq (Hz)). The phase is represented by a red curve. A data point is marked on the curve at approximately 3.46737Hz with a phase of 179.998 degrees, labeled as "M2: 3.46737Hz 179.998deg". Another data point is marked at a higher frequency with a phase of 35.55463 degrees.
+   - **Bottom Plot (Loop Gain dB20)**: This plot shows the magnitude of the loop gain in decibels (LOOPGAIN (dB)) versus frequency (freq (Hz)). The magnitude is represented by a yellow curve. A data point is marked on the curve at approximately 2.29087Hz with a magnitude of 27.5172dB, labeled as "M1: 2.29087Hz 27.5172dB". Another data point is marked at a higher frequency with a magnitude of 50.96456m dB.
+
+5. **Left Panel**: This panel lists the different traces being displayed in the graphical area. It includes "Loop Gain Phase" and "Loop Gain dB20" with their respective values and markers.
+
+6. **Bottom Status Bar**: The status bar at the bottom of the window shows information about the current trace being analyzed, the history of the analysis, and the specific test being run ("TB_BGR_tb_bgr_1").
+
+7. **Date and Time**: The top right corner of the graphical display area shows the date and time of the analysis, which is "Tue Oct 12 13:42:52 2021".
+
+Overall, the image provides a detailed view of the loop gain phase and magnitude analysis for a bandgap reference circuit, with specific data points highlighted for further examination.
 ```
 
 **Figure 72: Loop gain and phase plots in ViVA XL window**
@@ -1964,34 +2196,45 @@ Action 104: The **ADE maestro** view will appear as shown in Figure 76.
 
 Here is the image describtion:
 ```
-The image is a screenshot or snippet of text that reads "Figure 76: ADE maestro_Stb view." The text is in black font on a white background. The font appears to be a standard sans-serif typeface, and the text is likely part of a larger document, such as a technical manual, report, or presentation. The figure number "76" suggests that this is one of many figures in the document, and "ADE maestro_Stb view" likely refers to a specific view or screen within a software application or system named ADE Maestro.
+The image is a caption that reads "Figure 76: ADE maestro_Stb view." The text is in a bold font, indicating that it is likely a title or label for a figure in a document or presentation. The caption suggests that the figure is related to a view or interface within a software or system named "ADE maestro_Stb." There are no other visual elements or details in the image itself.
 ```
 
 Here is the image describtion:
 ```
-The image contains a text instruction that reads: "Action 105: Click Plot Outputs." The text is formatted with "Action 105:" in red, while "Click Plot Outputs" is in black, with "Plot Outputs" in bold. To the right of the text, there is a small icon that appears to be a graphical representation of a plot or chart, indicating where to click. The icon is a small square with a line graph inside it.
+The image appears to be a screenshot of a step or action from a set of instructions or a tutorial. The text is formatted as follows:
+
+- "Action 105:" is written in red, indicating it is a specific step in a sequence of actions.
+- "Click Plot Outputs" is written in black, with "Plot Outputs" in bold, suggesting it is an important term or button to be clicked.
+- There is a small icon to the right of the text, which appears to be a graphical representation of a plot or chart, possibly indicating the button or link to be clicked.
+
+The overall layout suggests that this is part of a guide or manual, likely related to software or data analysis, where the user is being instructed to click on a specific button labeled "Plot Outputs" to proceed with the task.
 ```
 
 Here is the image describtion:
 ```
-The image is a screenshot of a software interface, specifically from Cadence Virtuoso Visualization & Analysis XL, used for analyzing electronic circuits. The interface is displaying various plots and data points related to loop gain and phase margin analysis.
+The image is a screenshot of a software interface, specifically the Virtuoso Visualization & Analysis XL tool from Cadence, used for analyzing electronic circuits. The interface is divided into several sections, each displaying different types of data and controls.
 
-1. **Top Bar**: The top bar contains the software name "Virtuoso (R) Visualization & Analysis XL" and the specific test being analyzed "TB_BGR_tb_bgr maestro_Stb". There are multiple icons and options for file management, editing, viewing, graphing, axis adjustments, tracking, measurements, tools, window management, browsing, and help.
+1. **Top Menu Bar**: The top of the interface contains a menu bar with options such as File, Edit, View, Graph, Axis, Trace, Marker, Measurements, Tools, Window, Browser, and Help. These menus provide various functionalities for managing and analyzing data.
 
-2. **Left Panel**: The left panel lists the data being analyzed, labeled "Loop Gain Phase: Loop Gain dB20". It shows a hierarchical structure with a name "Vis V1" and two sub-items: "Loop Gain Phase" and "Loop Gain dB20".
+2. **Toolbar**: Below the menu bar, there is a toolbar with icons for quick access to common functions like opening files, saving, zooming, panning, and other analysis tools. The toolbar also includes a data point selector and a frequency display (1.846525MHz).
 
-3. **Main Plot Area**: The main plot area is divided into two sections:
-   - **Left Section**: This section contains two plots overlaid on the same graph. The x-axis represents frequency (Hz) on a logarithmic scale, ranging from 10^1 to 10^9 Hz. The y-axis on the left represents loop gain in decibels (dB), and the y-axis on the right represents loop gain phase in degrees (deg).
-     - The red curve represents the loop gain phase, with a highlighted data point at 12.0202 Hz showing a phase of 179.992 degrees.
-     - The yellow curve represents the loop gain in dB, with a highlighted data point at 7.94328 Hz showing a gain of 27.5172 dB.
-     - Another data point on the yellow curve at 1.84652 MHz shows a gain of 3.102068 mB.
-   - **Right Section**: This section contains a plot with the x-axis labeled "avss" and the y-axis labeled with a range from 6.0 to 36.0. There are two highlighted data points:
-     - A red data point labeled "M4: 0.0 35.531".
-     - A yellow data point labeled "M5: 0.0 6.8735".
+3. **Left Panel**: The left panel lists the different data traces available for analysis. In this case, it shows "Loop Gain Phase" and "Loop Gain dB20" with their respective values (35.33123deg and 3.102068m respectively).
 
-4. **Bottom Bar**: The bottom bar shows the trace information "Trace: Loop Gain Phase; History: ExplorerRun.0; Test: TB_BGR_tb_bgr_1".
+4. **Main Graph Area**: The central part of the interface is divided into two main graph areas:
+   - **Left Graph**: This graph displays the Loop Gain Phase (in red) and Loop Gain dB20 (in yellow) against frequency (Hz). The x-axis is logarithmic, ranging from 10^1 to 10^9 Hz. The y-axis on the left side shows the Loop Gain Phase in degrees, while the y-axis on the right side shows the Loop Gain in dB. Key points are marked with labels:
+     - M3: 12.0202Hz, 179.992deg
+     - M6: 7.94328Hz, 27.5172dB
+     - V1: 1.846525MHz, 35.33123deg
+     - V1: 1.846525MHz, 3.102068m dB
+   - **Right Graph**: This graph shows the Phase Margin and Gain Margin. The x-axis is labeled "avss" and the y-axis shows the margin values. Key points are marked with labels:
+     - M4: 0.0, 35.531
+     - M5: 0.0, 6.8735
 
-Overall, the image depicts a detailed analysis of loop gain and phase margin, with specific data points highlighted for further examination.
+5. **Status Bar**: At the bottom of the interface, there is a status bar displaying information about the current trace, history, and test being analyzed. It shows "Trace: Loop Gain Phase; History: ExplorerRun.0; Test: TB_BGR_tb_bgr_1".
+
+6. **Graph Controls**: Above each graph, there are controls for adjusting the view, such as sliders for zooming in and out, and buttons for panning.
+
+Overall, the image shows a detailed analysis of loop gain phase and gain margin for an electronic circuit, with specific data points highlighted for further examination.
 ```
 
 ### **Figure 77: Output plots**
@@ -2007,29 +2250,29 @@ Action 107: From the **Library Manager**, open the **TB\_BGR > tb\_bgr > schemat
 
 Here is the image describtion:
 ```
-The image depicts an electronic circuit schematic. Here is a detailed description of the components and connections:
+The image shows an electronic circuit schematic. Here is a detailed description of the components and connections:
 
 1. **Power Supply Section (Left Side):**
-   - There are two voltage sources labeled V7 and V8.
-   - V7 is connected to a node labeled "PPA" and has a voltage value of "vdd" with an AC magnitude of 1.
-   - V8 is connected to a node labeled "BGR" and has a voltage value of "vss".
-   - Both voltage sources are connected to a common ground.
+   - There are two voltage sources labeled `V7` and `V8`.
+   - `V7` is connected to a node labeled `PPA` and has a voltage value of `vdc=vdd` with an AC magnitude of `acm=1`.
+   - `V8` is connected to a node labeled `PBX` and has a voltage value of `vdc=vss`.
+   - Both voltage sources are connected to a common ground node.
 
 2. **Bandgap Reference Circuit (Right Side):**
-   - The main circuit is enclosed in a green rectangular box labeled "BGR Circuit".
-   - Inside the BGR Circuit, there are two current sources at the top, each connected to a resistor.
-   - The resistors are connected in series and form a voltage divider.
-   - The top of the left current source is connected to a node labeled "PPA".
-   - The top of the right current source is connected to a node labeled "V_BGR".
-   - The bottom of the voltage divider is connected to a node labeled "VSS".
-   - The node "V_BGR" is connected to an external capacitor labeled "C8", which is grounded.
+   - The main circuit is enclosed in a green rectangular box labeled `BGR Circuit`.
+   - Inside the box, there are two current sources at the top, each represented by a circle with an arrow inside.
+   - The left current source is connected to a resistor labeled `I10`.
+   - The right current source is connected to a node labeled `V_BGR`.
+   - Below the current sources, there are two resistors connected in series.
+   - The bottom of the resistors is connected to the `BGR Circuit` block, which likely contains additional components not shown in detail.
+   - The node `V_BGR` is connected to a capacitor labeled `C8`, which is connected to ground.
 
 3. **Connections:**
-   - The node "PPA" from the power supply section is connected to the top of the left current source in the BGR Circuit.
-   - The node "V_BGR" from the BGR Circuit is connected to the capacitor "C8".
-   - The node "VSS" from the power supply section is connected to the bottom of the voltage divider in the BGR Circuit.
+   - The `PPA` node from the power supply section is connected to the top of the `BGR Circuit`.
+   - The `PBX` node from the power supply section is connected to the bottom of the `BGR Circuit`.
+   - The `V_BGR` node is an output node that provides the bandgap reference voltage.
 
-Overall, the schematic represents a bandgap reference circuit with power supply connections and an external capacitor for stabilization.
+Overall, the schematic represents a bandgap reference circuit, which is a common circuit used to generate a stable reference voltage that is independent of temperature and supply voltage variations.
 ```
 
 **Figure 78: Schematic of tb\_bgr cell testbench**
@@ -2040,20 +2283,7 @@ Action 109: In the **Launch ADE Explorer** window, select **Create New View** an
 
 Here is the image describtion:
 ```
-The image is a screenshot of a dialog box titled "Launch ADE Explorer." The dialog box provides options for the user to either create a new view or open an existing view within the ADE Explorer application. 
-
-- The title "Launch ADE Explorer" is displayed at the top of the dialog box in a black bar with white text.
-- Below the title, there is a section labeled "ADE Explorer" in red text.
-- Within this section, there are two radio button options:
-  1. "Create New View" - This option is selected, as indicated by the filled red circle next to it.
-  2. "Open Existing View" - This option is not selected, as indicated by the empty circle next to it.
-- The "Create New View" option is highlighted with a red border, emphasizing that it is the current selection.
-- At the bottom of the dialog box, there are three buttons:
-  1. "OK" - This button is red with white text.
-  2. "Cancel" - This button is gray with black text.
-  3. "Help" - This button is also gray with black text.
-
-The overall design of the dialog box is simple and user-friendly, with clear options and buttons for navigation.
+The image is a screenshot of a dialog box titled "Launch ADE Explorer." The dialog box presents two options under the heading "ADE Explorer." The first option is "Create New View," which is selected, as indicated by the filled radio button next to it. The second option is "Open Existing View," which is not selected. Below these options, there are three buttons: "OK" in red, "Cancel" in gray, and "Help" in gray. The "OK" button is highlighted, suggesting it is the default action if the user presses Enter. The overall design of the dialog box is simple and functional, with a focus on providing clear choices for the user.
 ```
 
 **Figure 79: Launching ADE Explorer from the schematic window**
@@ -2080,30 +2310,30 @@ The **ADE Explorer** window opens as shown in Figure 81.
 
 Here is the image describtion:
 ```
-The image is a screenshot of the Virtuoso ADE Explorer, a software tool used for analog and mixed-signal design and simulation. The title bar at the top indicates that the current project is "TB_BGR tb_bgr maestro_Tran_Noise."
+The image is a screenshot of the Virtuoso ADE Explorer, a software tool used for analog and mixed-signal design and simulation, specifically for a project named "TB_BGR tb_bgr maestro_Tran_Noise." The interface is divided into several sections:
 
-The interface is divided into several sections:
+1. **Top Menu Bar**: This contains various dropdown menus such as Launch, Session, Setup, Analyses, Variables, Outputs, Simulation, Results, Tools, EAD, Parasitics/LDE, Window, and Help. These menus provide access to different functionalities and settings within the software.
 
-1. **Menu Bar**: At the very top, there is a menu bar with options such as Launch, Session, Setup, Analyses, Variables, Outputs, Simulation, Results, Tools, EAD, Parasitics/LDE, Window, and Help.
+2. **Toolbar**: Below the menu bar, there is a toolbar with icons for common actions like opening, saving, running simulations, and other frequently used commands. The toolbar includes buttons for replacing components, setting up simulations, and other tasks.
 
-2. **Toolbar**: Below the menu bar, there is a toolbar with various icons for common actions like opening, saving, and running simulations. There is also a search and replace bar.
+3. **Setup Panel (Left Side)**: This panel is labeled "Setup" and contains a hierarchical tree structure. It shows the current testbench (TB_BGR_tb_bgr_1) and its associated settings:
+   - **Simulator**: spectre
+   - **Analyses**: This section is currently empty, indicating no analyses have been added yet.
+   - **Design Variables**: This section is also empty.
+   - **Parameters**: This section includes "Corners" and "Reliability Analyses" with "Monte Carlo Sampling" enabled.
+   - **Checks/Asserts**: This section is empty.
 
-3. **Setup Panel (Left Side)**: On the left side, there is a panel labeled "Setup" with a hierarchical tree structure. It includes:
-   - TB_BGR_tb_bgr_1
-   - Simulator spectre
-   - Analyses (with a prompt to click to add analysis)
-   - Design Variables (with a prompt to click to add variable)
-   - Parameters (with sub-items like Corners and Reliability Analyses)
-   - Monte Carlo Sampling
-   - Checks/Asserts
+4. **Main Workspace (Center)**: The central part of the interface is mostly blank, indicating that no specific analyses or results are currently displayed. It has columns for Name, Type, Details, Plot, Save, and Spec, which would typically show details of the simulations or analyses being performed.
 
-4. **Main Panel (Center)**: The central part of the interface is mostly blank, indicating that no specific analysis or data is currently displayed. It has columns for Name, Type, Details, Plot, Save, and Spec.
+5. **Right Sidebar**: This contains vertical icons for various actions such as running simulations, stopping simulations, and plotting results. The icons include:
+   - A green play button (Run)
+   - A red stop button (Stop)
+   - A brown square (possibly for stopping or resetting)
+   - A waveform icon (Plot)
 
-5. **Right Toolbar**: On the right side, there is a vertical toolbar with icons for various actions, such as running simulations, stopping simulations, and plotting results.
+6. **Status Bar (Bottom)**: The bottom of the interface has a status bar that shows the current mouse position (L: 17(45)), a message area (M:), and the current project details (R: TB_BGR tb_bgr schematic Simulator: spectre aps).
 
-6. **Status Bar**: At the bottom, there is a status bar showing the mouse coordinates and some additional information about the current project and simulator.
-
-Overall, the image shows the initial setup stage of a simulation project in the Virtuoso ADE Explorer, with no specific analyses or results displayed yet.
+Overall, the image shows the initial setup stage of a simulation project in the Virtuoso ADE Explorer, with the user preparing to configure and run simulations for a bandgap reference (BGR) circuit.
 ```
 
 #### **Figure 81: ADE Explorer window showing maestro\_Tran\_Noise view**
@@ -2112,20 +2342,39 @@ In **ADE Explorer**, select **Click to add analysis** in the **Analyses** sectio
 
 Here is the image describtion:
 ```
-The image is a screenshot of a software interface titled "Setup." The interface is divided into two main columns: "Name" and "Value." At the top of each column, there is a filter option indicated by a red downward arrow.
+The image is a screenshot of a software interface, specifically a "Setup" window. This window appears to be part of a simulation or analysis tool, likely used in electronic design automation (EDA) or circuit simulation.
 
-The left column lists various components and settings in a hierarchical tree structure. The components are as follows:
+Here are the detailed elements of the image:
 
-1. **TB_BGR_tb_bgr_1**: Represented by a blue house icon.
-2. **Simulator spectre**: Represented by a green gear icon.
-3. **Analyses**: Represented by a green folder icon. Under this, there is a highlighted option in yellow that says "Click to add analysis."
-4. **Design Variables**: Represented by a red cube icon. Under this, there is a greyed-out option that says "Click to add variable."
-5. **Parameters**: Represented by a red checkmark icon, indicating it is selected.
-6. **Corners**: Represented by a red thermometer icon, also selected.
-7. **Reliability Analyses**: Represented by a green checkmark icon, not selected. Under this, there is an option for "Monte Carlo Sampling," represented by a green cube icon, which is also not selected.
-8. **Checks/Asserts**: Represented by a grey checkmark icon, not selected.
+1. **Title Bar**: The top of the window has a title bar with the label "Setup" and a help icon (a question mark inside a circle) on the right side.
 
-The right column, labeled "Value," is currently empty and does not display any values corresponding to the names listed in the left column. The interface appears to be part of a software tool used for setting up simulations or analyses, likely in an engineering or scientific context.
+2. **Columns**: Below the title bar, there are two columns labeled "Name" and "Value". Each column has a filter icon (a red downward-pointing triangle) that suggests the ability to filter the contents of the columns.
+
+3. **Tree Structure**: The main part of the window displays a hierarchical tree structure with various nodes and sub-nodes. The nodes are expandable and collapsible, indicated by the small boxes with plus or minus signs next to them.
+
+4. **Nodes and Sub-nodes**:
+   - **TB_BGR_tb_bgr_1**: This is the top-level node, likely representing a test bench or a specific simulation setup.
+   - **Simulator spectre**: This node indicates the simulator being used, which is "spectre".
+   - **Analyses**: This node is expandable and currently has a sub-node labeled "Click to add analysis" highlighted in yellow, suggesting that the user can add a new analysis here.
+   - **Design Variables**: This node is expandable and has a sub-node labeled "Click to add variable", indicating that the user can add design variables.
+   - **Parameters**: This node is checked, indicating that it is selected or active. It has a sub-node with a thermometer icon, likely representing temperature or another parameter.
+   - **Corners**: This node is checked and has a sub-node with a thermometer icon, indicating different operating conditions or process corners.
+   - **Reliability Analyses**: This node is expandable but currently collapsed.
+   - **Monte Carlo Sampling**: This node is expandable but currently collapsed, indicating that Monte Carlo sampling is part of the reliability analyses.
+   - **Checks/Asserts**: This node is expandable but currently collapsed, likely used for verification purposes.
+
+5. **Icons**: Each node has an associated icon that visually represents its function:
+   - A house icon for the top-level node.
+   - A green gear icon for the simulator.
+   - A red analysis icon for analyses.
+   - A red design variable icon for design variables.
+   - A red checkmark icon for parameters.
+   - A red thermometer icon for corners.
+   - A green icon for reliability analyses.
+   - A green icon for Monte Carlo sampling.
+   - A green icon for checks/asserts.
+
+Overall, the image shows a setup interface for configuring simulations, analyses, and design variables in an EDA tool.
 ```
 
 #### **Figure 82: Opening 'Analyses' form from 'Click to add analysis'**
@@ -2194,32 +2443,32 @@ In the **Setup** view assistant, set the **Design Variables** values for **avdd=
 
 Here is the image describtion:
 ```
-The image is a screenshot of a software interface, specifically from the Virtuoso ADE Explorer Editing environment. The interface appears to be part of a simulation tool used for electronic design automation (EDA).
+The image is a screenshot of the Virtuoso ADE Explorer Editing interface, specifically focusing on the "Simulation" menu. Here is a detailed description:
 
-Key elements in the image include:
+1. **Interface Title**: At the top, the title bar reads "Virtuoso® ADE Explorer Editing:" indicating the software and the specific module being used.
 
-1. **Menu Bar**: At the top, there is a menu bar with several options, including "Outputs," "Results," "Tools," "EAD," and "Parasitics."
+2. **Menu Bar**: Below the title bar, there is a menu bar with several options. The highlighted option is "Simulation," which is selected and expanded.
 
-2. **Highlighted Menu**: The "Simulation" menu is highlighted in yellow, indicating that it is currently selected or active.
+3. **Simulation Menu**: The "Simulation" menu is expanded, showing a list of options related to simulation tasks. The options listed in the menu are:
+   - **Netlist and Run**: Likely used to generate a netlist and start the simulation.
+   - **Run**: To start the simulation.
+   - **Stop**: To stop the simulation.
+   - **Suspend**: (grayed out, indicating it is not currently available).
+   - **Resume**: (grayed out, indicating it is not currently available).
+   - **Run Preview**: To preview the run settings or parameters.
+   - **MDL Control**: (with a submenu indicated by a right arrow).
+   - **Options**: (with a submenu indicated by a right arrow).
+   - **Netlist**: (with a submenu indicated by a right arrow).
+   - **Output Log**: Highlighted in yellow, suggesting it is the current selection or focus.
+   - **Linter Log**: (with a submenu indicated by a right arrow).
+   - **Convergence Aids**: (with a submenu indicated by a right arrow).
+   - **Diagnostics**: (with a submenu indicated by a right arrow).
 
-3. **Dropdown Menu**: Below the "Simulation" menu, a dropdown menu is open, displaying several options:
-   - "Netlist and Run"
-   - "Run"
-   - "Stop"
-   - "Suspend" (grayed out, indicating it is not currently available)
-   - "Resume" (grayed out, indicating it is not currently available)
-   - "Run Preview"
-   - "MDL Control"
-   - "Options" (with a submenu indicated by a right arrow)
-   - "Netlist"
-   - "Output Log..." (highlighted in yellow)
-   - "Linter Log..."
-   - "Convergence Aids"
-   - "Diagnostics"
+4. **Highlighted Items**: The "Simulation" menu item and the "Output Log" option within the menu are both highlighted in yellow, drawing attention to them.
 
-4. **Toolbar**: There is a toolbar with various icons and a dropdown menu labeled "(None)" on the right side of the image.
+5. **Additional Interface Elements**: To the right of the menu, there are additional interface elements, including a dropdown menu labeled "(None)" and a "Details" section, though these are not the primary focus of the image.
 
-The interface is designed for managing and running simulations, with options to control the simulation process, view logs, and access various tools and diagnostics. The highlighted "Output Log..." option suggests that the user is likely interested in viewing the output log of a simulation.
+Overall, the image provides a clear view of the "Simulation" menu within the Virtuoso ADE Explorer Editing interface, with a specific focus on the "Output Log" option.
 ```
 
 **Figure 85: Opening simulation log file from ADE Explorer window**
@@ -2228,30 +2477,46 @@ Action 115: Click **Results > Direct Plot > Main Form** in the **ADE Explorer** 
 
 Here is the image describtion:
 ```
-The image shows a screenshot of a software interface, specifically a menu related to plotting results in a simulation or analysis tool. The top part of the interface displays the title "TB_BGR tb_bgr maestro_Tran_Noise," indicating the current project or file being worked on.
+The image is a screenshot of a software interface, specifically from a tool used for electronic circuit simulation and analysis. The interface appears to be from a program related to Cadence Design Systems, which is commonly used for electronic design automation (EDA).
 
-The menu bar at the top includes several options: "Results," "Tools," "EAD," "Parasitics/LDE," "Window," and "Help." The "Results" menu is expanded, revealing a dropdown list of options. The "Direct Plot" option is highlighted in yellow, indicating it is selected.
+Here is a detailed description of the image:
 
-When "Direct Plot" is selected, a secondary menu appears to the right, titled "Direct Plot." This menu contains several options, with "Main Form ..." highlighted in yellow. Other options in this menu include:
+1. **Menu Bar**: At the top of the interface, there is a menu bar with several options:
+   - Results
+   - Tools
+   - EAD
+   - Parasitics/LDE
+   - Window
+   - Help
 
-- Transient Signal
-- Transient Minus DC
-- Transient Sum
-- Transient Difference
-- AC Magnitude
-- AC dB10
-- AC dB20
-- AC Phase
-- AC Magnitude & Phase
-- AC Gain & Phase
-- Equivalent Output Noise
-- Equivalent Input Noise
-- Squared Output Noise
-- Squared Input Noise
-- Noise Figure
-- DC
+2. **Highlighted Menu**: The "Results" menu is selected, and it has a dropdown menu open. Within this dropdown, the "Direct Plot" option is highlighted, indicating that it is selected.
 
-The interface appears to be part of a software tool used for electrical or electronic circuit simulation and analysis, providing various plotting and data visualization options for different types of signals and noise measurements.
+3. **Submenu**: The "Direct Plot" option has a submenu that is also open. This submenu contains several options:
+   - Main Form ...
+   - Transient Signal
+   - Transient Minus DC
+   - Transient Sum
+   - Transient Difference
+   - AC Magnitude
+   - AC dB10
+   - AC dB20
+   - AC Phase
+   - AC Magnitude & Phase
+   - AC Gain & Phase
+   - Equivalent Output Noise
+   - Equivalent Input Noise
+   - Squared Output Noise
+   - Squared Input Noise
+   - Noise Figure
+   - DC
+
+4. **Highlighted Options**: Within the submenu, the "Main Form ..." option is highlighted, indicating that it is selected or about to be selected.
+
+5. **Window Title**: The title of the window in the background is "TB_BGR tb_bgr maestro_Tran_Noise," which suggests that the user is working on a test bench (TB) for a bandgap reference (BGR) circuit, and they are analyzing transient noise.
+
+6. **Interface Design**: The interface uses a combination of white, grey, and red colors. The highlighted options are marked with a yellow background, making them stand out from the rest of the menu items.
+
+Overall, the image shows a user navigating through the "Results" menu to access the "Direct Plot" options in an electronic circuit simulation tool, likely to plot or analyze specific aspects of the circuit's performance.
 ```
 
 **Figure 86: Opening Direct Plot Form from ADE Explorer window**
@@ -2302,29 +2567,19 @@ Action 121: Place single-point markers on the plot using the **M** bindkey.
 
 Here is the image describtion:
 ```
-The image is a screenshot of a software interface, specifically the Virtuoso Visualization & Analysis XL tool from Cadence. The interface is displaying a graph of a transient response analysis.
+The image is a screenshot of the Cadence Virtuoso Visualization & Analysis XL tool, which is used for analyzing electronic circuits. The specific analysis being displayed is a transient noise response of a circuit, likely a bandgap reference (BGR) circuit, as indicated by the file name "TB_BGR_tb_bgr_1" and the title bar.
 
-Here are the details of the image:
+The main part of the image is a graph plotting the power spectral density (PSD) in decibels (dB) against frequency in megahertz (MHz). The y-axis represents the PSD in dB, ranging from -190 dB to -30 dB. The x-axis represents the frequency, ranging from 0 to 100 MHz.
 
-1. **Software Interface**:
-   - The top bar shows the title "Virtuoso (R) Visualization & Analysis XL: TB_BGR tb_bgr maestro_Tran_Noise".
-   - The menu bar includes options like File, Edit, View, Graph, Axis, Trace, Marker, Measurements, Tools, Window, Browser, and Help.
-   - Below the menu bar, there are various tool icons for different functions.
+The graph shows a green trace that starts at a high value on the left (low frequency) and gradually decreases as the frequency increases. There are two markers on the graph:
+- M1 at 15.62 MHz with a value of -161.876 dB.
+- M2 at 91.95 MHz with a value of -180.564 dB.
 
-2. **Graph Area**:
-   - The graph is titled "Transient Response".
-   - The y-axis is labeled in decibels (dB) ranging from -190 dB to -30 dB.
-   - The x-axis is labeled in frequency (MHz) ranging from 0 to 100 MHz.
-   - The graph shows a green plot line representing the power spectral density (psd) of a signal over frequency.
-   - Two markers are present on the graph:
-     - M1 at 15.62 MHz with a value of -161.876 dB.
-     - M2 at 91.95 MHz with a value of -180.564 dB.
+The toolbar at the top of the window contains various icons and options for manipulating the graph, such as zooming, panning, and adding markers. The left sidebar lists the "Transient Response" with a single entry for the noise analysis.
 
-3. **Additional Information**:
-   - The left side of the graph area has a section labeled "Name" with a blacked-out entry and a green bar labeled "db10(psd(...hGain".
-   - The bottom of the image shows a status bar with detailed trace information: "Trace: db10(psd(VT("/V_BGR") 100u 1.7m 320000 ?windowName "Rectangular" ?smooth 1 ?windowSize 20000 ?detrending "None" ?cohGain 1)); History: ExplorerRun.0; Test: T".
+At the bottom of the window, there is a status bar displaying details about the trace being analyzed, including the specific parameters and settings used for the analysis.
 
-Overall, the image depicts a detailed analysis of a signal's power spectral density over a range of frequencies using the Cadence Virtuoso tool.
+Overall, the image shows a detailed analysis of the noise performance of a circuit over a range of frequencies, with specific points of interest marked for further examination.
 ```
 
 **Figure 88: Output transient noise plot in ViVA XL**

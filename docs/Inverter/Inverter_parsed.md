@@ -20,17 +20,15 @@ The dc-ac converter, also known as the inverter, converts dc power to ac power a
 
 Here is the image describtion:
 ```
-The image is a block diagram illustrating the conversion of electrical energy from a DC source to an AC output. The diagram consists of three main components connected in series:
+The image depicts a block diagram of a power conversion system. The system consists of three main components arranged in series:
 
-1. **Battery or Rectifier**: This is the first component on the left side of the diagram. It represents the source of DC power, which could either be a battery or a rectifier that converts AC to DC.
+1. **Battery or Rectifier**: This is the first component on the left side of the diagram. It serves as the source of DC power. The battery provides a steady DC voltage, while a rectifier converts AC voltage to DC voltage.
 
-2. **Capacitor (C_d)**: The middle section of the diagram shows a capacitor labeled \( C_d \) with a voltage across it labeled \( V_d \). The capacitor is connected in parallel with the DC line, indicating its role in smoothing or filtering the DC voltage before it is fed into the next stage.
+2. **Capacitor (Cd)**: Positioned in the middle of the diagram, this capacitor is labeled with the symbol "Cd" and has a voltage across it denoted as "Vd". The capacitor is used to smooth out the DC voltage, reducing any ripples or fluctuations that may be present.
 
-3. **Inverter**: The third component is an inverter, which is responsible for converting the DC voltage into AC voltage. The inverter is depicted as a rectangular block labeled "Inverter."
+3. **Inverter**: This is the third component, located to the right of the capacitor. The inverter converts the smoothed DC voltage into AC voltage. The output of the inverter is connected to the AC voltage terminals, which are represented by two lines extending to the right.
 
-4. **AC Voltage Output**: On the right side of the inverter, there are two lines indicating the output of the inverter, which is labeled "AC Voltage." This represents the final AC output that can be used to power AC devices.
-
-The diagram effectively shows the flow of electrical energy from a DC source through a capacitor for smoothing, and then through an inverter to produce an AC output.
+The overall function of this system is to convert DC voltage from a battery or rectifier into AC voltage, which can then be used to power AC devices. The capacitor plays a crucial role in ensuring that the DC voltage supplied to the inverter is stable and free of significant ripples.
 ```
 
 Figure 2.1: Schematic for Inverter System
@@ -60,19 +58,27 @@ The disadvantage possessed by this scheme is that the switching devices used in 
 
 Here is the image describtion:
 ```
-The image depicts a schematic diagram of a half-bridge inverter circuit. The main components and their connections are as follows:
+The image depicts a simplified schematic of a half-bridge inverter circuit. Here is a detailed description of the components and their configuration:
 
-1. **Voltage Source (Vd)**: On the left side of the diagram, there is a DC voltage source labeled \( V_d \). The positive terminal is at the top, and the negative terminal is at the bottom.
+1. **DC Voltage Source (Vd)**: On the left side of the circuit, there is a DC voltage source labeled \( V_d \). This source provides the input voltage for the inverter.
 
-2. **Capacitors (C)**: There are two capacitors, each labeled \( C \), connected in series across the voltage source \( V_d \). The midpoint between the two capacitors is connected to the ground. Each capacitor has a voltage of \( \frac{V_d}{2} \) across it.
+2. **Capacitors (C)**: The circuit includes two capacitors, each labeled \( C \). These capacitors are connected in series across the DC voltage source \( V_d \). The midpoint between the two capacitors is at half the voltage of the source, \( \frac{V_d}{2} \).
 
-3. **Switches (S11 and S12)**: There are two switches, labeled \( S_{11} \) and \( S_{12} \), connected in series. Each switch has an anti-parallel diode across it, which is a common feature in power electronic circuits to allow current to flow in the opposite direction when the switch is off.
+3. **Switches (S11 and S12)**: There are two switches, labeled \( S_{11} \) and \( S_{12} \), which are typically implemented using transistors (such as MOSFETs or IGBTs). Each switch has an associated anti-parallel diode, which is a common feature in power electronic circuits to handle reverse current.
 
-4. **Output (Vo)**: The output voltage \( V_o \) is taken from the midpoint between the two switches \( S_{11} \) and \( S_{12} \). This point is connected to the load.
+4. **Output Voltage (Vo)**: The output voltage \( V_o \) is taken from the midpoint between the two switches. This point is connected to the load (not shown in the diagram).
 
-5. **Connections**: The top of the first capacitor \( C \) is connected to the positive terminal of the voltage source \( V_d \). The bottom of the second capacitor \( C \) is connected to the negative terminal of the voltage source \( V_d \). The midpoint between the two capacitors is connected to the ground. The switches \( S_{11} \) and \( S_{12} \) are connected in series between the positive and negative terminals of the voltage source. The output \( V_o \) is taken from the midpoint between the two switches.
+5. **Connections**:
+   - The positive terminal of the DC voltage source \( V_d \) is connected to the top terminal of the first capacitor and the drain of the upper switch \( S_{11} \).
+   - The negative terminal of the DC voltage source \( V_d \) is connected to the bottom terminal of the second capacitor and the source of the lower switch \( S_{12} \).
+   - The midpoint between the two capacitors is connected to the source of the upper switch \( S_{11} \) and the drain of the lower switch \( S_{12} \).
 
-This circuit is typically used to convert DC voltage to AC voltage by alternately switching \( S_{11} \) and \( S_{12} \) on and off, creating an alternating output voltage \( V_o \).
+6. **Operation**: 
+   - When \( S_{11} \) is closed (conducting) and \( S_{12} \) is open (non-conducting), the output voltage \( V_o \) is approximately \( +\frac{V_d}{2} \).
+   - When \( S_{11} \) is open (non-conducting) and \( S_{12} \) is closed (conducting), the output voltage \( V_o \) is approximately \( -\frac{V_d}{2} \).
+   - By switching \( S_{11} \) and \( S_{12} \) on and off alternately, an AC output voltage can be generated from the DC input voltage.
+
+This half-bridge inverter is a fundamental building block in power electronics, used in applications such as motor drives, uninterruptible power supplies (UPS), and renewable energy systems.
 ```
 
 Figure 2.2: Schematic diagram for Half-Bridge PWM inverter.
@@ -87,16 +93,23 @@ $$\nu\_r \le \nu\_c \qquad S\_{12} \text{ is on } , \quad V\_{out} = -\frac{V\_d
 
 Here is the image describtion:
 ```
-The image consists of two subplots labeled (a) and (b).
+The image consists of two subplots labeled (a) and (b), which appear to be related to a pulse-width modulation (PWM) process.
 
-(a) The first subplot shows a graph of "Modulation Signal and Triangle" versus "Time (sec)". The x-axis represents time in seconds, ranging from 0 to 2 milliseconds (2 x 10^-3 seconds). The y-axis represents the amplitude, ranging from -1 to 1. There are two waveforms plotted on this graph:
-- A triangular waveform (Vr) that oscillates between -1 and 1 with a high frequency.
-- A sinusoidal modulation signal (Vc) that oscillates between -1 and 1 with a lower frequency compared to the triangular waveform.
-The triangular waveform intersects the sinusoidal waveform at various points, and these intersections are labeled as Vc and Vr.
+**Subplot (a):**
+- The x-axis is labeled "Time (sec)" and ranges from 0 to 2 milliseconds (2 x 10^-3 seconds).
+- The y-axis is labeled "Modulation Signal and Triangle" and ranges from -1 to 1.
+- There are two waveforms plotted:
+  - A triangular waveform (Vr) that oscillates between -1 and 1 with a high frequency.
+  - A sinusoidal waveform (Vc) that oscillates between -1 and 1 with a lower frequency.
+- The triangular waveform intersects the sinusoidal waveform at various points.
 
-(b) The second subplot shows a graph of "Pulse Amplitude" versus "Time (sec)". The x-axis represents time in seconds, ranging from 0 to 2 milliseconds (2 x 10^-3 seconds). The y-axis represents the pulse amplitude, ranging from 0 to 1. The graph displays a series of rectangular pulses (pulse-width modulation) that switch between 0 and 1. The width and spacing of these pulses vary, corresponding to the intersections of the triangular and sinusoidal waveforms in subplot (a).
+**Subplot (b):**
+- The x-axis is labeled "Time (sec)" and ranges from 0 to 2 milliseconds (2 x 10^-3 seconds).
+- The y-axis is labeled "Pulse Amplitude" and ranges from -0.2 to 1.2.
+- The plot shows a series of rectangular pulses (PWM signal) with amplitude values of either 0 or 1.
+- The width of the pulses varies, corresponding to the points where the triangular waveform intersects the sinusoidal waveform in subplot (a).
 
-Overall, the image illustrates the process of pulse-width modulation, where the modulation signal (sinusoidal waveform) is compared with a high-frequency triangular waveform to generate a series of pulses with varying widths.
+Overall, the image illustrates the process of generating a PWM signal by comparing a sinusoidal modulation signal with a high-frequency triangular carrier signal. The resulting PWM signal in subplot (b) has pulse widths that vary according to the amplitude of the sinusoidal modulation signal in subplot (a).
 ```
 
 Figure 2.3: SPWM illustration (a) Sine-Triangle Comparison (b) Switching Pulses after comparison.
@@ -113,7 +126,7 @@ for each leg of the inverter. This enables the output voltage to fluctuate betwe
 
 Here is the image describtion:
 ```
-The image is a graph depicting a square wave signal. The x-axis represents time in seconds, ranging from 0 to 2 milliseconds (2 x 10^-3 seconds). The y-axis represents voltage in volts, ranging from -100V to 100V. The square wave alternates between 100V and -100V at regular intervals, with a period of approximately 0.2 milliseconds. The waveform is consistent and symmetrical, indicating a stable and periodic signal.
+The image is a plot of voltage versus time. The x-axis represents time in seconds, ranging from 0 to 2 milliseconds (2 x 10^-3 seconds). The y-axis represents voltage in volts, ranging from -100 V to 100 V. The plot shows a square wave signal, which alternates between 100 V and -100 V at regular intervals. The waveform has a high level at 100 V and a low level at -100 V, with sharp transitions between these levels. The signal appears to have a consistent period, indicating a regular and repeating pattern. The plot is drawn with a thick black line, making the waveform clearly visible against the grid background.
 ```
 
 Figure 2.4: Output voltage of the Half-Bridge inverter.
@@ -124,23 +137,22 @@ Figure 2.4: Output voltage of the Half-Bridge inverter.
 
 Here is the image describtion:
 ```
-The image depicts a schematic diagram of a single-phase full-bridge inverter circuit. The main components and their connections are as follows:
+The image depicts a schematic diagram of a single-phase full-bridge inverter circuit. The key components and their arrangement are as follows:
 
-1. **DC Voltage Source (Vd)**: On the left side of the diagram, there is a DC voltage source labeled \( V_d \) with its positive terminal at the top and negative terminal at the bottom.
+1. **DC Voltage Source (Vd)**: On the left side of the diagram, there is a DC voltage source labeled \( V_d \). The positive terminal is at the top, and the negative terminal is at the bottom.
 
-2. **Capacitors (C)**: Two capacitors are connected in series across the DC voltage source. Each capacitor is labeled \( C \) and they are connected such that the midpoint between them is labeled as point \( o \). The voltage across each capacitor is \( \frac{V_d}{2} \).
+2. **Capacitors (C)**: The DC voltage source is connected to two capacitors, each labeled \( C \). These capacitors are connected in series, with the midpoint labeled as \( o \). The voltage across each capacitor is \( \frac{V_d}{2} \).
 
-3. **Switches (S11, S12, S21, S22)**: There are four switches in the circuit, each represented by a transistor symbol with an anti-parallel diode. The switches are labeled as \( S_{11} \), \( S_{12} \), \( S_{21} \), and \( S_{22} \).
-   - \( S_{11} \) and \( S_{12} \) are connected to the positive terminal of the DC source.
-   - \( S_{21} \) and \( S_{22} \) are connected to the negative terminal of the DC source.
+3. **Switches (S11, S12, S21, S22)**: There are four switches in the circuit, each represented by a transistor symbol with an anti-parallel diode. The switches are labeled \( S_{11} \), \( S_{12} \), \( S_{21} \), and \( S_{22} \).
 
-4. **Output Terminals (a, b)**: The output terminals of the inverter are labeled as \( a \) and \( b \). 
-   - Terminal \( a \) is connected to the junction between switches \( S_{11} \) and \( S_{21} \).
-   - Terminal \( b \) is connected to the junction between switches \( S_{12} \) and \( S_{22} \).
+   - **S11 and S12**: These switches are connected to the midpoint \( o \) and the positive terminal of the DC source. \( S_{11} \) is connected to point \( a \), and \( S_{12} \) is connected to the negative terminal of the DC source.
+   - **S21 and S22**: These switches are connected to the midpoint \( o \) and the negative terminal of the DC source. \( S_{21} \) is connected to point \( a \), and \( S_{22} \) is connected to the positive terminal of the DC source.
 
-5. **Output Voltage (Vab)**: The output voltage across the terminals \( a \) and \( b \) is labeled as \( V_{ab} \).
+4. **Output Terminals (a and b)**: The points \( a \) and \( b \) are the output terminals of the inverter. The voltage across these terminals is labeled \( V_{ab} \).
 
-The circuit operates by switching the transistors in a specific sequence to convert the DC input voltage \( V_d \) into an AC output voltage \( V_{ab} \). The anti-parallel diodes across each switch allow for current flow in the opposite direction when the switches are off, which is essential for the operation of the inverter.
+5. **Diodes**: Each switch has an anti-parallel diode, which allows current to flow in the opposite direction when the switch is off. These diodes are essential for handling the inductive loads and ensuring proper operation of the inverter.
+
+The overall function of this circuit is to convert the DC voltage \( V_d \) into an AC voltage \( V_{ab} \) by appropriately switching the transistors \( S_{11} \), \( S_{12} \), \( S_{21} \), and \( S_{22} \). The switching sequence determines the polarity and magnitude of the output AC voltage.
 ```
 
 Figure 2.5: Schematic of a Single Phase Full-Bridge Inverter.
@@ -175,28 +187,43 @@ Here is the image describtion:
 ```
 The image consists of three subplots labeled (a), (b), and (c), each displaying a different waveform over a time period of 0 to 0.02 seconds.
 
-(a) The first subplot shows a waveform labeled "Sine-triangle" on the y-axis. The waveform appears to be a combination of a sine wave and a triangle wave. The sine wave is a smooth, continuous curve oscillating between -1 and 1, while the triangle wave is a series of sharp, linear peaks and troughs superimposed on the sine wave. The x-axis is labeled "Time (sec)" and ranges from 0 to 0.02 seconds.
+1. **Subplot (a):**
+   - The y-axis is labeled "Sine-triangle."
+   - The plot shows a combination of a sine wave and a triangle wave. The sine wave is a smooth, continuous curve that oscillates between -1 and 1. Superimposed on this sine wave is a high-frequency triangle wave, which creates a jagged, sawtooth-like pattern on top of the sine wave. The sine wave appears to have a lower frequency compared to the triangle wave.
 
-(b) The second subplot is labeled "S11/S22" on the y-axis. This waveform consists of a series of rectangular pulses that alternate between 0 and 1. The pulses are evenly spaced and have a consistent width. The x-axis is also labeled "Time (sec)" and ranges from 0 to 0.02 seconds.
+2. **Subplot (b):**
+   - The y-axis is labeled "S11/S22."
+   - This plot displays a series of vertical lines that alternate between 0 and 1. The pattern is highly regular, with each line reaching either the maximum value of 1 or the minimum value of 0. The lines are closely spaced, indicating a high-frequency signal.
 
-(c) The third subplot is labeled "S12/S21" on the y-axis. Similar to the second subplot, this waveform also consists of rectangular pulses alternating between 0 and 1. The pulses are evenly spaced and have a consistent width, but the pattern appears slightly different from the second subplot. The x-axis is labeled "Time (sec)" and ranges from 0 to 0.02 seconds.
+3. **Subplot (c):**
+   - The y-axis is labeled "S12/S21."
+   - Similar to subplot (b), this plot also shows a series of vertical lines alternating between 0 and 1. The pattern is again highly regular and closely spaced, indicating another high-frequency signal. The frequency and spacing of the lines appear to be similar to those in subplot (b).
 
-Overall, the image presents three different waveforms over a short time period, with the first subplot showing a combination of sine and triangle waves, and the second and third subplots showing rectangular pulse waveforms.
+All three subplots share the same x-axis labeled "Time (sec)," which ranges from 0 to 0.02 seconds. The time intervals are marked at 0.005, 0.01, and 0.015 seconds. The overall appearance suggests that the plots are likely representing different aspects or components of a signal or system over a very short time period.
 ```
 
 Figure 2.6:Bipolar PWM (a) Sine-triangle comparison (b) Switching pulses for S11/S22 (c) Switching pulses for S12/S21
 
 Here is the image describtion:
 ```
-The image consists of three subplots labeled (a), (b), and (c), each depicting a different signal over a time interval from 0.04 seconds to 0.08 seconds.
+The image consists of three subplots, each displaying a different waveform over a short period of time (from 0.04 to 0.08 seconds). Here is a detailed description of each subplot:
 
-(a) The first subplot shows a sinusoidal waveform labeled "modulation signal (mi sin(wet))" on the y-axis. The signal oscillates smoothly between -1 and 1, indicating a typical sine wave pattern.
+1. **Top Subplot (a)**:
+   - **Y-axis Label**: "modulation signal (mi sin(wet))"
+   - **X-axis Label**: "Time (sec)"
+   - **Waveform**: This plot shows a sinusoidal waveform that oscillates between -1 and 1. The waveform completes approximately one full cycle within the given time frame. The signal appears smooth and continuous, representing a typical modulation signal.
 
-(b) The second subplot displays a signal labeled "Vab (V)" on the y-axis. This signal appears to be a high-frequency switching waveform, oscillating rapidly between approximately -100V and 100V. The waveform is densely packed with vertical lines, indicating rapid switching events.
+2. **Middle Subplot (b)**:
+   - **Y-axis Label**: "Vab (V)"
+   - **X-axis Label**: "Time (sec)"
+   - **Waveform**: This plot displays a high-frequency switching signal, which is characteristic of a Pulse Width Modulation (PWM) signal. The waveform rapidly switches between approximately +100V and -100V. The density of the switching indicates a high-frequency operation, and the pattern of the switching appears to be modulated by the signal from the top subplot.
 
-(c) The third subplot shows another sinusoidal waveform labeled "Load current (A)" on the y-axis. Similar to the first subplot, this signal oscillates smoothly but between -2A and 2A, indicating another sine wave pattern.
+3. **Bottom Subplot (c)**:
+   - **Y-axis Label**: "Load current (A)"
+   - **X-axis Label**: "Time (sec)"
+   - **Waveform**: This plot shows another sinusoidal waveform, similar in shape to the modulation signal in the top subplot. The amplitude of this waveform oscillates between -2A and 2A. This waveform represents the load current, which is smooth and continuous, indicating that the PWM signal has been filtered to produce a sinusoidal current.
 
-All three subplots share the same x-axis labeled "Time (sec)," covering the same time interval from 0.04 seconds to 0.08 seconds. The overall image appears to illustrate the relationship between a modulation signal, a switching voltage waveform, and the resulting load current in an electrical or electronic system.
+Overall, the image illustrates the process of generating a sinusoidal load current using a modulation signal and a PWM signal. The modulation signal (a) is used to control the PWM signal (b), which in turn produces a filtered load current (c) that closely follows the shape of the modulation signal.
 ```
 
 Figure 2.7: Bipolar PWM scheme (a) Modulation signal for leg 'a' (b) output line-line voltage (c) load current
@@ -239,32 +266,29 @@ In this scheme, the devices in one leg are turned on or off based on the compari
 
 Here is the image describtion:
 ```
-The image consists of three subplots labeled (a), (b), and (c), each displaying a different waveform or signal over a time interval from 0.04 seconds to 0.06 seconds.
+The image consists of three subplots labeled (a), (b), and (c), each displaying a different waveform or signal over a specific time interval from 0.04 seconds to 0.06 seconds.
 
-(a) The first subplot, labeled "sine-trianglecomparison," shows two waveforms overlaid on each other. The thicker waveform appears to be a sine wave, characterized by its smooth, continuous oscillations between -1 and 1. The thinner waveform is a triangle wave, which has a linear rise and fall, creating a series of sharp peaks and troughs. The sine wave and triangle wave are compared over the same time interval, and their differences in shape and frequency are evident.
+(a) The first subplot, labeled "sine-trianglecomparison," shows two waveforms overlaid on each other. The thicker waveform appears to be a sine wave, characterized by its smooth, continuous oscillations between -1 and 1. The thinner waveform is a triangle wave, which has a linear rise and fall, creating a series of sharp peaks and troughs. The sine wave and triangle wave are compared over the same time interval, demonstrating their different shapes and periodicities.
 
-(b) The second subplot, labeled "S11," displays a series of vertical lines that form a pattern resembling a square wave. The signal alternates between 0 and 1 with a high frequency, creating a dense pattern of lines. The waveform appears to be a digital signal with a consistent period and amplitude.
+(b) The second subplot, labeled "S11," displays a series of vertical lines that form a pattern resembling a pulse train or a square wave. The signal alternates between 0 and 1, with each pulse having a consistent width and spacing. This pattern is repeated over the entire time interval from 0.04 seconds to 0.06 seconds.
 
-(c) The third subplot, labeled "S21," also shows a series of vertical lines similar to the second subplot. This signal alternates between 0 and 1 with a high frequency, forming a dense pattern of lines. The waveform is another digital signal with a consistent period and amplitude, similar to the one in subplot (b).
+(c) The third subplot, labeled "S21," also shows a series of vertical lines similar to the second subplot. This signal also alternates between 0 and 1, forming a pulse train or square wave pattern. The pulses in this subplot appear to have a different width or spacing compared to the pulses in subplot (b), indicating a different frequency or duty cycle.
 
-Overall, the image compares different types of waveforms, including a sine wave, a triangle wave, and two digital signals, highlighting their distinct characteristics and behaviors over a short time interval.
+All three subplots share the same x-axis labeled "Time (sec)," indicating the time in seconds, and the y-axis labels vary according to the specific signal being displayed. The y-axis for subplot (a) is labeled "sine-trianglecomparison," while the y-axes for subplots (b) and (c) are labeled "S11" and "S21," respectively. The overall image provides a visual comparison of different types of waveforms and signals over a short time interval.
 ```
 
 Figure 2.8: Unipolar PWM voltage switching scheme (a) Sine triangle comparison (b) switching pulses for S11 (c) switching pulses for S21.
 
 Here is the image describtion:
 ```
-The image consists of four subplots labeled (a), (b), (c), and (d), each displaying a different electrical signal over time. The x-axis for all subplots represents time in seconds, ranging from 0.04 to 0.08 seconds.
+The image consists of four subplots labeled (a), (b), (c), and (d), each displaying a different electrical signal over time. The x-axis of each subplot represents time in seconds, ranging from 0.04 to 0.06 seconds for the first three subplots and from 0.04 to 0.08 seconds for the fourth subplot. 
 
-(a) The first subplot shows the voltage \( V_{an} \) in volts (V) on the y-axis, ranging from -100 V to 100 V. The signal appears as a series of high-frequency oscillations or pulses.
+- Subplot (a) is labeled "Van (V)" on the y-axis and shows a high-frequency oscillating signal with a peak-to-peak voltage of approximately 200 V.
+- Subplot (b) is labeled "Vbn (V)" on the y-axis and also displays a high-frequency oscillating signal similar to subplot (a), with the same peak-to-peak voltage of approximately 200 V.
+- Subplot (c) is labeled "Vab (V)" on the y-axis and shows a signal that appears to be a combination of the signals in subplots (a) and (b). The signal has a peak-to-peak voltage of approximately 400 V and exhibits a pattern that changes around 0.05 seconds.
+- Subplot (d) is labeled "Iab (A)" on the y-axis and displays a sinusoidal current signal with a peak current of approximately 5 A. The signal is smooth and continuous, unlike the high-frequency oscillations seen in the voltage signals of the previous subplots.
 
-(b) The second subplot displays the voltage \( V_{bn} \) in volts (V) on the y-axis, also ranging from -100 V to 100 V. This signal is similar to the first subplot, showing high-frequency oscillations or pulses.
-
-(c) The third subplot illustrates the voltage \( V_{ab} \) in volts (V) on the y-axis, ranging from -200 V to 200 V. The signal shows a combination of high-frequency oscillations and a step change around 0.05 seconds, where the amplitude of the oscillations changes.
-
-(d) The fourth subplot presents the current \( I_{ab} \) in amperes (A) on the y-axis, ranging from -5 A to 5 A. The signal is a smooth sinusoidal waveform, indicating a periodic current.
-
-Overall, the image depicts various electrical signals, including voltages and current, with different characteristics such as high-frequency oscillations and sinusoidal waveforms.
+Overall, the image presents a detailed view of voltage and current waveforms in an electrical system, with the voltage signals showing high-frequency oscillations and the current signal displaying a sinusoidal pattern.
 ```
 
 Figure 2.9: Unipolar PWM voltage switching scheme (a) phase voltage 'a' (b) phase voltage 'b' (c) line to line voltage Vab (d) load current
@@ -315,32 +339,34 @@ In the inverter employing the bipolar switching scheme, switches are operated in
 
 Here is the image describtion:
 ```
-The image contains two separate graphs, labeled (d) and (e), each displaying a time series signal over a short duration from 0.04 to 0.05 seconds. 
+The image consists of two subplots, labeled (d) and (e), which display time-domain signals. Both subplots have a similar layout and style, with the x-axis representing time in seconds (sec) and the y-axis representing the signal amplitude.
 
-1. **Graph (d)**:
-   - The y-axis is labeled "S21" and ranges from 0 to 1.
-   - The x-axis is labeled "Time (sec)" and ranges from 0.04 to 0.05 seconds.
-   - The signal appears as a series of vertical lines, indicating a high-frequency oscillation or pulse train within the given time frame.
+1. **Subplot (d):**
+   - The y-axis is labeled "S21."
+   - The x-axis ranges from 0.04 to 0.05 seconds.
+   - The signal appears to be a square wave oscillating between 0 and 1.
+   - The waveform has a high frequency, with multiple cycles occurring within the 0.01-second time window shown.
 
-2. **Graph (e)**:
-   - The y-axis is labeled "S22" and also ranges from 0 to 1.
-   - The x-axis is labeled "Time (sec)" and ranges from 0.04 to 0.05 seconds, similar to graph (d).
-   - This signal also consists of vertical lines, suggesting another high-frequency oscillation or pulse train, similar in nature to the signal in graph (d).
+2. **Subplot (e):**
+   - The y-axis is labeled "S22."
+   - The x-axis also ranges from 0.04 to 0.05 seconds.
+   - Similar to subplot (d), the signal is a square wave oscillating between 0 and 1.
+   - The frequency of the waveform in subplot (e) appears to be slightly higher than that in subplot (d), as there are more cycles within the same time window.
 
-Both graphs show a dense pattern of vertical lines, indicating rapid changes in the signal values within the short time interval displayed. The signals in both graphs seem to be periodic and have a similar structure, suggesting they might be related or represent similar phenomena.
+Both subplots are likely part of a larger analysis or study, given their similar formatting and the specific time window chosen for display. The signals are likely related to each other, possibly representing different channels or measurements in a time-domain analysis.
 ```
 
 Figure 2.10: Modified bipolar PWM (a) Sine-triangle comparison (b), (c), (d), and (e) switching pulses for devices S11, S12, S21 and S22.
 
 Here is the image describtion:
 ```
-The image consists of two graphs, labeled (a) and (b), each depicting a different electrical signal over time.
+The image consists of two graphs, labeled (a) and (b), which are plotted against time on the x-axis, ranging from 0.04 to 0.08 seconds.
 
-Graph (a) is a plot of voltage (Vab) versus time (sec). The x-axis represents time in seconds, ranging from 0.04 to 0.08 seconds. The y-axis represents voltage in volts, ranging from -100V to 100V. The voltage signal appears as a series of high-frequency pulses that switch between positive and negative values, creating a pattern of rectangular pulses. The signal alternates between approximately +100V and -100V, with the transitions occurring at regular intervals.
+Graph (a) is a plot of voltage (Vab) in volts (V) versus time (sec). The y-axis ranges from -100 V to 100 V. The voltage waveform appears to be a high-frequency square wave, alternating between approximately +100 V and -100 V. The waveform shows distinct periods of high and low states, with rapid transitions between these states.
 
-Graph (b) is a plot of current (Iab) versus time (sec). The x-axis represents time in seconds, ranging from 0.04 to 0.08 seconds, similar to graph (a). The y-axis represents current in amperes, ranging from -2A to 2A. The current signal is a smooth, sinusoidal waveform that oscillates between -2A and 2A. The waveform completes one full cycle within the given time range, starting from -2A, rising to a peak of 2A, and then returning to -2A.
+Graph (b) is a plot of current (Iab) in amperes (A) versus time (sec). The y-axis ranges from -2 A to 2 A. The current waveform is a smooth sinusoidal wave, starting at -2 A at 0.04 seconds, peaking at around +2 A at approximately 0.055 seconds, and then returning to -2 A by 0.08 seconds. The sinusoidal wave completes one full cycle within the given time frame.
 
-Overall, graph (a) shows a high-frequency switching voltage signal, while graph (b) shows a sinusoidal current signal over the same time period.
+Overall, the image shows a high-frequency square voltage waveform and a corresponding sinusoidal current waveform over the same time period.
 ```
 
 Figure 2.11: Modified bipolar PWM scheme (a) line-to-line voltage (b) load current The switching pattern for negative values of the modulating signal *V* is given as *<sup>m</sup>*
@@ -415,32 +441,41 @@ $$\left(V\_{qd}\right)^{\*} = \mathbf{t}\_a V\_{qda} + \mathbf{t}\_b V\_{qdb} + 
 
 Here is the image describtion:
 ```
-The image is a diagram featuring a set of coordinate axes with four labeled vectors extending from the origin. The diagram appears to represent a vector space with specific vectors labeled according to their components and corresponding functions. Here is a detailed description:
+The image is a diagram featuring a set of coordinate axes with vectors labeled at each of the four cardinal directions. The diagram appears to be related to a mathematical or engineering context, possibly involving vector analysis or control systems.
 
-1. **Axes**: 
-   - The diagram has a horizontal axis (x-axis) and a vertical axis (y-axis) intersecting at the origin (0,0).
+1. **Axes**:
+   - The diagram has a central origin point with two perpendicular axes intersecting at this point.
+   - The horizontal axis extends to the left and right, while the vertical axis extends upwards and downwards.
 
-2. **Vectors**:
-   - **Vector in the first quadrant**: 
-     - Labeled as \([ \frac{V_d}{2} - V_{no}, 0 ] = f_{qda}\)
-     - This vector points upwards along the positive y-axis.
-   - **Vector in the second quadrant**:
-     - Labeled as \([-V_{no}, \frac{V_d}{2} ] = f_{qdc}\)
-     - This vector points to the right along the positive x-axis.
-   - **Vector in the third quadrant**:
-     - Labeled as \([-V_{no}, -\frac{V_d}{2} ] = f_{qdb}\)
-     - This vector points downwards along the negative y-axis.
-   - **Vector in the fourth quadrant**:
-     - Labeled as \([-V_{no}, -\frac{V_d}{2} ] = f_{qdd}\)
-     - This vector points to the left along the negative x-axis.
+2. **Vectors and Labels**:
+   - **Top Vector**: 
+     - Positioned along the positive vertical axis.
+     - Labeled as \(\left[\frac{V_d}{2} - V_{no}, 0\right] = f_{qda}\).
+   - **Right Vector**: 
+     - Positioned along the positive horizontal axis.
+     - Labeled as \(\left[-V_{no}, \frac{V_d}{2}\right] = f_{qdc}\).
+   - **Bottom Vector**: 
+     - Positioned along the negative vertical axis.
+     - Labeled as \(\left[-V_{no}, -\frac{V_d}{2}\right] = f_{qdb}\).
+   - **Left Vector**: 
+     - Positioned along the negative horizontal axis.
+     - Labeled as \(\left[-V_{no}, -\frac{V_d}{2}\right] = f_{qdd}\).
 
 3. **Additional Vector**:
-   - There is an additional vector labeled \(f_{qd}^*\) that extends from the origin at an angle, pointing into the first quadrant. This vector does not lie along the primary axes but rather at an angle, indicating a different direction in the vector space.
+   - There is an additional vector labeled \(f_{qd}^*\) that is not aligned with the primary axes.
+   - This vector is positioned in the first quadrant, indicating a direction that is both positive in the horizontal and vertical components.
 
-4. **Labels**:
-   - Each vector is labeled with its components in square brackets and an associated function notation (e.g., \(f_{qda}\), \(f_{qdc}\), etc.).
+4. **Arrows**:
+   - Each vector is represented by an arrow pointing away from the origin in the direction specified by the coordinates.
 
-The diagram is likely used to illustrate the relationships between these vectors and their corresponding functions in a specific context, possibly related to electrical engineering or control systems.
+5. **Coordinate Notation**:
+   - The coordinates for each vector are given in square brackets, indicating the components along the horizontal and vertical axes respectively.
+
+6. **Subscripts and Variables**:
+   - The variables \(V_d\) and \(V_{no}\) are used in the coordinates, suggesting they are parameters or constants relevant to the context of the diagram.
+   - The subscripts \(qda\), \(qdc\), \(qdb\), and \(qdd\) are used to differentiate between the different vectors.
+
+Overall, the diagram is a clear representation of vectors in a two-dimensional plane, with specific labels and coordinates indicating their direction and magnitude relative to the origin.
 ```
 
 Figure 2.12: Space vector representation of the voltages in a single-phase inverter.
@@ -461,19 +496,19 @@ The single-phase inverter in the full-bridge topology has been simulated in Matl
 
 Here is the image describtion:
 ```
-The image consists of five subplots labeled (a) through (e), each displaying a different type of signal over a time interval from 0.04 to 0.06 seconds. Here is a detailed description of each subplot:
+The image consists of five subplots labeled (a) through (e), each displaying a different signal over a time interval from 0.04 to 0.06 seconds. Here is a detailed description of each subplot:
 
-(a) The first subplot shows a modulation signal. The signal varies between approximately -2 and 2 units. It starts at around 1.5, decreases to -2, then increases to 2, and finally decreases slightly towards the end of the interval.
+(a) The first subplot shows a modulation signal. The signal varies between approximately -2 and 2 units. It starts at around 1.5, decreases to -2, then increases to 2, and finally decreases again towards 0. The signal has a smooth, continuous waveform with some sharp transitions.
 
-(b) The second subplot displays a signal labeled S11/S22. This signal is a series of high-frequency pulses that are either at 0 or 1. The pulses are continuous from 0.04 to about 0.048 seconds, then there is a gap, and the pulses resume from about 0.052 to 0.06 seconds.
+(b) The second subplot displays the signals S11 and S22 over time. These signals are binary, alternating between 0 and 1. The transitions between 0 and 1 are very frequent, indicating a high-frequency switching pattern. The pattern changes slightly around 0.05 seconds.
 
-(c) The third subplot shows a signal labeled S12/S21. Similar to subplot (b), this signal consists of high-frequency pulses alternating between 0 and 1. The pulses are present from 0.04 to about 0.048 seconds, followed by a gap, and then resume from about 0.052 to 0.06 seconds.
+(c) The third subplot shows the signals S12 and S21 over time. Similar to subplot (b), these signals are also binary and alternate between 0 and 1 with high frequency. The switching pattern is slightly different from that in subplot (b) and also changes around 0.05 seconds.
 
-(d) The fourth subplot presents a voltage signal labeled Vab (V). This signal also consists of high-frequency pulses, but the amplitude varies between -100 and 100 volts. The pattern is similar to subplots (b) and (c), with pulses from 0.04 to about 0.048 seconds, a gap, and then pulses from about 0.052 to 0.06 seconds.
+(d) The fourth subplot presents the voltage Vab in volts (V). The voltage alternates between approximately -100V and 100V, indicating a high-frequency switching pattern similar to the signals in subplots (b) and (c). The pattern changes around 0.05 seconds.
 
-(e) The fifth subplot shows a current signal labeled Iab (A). This signal is a smooth sinusoidal waveform varying between approximately -5 and 5 amperes. The waveform starts at around 4.5 A, decreases to -5 A, and then increases back to around 4.5 A by the end of the interval.
+(e) The fifth subplot shows the current Iab in amperes (A). The current waveform is a smooth sinusoidal signal, varying between approximately -5A and 5A. The sinusoidal nature of the current indicates a continuous and periodic signal.
 
-Overall, the image depicts various electrical signals, including modulation, pulse, voltage, and current signals, over a short time interval.
+Overall, the image depicts various electrical signals, including modulation, binary switching signals, voltage, and current, over a short time interval. The binary signals and voltage exhibit high-frequency switching, while the modulation signal and current have smoother waveforms.
 ```
 
 simulation the dc voltage was assumed to be 200 V and the modulation index to be 0.8.
@@ -484,21 +519,28 @@ Here is the image describtion:
 ```
 The image consists of seven subplots labeled (a) through (g), each displaying a different signal or waveform over a time interval from 0.04 seconds to 0.06 seconds. Here is a detailed description of each subplot:
 
-(a) The first subplot shows a modulation signal. The waveform is continuous and varies between approximately -1 and 2. It has a distinct shape with a dip around 0.045 seconds and a peak around 0.055 seconds.
+(a) Modulation Signal:
+- The first subplot shows a modulation signal that varies between approximately -1 and 2. The signal has a non-linear, piecewise shape with distinct segments that include both smooth curves and sharp transitions.
 
-(b) The second subplot displays a signal labeled S11. This is a binary signal that switches between 0 and 1. It starts at 1, drops to 0 at around 0.045 seconds, rises back to 1 at around 0.05 seconds, and drops to 0 again at around 0.055 seconds.
+(b) S11 Signal:
+- The second subplot displays a binary signal labeled S11. This signal alternates between 0 and 1. It starts at 1, drops to 0 at around 0.045 seconds, rises back to 1 at around 0.05 seconds, and drops to 0 again at around 0.055 seconds.
 
-(c) The third subplot shows a signal labeled S12. This is also a binary signal similar to S11 but with different switching times. It starts at 1, drops to 0 at around 0.048 seconds, rises back to 1 at around 0.053 seconds, and drops to 0 again at around 0.058 seconds.
+(c) S12 Signal:
+- The third subplot shows another binary signal labeled S12. This signal also alternates between 0 and 1. It starts at 0, rises to 1 at around 0.045 seconds, drops back to 0 at around 0.055 seconds.
 
-(d) The fourth subplot presents a signal labeled S21. This is a high-frequency binary signal that switches rapidly between 0 and 1. The signal has periods of high-frequency switching interspersed with periods where it remains at 0.
+(d) S21 Signal:
+- The fourth subplot presents a high-frequency binary signal labeled S21. This signal rapidly switches between 0 and 1, creating a series of vertical lines. The signal has periods of high-frequency switching interspersed with periods where it remains at 0.
 
-(e) The fifth subplot shows a signal labeled S22, which is similar to S21. It also switches rapidly between 0 and 1 with similar patterns of high-frequency switching and periods of remaining at 0.
+(e) S22 Signal:
+- The fifth subplot shows another high-frequency binary signal labeled S22, similar to S21. It also rapidly switches between 0 and 1, with periods of high-frequency switching and periods where it remains at 0.
 
-(f) The sixth subplot displays a voltage signal labeled Vab (V). This signal oscillates between approximately -100V and 100V. The waveform shows high-frequency oscillations with distinct periods of positive and negative voltages.
+(f) Vab (Voltage) Signal:
+- The sixth subplot displays a voltage signal labeled Vab (V). This signal oscillates between approximately -100 V and 100 V. The waveform consists of high-frequency oscillations with distinct segments where the voltage remains constant for short periods.
 
-(g) The seventh subplot shows a current signal labeled Iab (A). This is a continuous waveform that varies between approximately -3A and 3A. The waveform has a sinusoidal shape, indicating an alternating current with peaks and troughs.
+(g) Iab (Current) Signal:
+- The seventh subplot shows a current signal labeled Iab (A). This signal varies smoothly between approximately -3 A and 3 A, forming a sinusoidal waveform.
 
-Overall, the image depicts various signals and waveforms, including modulation signals, binary signals, voltage, and current, over a short time interval.
+Overall, the image depicts various signals that are likely part of an electrical or electronic system, showing how different components or stages of the system behave over a short time interval.
 ```
 
 Figure 2.14: Modified bipolar PWM scheme (a) modulation signal (b), (c), (d) & (e) switching pulses S11, S12, S21 and S22 (f) line-to-line voltage (g) load current.
@@ -522,123 +564,118 @@ Table2.4: Comparative experimental results for the various modulation schemes
 
 Here is the image describtion:
 ```
-The image is a screenshot of an oscilloscope display, which shows three different waveforms on three separate channels. Here is a detailed description of the image:
+The image is a screenshot of an oscilloscope display, which shows three different waveforms on three separate channels. Here are the details:
 
-1. **Channel 1 (Ch1)**: 
-   - The waveform is displayed in blue.
-   - The vertical scale is set to 100 V per division.
-   - The waveform appears to be a noisy signal with a lot of high-frequency components superimposed on it, making it look like a dense, fuzzy band.
+1. **Channels and Waveforms:**
+   - **Channel 1 (Ch1)**: Displayed in blue, with a vertical scale of 100 V per division. The waveform appears to be a noisy signal with a high amplitude, occupying the top portion of the screen.
+   - **Channel 2 (Ch2)**: Displayed in green, with a vertical scale of 100 mV per division. This waveform is a sinusoidal signal with some noise, occupying the middle portion of the screen.
+   - **Channel 3 (Ch3)**: Displayed in purple, with a vertical scale of 500 mV per division. This waveform is a clean sinusoidal signal, occupying the bottom portion of the screen.
 
-2. **Channel 2 (Ch2)**:
-   - The waveform is displayed in green.
-   - The vertical scale is set to 100 mV per division.
-   - The waveform is a sinusoidal signal with some noise. The sinusoidal pattern is clear, but there is some fuzziness around the edges, indicating the presence of noise.
+2. **Time Scale:**
+   - The horizontal time scale is set to 4.00 ms per division.
 
-3. **Channel 3 (Ch3)**:
-   - The waveform is displayed in purple.
-   - The vertical scale is set to 500 mV per division.
-   - The waveform is a clean sinusoidal signal with a lower amplitude compared to Channel 2. It appears smooth and without significant noise.
+3. **Markers and Measurements:**
+   - There are two vertical cursors (orange) on the screen, indicating a time difference of 160.000 µs between them.
+   - The voltage level for Channel 1 is indicated as -328 V.
 
-4. **Time Scale**:
-   - The horizontal scale is set to 4.00 ms per division.
-
-5. **Markers and Measurements**:
-   - There are two orange markers labeled "1" and "2" at the top of the display, indicating a time interval measurement.
-   - The time interval between the markers is shown as 160.000 µs.
-
-6. **Additional Information**:
+4. **Additional Information:**
    - The oscilloscope is in "Stop" mode, meaning it is not currently acquiring new data.
-   - The bottom right corner of the display shows the date and time as "23 Oct 2002 13:11:28".
-   - The vertical position of Channel 1 is set to -328 V, as indicated by the label on the right side of the display.
+   - The date and time at the bottom right corner indicate "23 Oct 2002, 13:11:28."
 
-Overall, the image shows three different waveforms with varying levels of noise and amplitude, captured on an oscilloscope.
+5. **General Observations:**
+   - The waveform on Channel 1 is significantly noisier compared to the other two channels.
+   - Channel 2 shows a sinusoidal waveform with some noise superimposed on it.
+   - Channel 3 shows a clean sinusoidal waveform with no visible noise.
+
+The display provides a clear comparison of the three different signals being measured, with distinct characteristics for each channel.
 ```
 
 Figure 2.15: Bipolar switching scheme, starting from top (1) the load voltage (2) the load current (3) modulation signal with mi = 0.8.
 
 Here is the image describtion:
 ```
-The image is a screenshot of an oscilloscope display showing three different waveforms, each represented by a different channel. Here is a detailed description of the image:
+The image is a screenshot of an oscilloscope display showing three different waveforms on three channels. Here are the details:
 
-1. **Channels and Waveforms:**
-   - **Channel 1 (Ch1)**: Displayed in blue, with a vertical scale of 100 V per division. The waveform appears to be a square wave with a high amplitude, indicating a high voltage signal.
+1. **Channels and Waveforms**:
+   - **Channel 1 (Ch1)**: Displayed in blue, with a vertical scale of 100 V per division. The waveform appears to be a square wave with a high amplitude, reaching up to approximately 330 V.
    - **Channel 2 (Ch2)**: Displayed in green, with a vertical scale of 100 mV per division. The waveform is a sinusoidal wave with a lower amplitude compared to Channel 1.
-   - **Channel 3 (Ch3)**: Displayed in pink, with a vertical scale of 500 mV per division. The waveform is also sinusoidal but with a different phase and amplitude compared to Channel 2.
+   - **Channel 3 (Ch3)**: Displayed in purple, with a vertical scale of 500 mV per division. The waveform is also sinusoidal but with a different phase and amplitude compared to Channel 2.
 
-2. **Time Scale:**
-   - The horizontal time scale is set to 4.00 ms per division, indicating the time interval for each division on the x-axis.
+2. **Time Scale**:
+   - The horizontal scale is set to 4.00 ms per division, indicating the time base for the waveforms.
 
-3. **Measurement Markers:**
-   - There are two vertical orange markers labeled "1" and "2" at the top of the display, indicating a time interval measurement of 160.000 µs between them.
+3. **Cursors**:
+   - There are two vertical cursors (T1 and T2) placed on the screen, with a time difference (ΔT) of 160.000 µs between them. This is used to measure the time interval between two points on the waveforms.
 
-4. **Additional Information:**
-   - The bottom right corner of the display shows the date and time as "23 Oct 2002 13:03:06".
-   - The bottom of the display provides information about the channels and their respective vertical scales.
-   - The frequency of Channel 1 is indicated as 330 V.
+4. **Additional Information**:
+   - The oscilloscope is a Tektronix model, as indicated by the "Tek" logo at the top left.
+   - The date and time at the bottom right corner show "23 Oct 2002, 13:03:06".
+   - The frequency of Channel 1 is indicated as 330 V, which seems to be a mislabeling or an error, as it should typically show frequency in Hz.
 
-5. **Grid and Display:**
-   - The display has a grid with horizontal and vertical divisions to help measure the amplitude and time period of the waveforms.
-   - The waveforms are shown with some noise, indicating real-world signal characteristics.
+5. **Waveform Characteristics**:
+   - The waveform on Channel 1 is a high-amplitude square wave.
+   - The waveform on Channel 2 is a low-amplitude sinusoidal wave.
+   - The waveform on Channel 3 is another sinusoidal wave with a different amplitude and phase compared to Channel 2.
 
-Overall, the image shows a detailed oscilloscope capture of three different electrical signals, each with distinct characteristics in terms of amplitude, frequency, and waveform shape.
+Overall, the image shows a detailed view of three different electrical signals being analyzed simultaneously on an oscilloscope.
 ```
 
  Figure 2.16: Bipolar switching scheme with zero sequence voltage, (1) load voltage (2) the load current (3) modulation signal.
 
 Here is the image describtion:
 ```
-The image is a screenshot of an oscilloscope display showing multiple waveforms. Here is a detailed description of the image:
+The image is a screenshot of an oscilloscope display, which shows multiple waveforms overlaid on a grid. The oscilloscope is a Tektronix model, as indicated by the "Tek" logo in the top left corner. The display is in a stopped state, as indicated by the "Stop" label next to the logo.
 
-1. **General Layout**:
-   - The oscilloscope is in a stopped state, as indicated by the "Tek Stop" label at the top left corner.
-   - The display shows four channels, each with different voltage scales and waveforms.
-   - The time base is set to 4.00 milliseconds per division, as indicated at the bottom center of the screen.
-   - The date and time at the bottom right corner show "23 Oct 2002, 13:37:28".
+There are four channels displayed, each with different voltage scales and waveforms:
 
-2. **Waveforms**:
-   - **Channel 1 (Ch1)**: Displayed in blue, with a scale of 100 V per division. The waveform is a high-voltage signal with a complex shape, showing a combination of a sinusoidal wave with superimposed high-frequency noise or oscillations.
-   - **Channel 2 (Ch2)**: Displayed in green, with a scale of 100 mV per division. This waveform is a smoother sinusoidal wave, with less noise compared to Channel 1.
-   - **Channel 3 (Ch3)**: Displayed in purple, with a scale of 1.00 V per division. This waveform is a square wave, with clear transitions between high and low states.
-   - **Channel 4 (Ch4)**: Displayed in black, with a scale of 500 mV per division. This waveform is another sinusoidal wave, similar to Channel 2 but with a different amplitude.
+1. **Channel 1 (Ch1)**: This waveform is displayed in blue and has a voltage scale of 100 V per division. The waveform appears to be a distorted sine wave with significant noise or high-frequency components superimposed on it. The peak-to-peak voltage is quite high, as indicated by the scale.
 
-3. **Markers and Measurements**:
-   - There are two vertical cursors (T1 and T2) at the top of the screen, indicating a time difference of 160.000 microseconds between them.
-   - The horizontal position of the waveforms is centered around the middle of the screen.
-   - The voltage levels for each channel are indicated on the left side of the screen, with color-coded labels matching the waveforms.
+2. **Channel 2 (Ch2)**: This waveform is displayed in green and has a voltage scale of 100 mV per division. The waveform is a cleaner sine wave compared to Channel 1, with less noise and a lower amplitude.
 
-4. **Additional Information**:
-   - The power indicator at the top right corner shows that the oscilloscope is plugged in and has a full battery.
-   - The trigger level for Channel 1 is set to -308 V, as indicated at the bottom center of the screen.
+3. **Channel 3 (Ch3)**: This waveform is displayed in purple and has a voltage scale of 1.00 V per division. The waveform is a square wave with a duty cycle that appears to be around 50%. The transitions between high and low states are sharp, indicating a digital signal.
 
-Overall, the image shows a detailed view of multiple electrical signals captured by an oscilloscope, with various waveforms and measurements displayed for analysis.
+4. **Channel 4 (Ch4)**: This waveform is displayed in light green and has a voltage scale of 500 mV per division. The waveform is a smooth sine wave with a lower amplitude compared to Channel 1 and Channel 2.
+
+The time base for the oscilloscope is set to 4.00 ms per division, as indicated at the bottom of the screen. The horizontal cursor (T) is set to 160.000 µs, which is displayed in orange at the bottom of the screen.
+
+The date and time are displayed at the bottom right corner of the screen, showing "23 Oct 2002" and "13:37:28".
+
+Overall, the image shows a complex set of waveforms with different characteristics, likely representing different signals in an electronic circuit or system.
 ```
 
  Figure 2.17: Modified bipolar switching scheme,(1) load voltage (2) load current (3) modulation signal for one leg (4) modulation signal for the other leg with mi= 0.8
 
 Here is the image describtion:
 ```
-The image is a screenshot of an oscilloscope display showing multiple waveforms. Here is a detailed description of the image:
+The image is a screenshot of an oscilloscope display, which shows multiple waveforms overlaid on a grid. The oscilloscope is a Tektronix model, as indicated by the "Tek" logo in the top left corner. The display is divided into four channels, each represented by a different color and labeled as Ch1, Ch2, Ch3, and Ch4.
 
-1. **General Layout**:
-   - The display is divided into four horizontal sections, each representing a different channel.
-   - The time base is set to 4.00 milliseconds per division, as indicated at the bottom of the screen.
-   - The date and time at the bottom right corner show "23 Oct 2002 13:30:12".
+1. **Channel 1 (Ch1)**: 
+   - Color: Blue
+   - Scale: 100 V/div
+   - The waveform is a high-frequency signal with a rectangular shape, indicating a series of pulses or a digital signal.
 
-2. **Waveforms**:
-   - **Channel 1 (Ch1)**: The waveform is a series of rectangular pulses with varying widths, indicating a digital signal or a pulse-width modulated (PWM) signal. The vertical scale for Ch1 is set to 100 V per division.
-   - **Channel 2 (Ch2)**: This channel displays a sinusoidal waveform, which is a smooth, continuous wave. The vertical scale for Ch2 is set to 100 mV per division.
-   - **Channel 3 (Ch3)**: The waveform here is a square wave, characterized by its sharp transitions between high and low levels. The vertical scale for Ch3 is set to 1.00 V per division.
-   - **Channel 4 (Ch4)**: This channel shows a triangular waveform, which linearly rises and falls. The vertical scale for Ch4 is set to 500 mV per division.
+2. **Channel 2 (Ch2)**:
+   - Color: Green
+   - Scale: 100 mV/div
+   - The waveform is a sinusoidal signal, which appears to be a clean sine wave.
 
-3. **Markers and Measurements**:
-   - There are two vertical cursors labeled "T" and "T" at the top of the screen, indicating a time measurement between two points on the waveforms.
-   - The time difference between the cursors is 160.000 microseconds, as shown at the bottom of the screen.
+3. **Channel 3 (Ch3)**:
+   - Color: Purple
+   - Scale: 1.00 V/div
+   - The waveform is a square wave, characterized by its sharp transitions between high and low states.
 
-4. **Additional Information**:
-   - The oscilloscope model is likely a Tektronix, as indicated by the "Tek PreVu" label at the top left corner.
-   - The battery icon at the top right corner suggests that the oscilloscope is portable or has a battery backup.
+4. **Channel 4 (Ch4)**:
+   - Color: Light Green
+   - Scale: 500 mV/div
+   - The waveform is a triangular wave, with a linear rise and fall.
 
-Overall, the image shows a detailed view of different types of waveforms captured on an oscilloscope, with specific settings and measurements provided for each channel.
+The time base for the oscilloscope is set to 4.00 ms/div, as indicated at the bottom center of the display. The horizontal axis represents time, while the vertical axis represents voltage for each channel.
+
+There are also two vertical cursors (T and t) on the display, which are used to measure the time interval between two points on the waveforms. The time difference between these cursors is shown as 160.000 µs.
+
+The date and time at the bottom right corner indicate that the screenshot was taken on 23 October 2002 at 13:30:12.
+
+Overall, the image shows a combination of different types of waveforms (rectangular, sinusoidal, square, and triangular) being measured simultaneously on an oscilloscope.
 ```
 
  Figure 2.18: Modified bipolar switching scheme with zero sequence voltage (1) load voltage (2) load current (3) modulation signal for one leg (4) modulation signal for the other leg with mi = 0.8 and zero sequence added.

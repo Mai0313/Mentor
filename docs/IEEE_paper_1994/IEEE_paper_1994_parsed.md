@@ -26,24 +26,76 @@ H. Bakes is with ETH Hoenggerberg, Zurich, Switzerland. IEEE Log Number 921 1963
 
 Here is the image describtion:
 ```
-The image consists of two parts labeled (a) and (b).
+The image consists of two parts: a circuit diagram (a) and a voltage transfer characteristic curve (b).
 
-(a) The left part of the image is a schematic diagram of a CMOS circuit. The circuit includes six MOSFET transistors labeled M1, M2, M3, M4, M5, and M6. The transistors are arranged in a specific configuration to form a logic gate. The circuit also includes a current source labeled I0, and two voltage sources labeled VG and VDD. The output voltage is labeled VO. The transistors M1, M2, and M3 are connected in series, with M1 connected to ground. Transistors M4, M5, and M6 are also connected in series, with M6 connected to VDD. The gates of M1 and M4 are connected to VG, while the gates of M2 and M5 are connected to the output VO. The gate of M3 is connected to the source of M2, and the gate of M6 is connected to the source of M5.
+### Part (a): Circuit Diagram
+The circuit diagram in part (a) appears to be a CMOS inverter with additional transistors, likely forming a more complex logic gate or a specific type of inverter. Here are the key components and their connections:
 
-(b) The right part of the image is a voltage transfer characteristic (VTC) curve. The graph plots the output voltage VO on the y-axis against the input voltage VG on the x-axis. The curve shows the relationship between the input and output voltages for the CMOS circuit. The graph includes several labeled points: VOL (output low voltage), VOH (output high voltage), VL (low input voltage threshold), VLi (input voltage at the lower transition point), VHi (input voltage at the higher transition point), and VH (high input voltage threshold). The curve indicates the regions where the output voltage transitions from high to low and vice versa as the input voltage varies from 0 to VDD. The dashed lines represent the ideal high and low output voltage levels (VOH and VOL), while the solid line represents the actual output voltage behavior.
+1. **Transistors:**
+   - **M1 and M2:** These are NMOS transistors.
+   - **M3 and M4:** These are PMOS transistors.
+   - **M5 and M6:** These are additional transistors, likely PMOS and NMOS respectively, forming part of the circuit's logic.
+
+2. **Connections:**
+   - **VG:** This is the input voltage applied to the gate of M1.
+   - **VDD:** This is the supply voltage connected to the source of M4 and M6.
+   - **Vo:** This is the output voltage taken from the drain of M6.
+   - **Ground:** The source of M1 is connected to ground.
+   - **Current Source (I0):** There is a current source connected between the drain of M1 and the source of M2.
+
+3. **Intermediate Nodes:**
+   - **VP:** This is an intermediate voltage node between M4 and M5.
+   - **VN:** This is an intermediate voltage node between M2 and M3.
+
+### Part (b): Voltage Transfer Characteristic Curve
+The graph in part (b) shows the voltage transfer characteristic (VTC) of the circuit, which plots the output voltage (Vo) against the input voltage (VG). Key points and regions on the curve include:
+
+1. **VoL (Low Output Voltage):** The minimum output voltage when the input voltage is low.
+2. **VoH (High Output Voltage):** The maximum output voltage when the input voltage is high.
+3. **VL and VH:** These are the input voltage levels where the output starts to transition from high to low and vice versa.
+4. **VLi and VHi:** These are intermediate input voltage levels where the output voltage is in the middle of its transition.
+5. **VDD:** The supply voltage level, which is the maximum possible output voltage.
+6. **Vo:** The output voltage, which varies between VoL and VoH as the input voltage VG changes from 0 to VDD.
+
+The curve shows a typical inverter characteristic with a sharp transition between the high and low output states, indicating the switching behavior of the circuit. The arrows on the curve indicate the direction of the voltage change as the input voltage VG is varied.
 ```
 
 Fig. *1.* CMOS Schmitt trigger and its transfer characteristic
 
 Here is the image describtion:
 ```
-The image consists of three parts labeled (a), (b), and (c).
+The image consists of three parts: a circuit diagram (a), and two graphs (b) and (c).
 
-(a) The first part is a circuit diagram. It includes three MOSFET transistors labeled M1, M2, and M3. The circuit is powered by a voltage source labeled V_DD. The gate of M1 is connected to a voltage source labeled V_G. The source of M1 is connected to the ground. The drain of M1 is connected to the source of M2. The gate of M2 is connected to the drain of M1. The drain of M2 is connected to the source of M3. The gate of M3 is connected to the drain of M2. The drain of M3 is connected to V_DD. There is a current source labeled I_O connected between the drain of M2 and the ground. The output voltage V_O is taken from the drain of M2.
+(a) Circuit Diagram:
+- The circuit diagram shows a configuration of three MOSFET transistors labeled M1, M2, and M3.
+- The source of M1 is connected to the ground, and its gate is connected to an input voltage VG.
+- The drain of M1 is connected to the source of M2.
+- The gate of M2 is connected to a node labeled VN.
+- The drain of M2 is connected to the source of M3.
+- The gate of M3 is connected to a voltage source VDD.
+- The drain of M3 is connected to VDD.
+- There is a current source labeled Io connected between the drain of M2 and the ground.
+- The output voltage Vo is taken from the node between the drain of M2 and the source of M3.
 
-(b) The second part is a graph showing the relationship between the output current I_O and the output voltage V_O. The x-axis represents the output voltage V_O, and the y-axis represents the output current I_O. The graph shows a piecewise linear relationship with different regions labeled V_OS, V_OT, V_OC, and V_DD. The current I_O starts at zero, increases linearly, reaches a constant value I_ON, and then decreases back to zero.
+(b) Graph:
+- The graph plots Io (output current) on the y-axis against Vo (output voltage) on the x-axis.
+- The graph shows a piecewise linear relationship with three distinct regions:
+  1. A rising slope from VoS to VoT.
+  2. A flat region from VoT to VoC.
+  3. A falling slope from VoC to VDD.
+- The current Io reaches a maximum value IoN in the flat region.
 
-(c) The third part is another graph showing the relationship between the output current I_O and the output voltage V_O for a specific gate voltage V_G = V_H. The x-axis represents the output voltage V_O, and the y-axis represents the output current I_O. The graph shows two curves: one solid and one dashed. The solid curve represents the current I_O for the high gate voltage V_G = V_H, while the dashed curve represents the current I_O for a lower gate voltage. The graph shows regions labeled I_ONH, I_OPH, V_OL, and V_DD. The difference between the two curves is labeled as ΔI. The current I_O starts at zero, increases, reaches a peak, and then decreases back to zero.
+(c) Graph:
+- The graph plots Io (output current) on the y-axis against Vo (output voltage) on the x-axis for VG = VH.
+- The graph shows two curves:
+  1. A solid line representing the actual output current.
+  2. A dashed line representing a reference or ideal output current.
+- The solid line shows a rising slope from VoL to a peak value and then a falling slope.
+- The dashed line shows a more gradual rise and fall.
+- The difference between the solid and dashed lines is labeled as ΔI.
+- The current Io reaches a maximum value IoNH in the solid line and IoPH in the dashed line.
+
+Overall, the image depicts a MOSFET-based circuit and its output current characteristics as a function of the output voltage, highlighting the differences between actual and ideal performance.
 ```
 
 Fig. 2. N-subcircuit driven by a voltage source: (a) circuit; (b) current-voltage characteristic; (c) superposition of N- and P-subcircuit characteristics.
@@ -158,11 +210,35 @@ Here is the image describtion:
 ```
 The image consists of two circuit diagrams labeled (a) and (b).
 
-(a) The first diagram (a) shows a transistor circuit with three MOSFETs labeled M1, M2, and M3. The circuit is connected to a power supply voltage V_DD at the top. The source of M1 is connected to ground, and its gate is connected to a voltage source V_H. The drain of M1 is connected to the source of M2. The gate of M2 is connected to the drain of M1. The drain of M2 is connected to a resistor labeled R_LP, which is also connected to V_DD. The source of M3 is connected to the drain of M2, and its gate is connected to the same node. The drain of M3 is connected to another resistor labeled R_LP, which is also connected to V_DD. The output voltage V_O is taken from the drain of M3. The currents through the circuit are labeled as ΔI, NH, and NH - ΔI.
+### Diagram (a):
+- **Transistors**: The circuit includes three MOSFET transistors labeled M1, M2, and M3.
+  - M1 is connected to the ground and has its gate connected to a voltage source labeled \( V_H \).
+  - M2 and M3 are connected in a differential pair configuration.
+- **Current Sources**: 
+  - There is a current source labeled \( \Delta I \) connected to the drain of M2.
+  - Another current source labeled \( NH - \Delta I \) is connected to the drain of M3.
+- **Resistor**: 
+  - A resistor labeled \( R_{LP} \) is connected between the drains of M2 and M3 and the supply voltage \( V_{DD} \).
+- **Voltage Nodes**: 
+  - The output voltage \( V_O \) is taken from the common drain connection of M2 and M3.
+  - The source of M1 is connected to the ground.
+  - The gate of M2 is connected to a voltage source labeled \( V_H \).
 
-(b) The second diagram (b) is a small-signal equivalent circuit of the first diagram. It shows two dependent current sources, each represented by a circle with an arrow inside. The first current source is labeled g_m2 * v_gs2, and the second is labeled g_m3 * v_gs3. The voltage v_gs2 is applied between the gate and source of the first current source, and v_gs3 is applied between the gate and source of the second current source. The output voltage V_O is taken from the node where the two current sources meet. There is also a resistor labeled r_o1 connected to ground from the source of the first current source.
+### Diagram (b):
+- **Small-Signal Model**: This diagram represents the small-signal equivalent circuit of the differential pair shown in diagram (a).
+- **Transconductance Elements**:
+  - Two controlled current sources are present, labeled \( g_{m2} v_{gs2} \) and \( g_{m3} v_{gs3} \), representing the transconductance of transistors M2 and M3, respectively.
+- **Resistor**: 
+  - A resistor labeled \( r_{o1} \) is connected to the source of the controlled current source \( g_{m3} v_{gs3} \).
+- **Voltage Nodes**:
+  - The input voltages \( v_{gs2} \) and \( v_{gs3} \) are applied to the gates of the transistors in the small-signal model.
+  - The output voltage \( V_O \) is taken from the common node of the controlled current sources.
+- **Ground Connections**: 
+  - The sources of the controlled current sources are connected to the ground.
 
-Overall, the image depicts a transistor circuit and its small-signal equivalent model, highlighting the relationships between the various components and the resulting output voltage.
+### Summary:
+- Diagram (a) shows a differential amplifier circuit with MOSFETs M1, M2, and M3, current sources, and a load resistor.
+- Diagram (b) shows the small-signal equivalent model of the differential amplifier, highlighting the transconductance and output resistance elements.
 ```
 
 Fig. 3. CMOS Schmitt trigger during transition: (a) equivalent circuit and (b) small-signal model.
