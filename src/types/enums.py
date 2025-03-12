@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class AnalogAgentMode(str, Enum):
     # Using ChatCompletion
     original: str = "original"

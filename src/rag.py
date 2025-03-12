@@ -122,9 +122,12 @@ def retrieve_data(query: str) -> str:
     model = OpenAIModel(model_name="aide-gpt-4o", openai_client=client)
     agent = Agent(model=model, result_type=CheckRelevantDocuments)
     subcircuit_description = Path("./lib_info.tsv").read_text(encoding="utf-8")
+    all_docs_string = "\n- ".join(all_docs)
     response = agent.run_sync(
         user_prompt=f"""
-        Here is all the docs: {all_docs}, please select the relevant docs to the question: {query} by the docs titles.
+        Here is all the docs: {all_docs_string}
+        Please select the relevant docs to the following question by the docs titles:
+        {query}
 
         And also, this is the description of subcircuit_lib
         You should use the description to find the best match for those file under ./subcircuit_lib:

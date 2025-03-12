@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 from pathlib import Path
 import datetime
 
@@ -27,7 +27,9 @@ from openai.types.chat.chat_completion_message import ChatCompletionMessage
 from autogen.agentchat.contrib.captainagent.captainagent import CaptainAgent
 
 from src.rag import retrieve_data, get_config_dict
-from src.enums import AnalogAgentMode
+from src.types.code import CodeBlock
+from src.types.enums import AnalogAgentMode
+from src.types.usage import AutogenUsage
 
 console = Console()
 warnings.filterwarnings("ignore", category=ResourceWarning)
@@ -99,15 +101,6 @@ with open("dc_sweep.txt") as fopen:
             best_voltage = vin[i]
     return "success to find best voltage", best_voltage
 """
-
-
-class AutogenUsage(BaseModel):
-    cost: Optional[float] = Field(default=0.0, title="Cost of the API call")
-    prompt_tokens: Optional[int] = Field(default=0, title="Number of tokens in the prompt")
-    completion_tokens: Optional[int] = Field(default=0, title="Number of tokens in the completion")
-    total_tokens: Optional[int] = Field(
-        default=0, title="Total number of tokens in the prompt and completion"
-    )
 
 
 class ChatResultConverter(BaseModel):
@@ -217,28 +210,6 @@ class ChatResultConverter(BaseModel):
             usage=self.usage,
         )
         return chat_completion_result
-
-
-class CodeBlock(BaseModel):
-    code_type: str = Field(
-        ...,
-        title="Code Type of the Code Block",
-        description="This field will contain the code type of the block, e.g. python, json, etc.",
-        frozen=True,
-        deprecated=False,
-    )
-    code_content: str = Field(
-        ...,
-        title="Code Content of the Code Block",
-        description="This field will contain the pure code content of the block without any ``` or code type.",
-        frozen=True,
-        deprecated=False,
-    )
-
-    @computed_field
-    @property
-    def code_in_markdown(self) -> str:
-        return f"```{self.code_type}\n{self.code_content}\n```"
 
 
 class AnalogAgentArgs(BaseModel):
